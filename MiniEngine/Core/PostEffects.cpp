@@ -484,10 +484,10 @@ void PostEffects::Render( void )
 
     Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-    if (EnableHDR && !SSAO::DebugDraw && !(DepthOfField::Enable && DepthOfField::DebugMode >= 3))
-        ProcessHDR(Context);
-    else
-        ProcessLDR(Context);
+    //if (EnableHDR && !SSAO::DebugDraw && !(DepthOfField::Enable && DepthOfField::DebugMode >= 3))
+    //    ProcessHDR(Context);
+    //else
+    //    ProcessLDR(Context);
 
     bool bGeneratedLumaBuffer = EnableHDR || FXAA::DebugDraw || BloomEnable;
     if (FXAA::Enable)

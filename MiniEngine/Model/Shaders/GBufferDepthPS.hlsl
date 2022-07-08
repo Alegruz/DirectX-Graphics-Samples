@@ -8,16 +8,7 @@
 //
 // Developed by Minigraph
 //
-// Author:  James Stanard 
-//
+// Author(s):	James Stanard
 
-#include "PresentRS.hlsli"
-#include "ColorSpaceUtility.hlsli"
-
-Texture2D<float3> MainBuffer : register(t0);
-
-[RootSignature(Present_RootSig)]
-float4 main( float4 position : SV_Position, float2 uv : TexCoord0 ) : SV_Target0
-{
-    return float4(ApplyREC2084Curve(MainBuffer[(int2)position.xy] / 10000.0), 1);
-}
+#define GBUFFER_DEPTH
+#include "ModelViewerPS.hlsl"

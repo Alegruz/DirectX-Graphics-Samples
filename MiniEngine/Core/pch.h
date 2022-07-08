@@ -48,6 +48,17 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include "d3dx12.h"
+
+//#define USE_DEBUG_RUNTIME (1)
+
+//#if USE_DEBUG_RUNTIME
+//    #ifndef _DEBUG
+//        #define _DEBUG (1)
+//    #elif !_DEBUG
+//        #define _DEBUG (1)
+//    #endif
+//#endif
+
 #ifdef _DEBUG
     #include <dxgidebug.h>
 #endif

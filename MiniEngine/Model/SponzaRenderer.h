@@ -26,6 +26,14 @@ namespace Math
     class Vector3;
 }
 
+enum class eGBufferType : UINT8
+{
+    FORWARD,
+    DEPTH,
+    NORMAL,
+    COUNT,
+};
+
 namespace Sponza
 {
     void Startup( Math::Camera& camera );
@@ -40,6 +48,9 @@ namespace Sponza
         bool skipShadowMap = false );
 
     const ModelH3D& GetModel();
+
+    void SetNextGBufferOutput();
+    void SetPreviousGBufferOutput();
 
     extern Math::Vector3 m_SunDirection;
     extern ShadowCamera m_SunShadow;

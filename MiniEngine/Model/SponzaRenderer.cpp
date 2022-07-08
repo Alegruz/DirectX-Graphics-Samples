@@ -35,6 +35,8 @@
 #include "CompiledShaders/DepthViewerPS.h"
 #include "CompiledShaders/ModelViewerVS.h"
 #include "CompiledShaders/ModelViewerPS.h"
+#include "CompiledShaders/GBufferDepthPS.h"
+#include "CompiledShaders/GBufferNormalPS.h"
 
 using namespace Math;
 using namespace Graphics;
@@ -52,6 +54,12 @@ namespace Sponza
     GraphicsPSO m_CutoutModelPSO = { (L"Sponza: Cutout Color PSO") };
     GraphicsPSO m_ShadowPSO(L"Sponza: Shadow PSO");
     GraphicsPSO m_CutoutShadowPSO(L"Sponza: Cutout Shadow PSO");
+
+    GraphicsPSO m_GBufferDepthPSO = { (L"Sponza: GBuffer Depth PSO") };
+    GraphicsPSO m_GBufferNormalPSO = { (L"Sponza: GBuffer Normal PSO") };
+
+    GraphicsPSO* m_apMainPSOs[] = { &m_ModelPSO, &m_GBufferDepthPSO, &m_GBufferNormalPSO };
+    eGBufferType m_CurrentBufferType = eGBufferType::FORWARD;
 
     ModelH3D m_Model;
     std::vector<bool> m_pMaterialIsCutout;
@@ -120,9 +128,20 @@ void Sponza::Startup( Camera& Camera )
     m_ModelPSO.SetBlendState(BlendDisable);
     m_ModelPSO.SetDepthStencilState(DepthStateTestEqual);
     m_ModelPSO.SetRenderTargetFormats(2, formats, DepthFormat);
+    //m_ModelPSO.SetRenderTargetFormats(0, nullptr, DepthFormat);
     m_ModelPSO.SetVertexShader( g_pModelViewerVS, sizeof(g_pModelViewerVS) );
     m_ModelPSO.SetPixelShader( g_pModelViewerPS, sizeof(g_pModelViewerPS) );
     m_ModelPSO.Finalize();
+
+    m_GBufferDepthPSO = m_ModelPSO;
+    m_GBufferDepthPSO.SetRenderTargetFormats(1, &ColorFormat, DepthFormat);
+    m_GBufferDepthPSO.SetPixelShader(g_pGBufferDepthPS, sizeof(g_pGBufferDepthPS));
+    m_GBufferDepthPSO.Finalize();
+
+    m_GBufferNormalPSO = m_GBufferDepthPSO;
+    m_GBufferNormalPSO.SetRenderTargetFormats(1, &ColorFormat, DepthFormat);
+    m_GBufferNormalPSO.SetPixelShader(g_pGBufferNormalPS, sizeof(g_pGBufferNormalPS));
+    m_GBufferNormalPSO.Finalize();
 
     m_CutoutModelPSO = m_ModelPSO;
     m_CutoutModelPSO.SetRasterizerState(RasterizerTwoSided);
@@ -160,6 +179,16 @@ void Sponza::Startup( Camera& Camera )
 const ModelH3D& Sponza::GetModel()
 {
     return Sponza::m_Model;
+}
+
+void Sponza::SetNextGBufferOutput()
+{
+    m_CurrentBufferType = static_cast<eGBufferType>((static_cast<size_t>(m_CurrentBufferType) + 1) % static_cast<size_t>(eGBufferType::COUNT));
+}
+
+void Sponza::SetPreviousGBufferOutput()
+{
+    m_CurrentBufferType = static_cast<eGBufferType>((static_cast<size_t>(m_CurrentBufferType) + static_cast<size_t>(eGBufferType::COUNT) - 1) % static_cast<size_t>(eGBufferType::COUNT));
 }
 
 void Sponza::Cleanup( void )
@@ -384,10 +413,12 @@ void Sponza::RenderScene(
                 gfxContext.SetDynamicConstantBufferView(Renderer::kMaterialConstants, sizeof(psConstants), &psConstants);
 
                 {
-                    gfxContext.SetPipelineState(m_ModelPSO);
+                    //gfxContext.SetPipelineState(m_ModelPSO);
+                    gfxContext.SetPipelineState(*m_apMainPSOs[static_cast<size_t>(m_CurrentBufferType)]);
                     gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
                     D3D12_CPU_DESCRIPTOR_HANDLE rtvs[]{ g_SceneColorBuffer.GetRTV(), g_SceneNormalBuffer.GetRTV() };
                     gfxContext.SetRenderTargets(ARRAYSIZE(rtvs), rtvs, g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+                    //gfxContext.SetRenderTargets(0, nullptr, g_SceneDepthBuffer.GetDSV_DepthReadOnly());
                     gfxContext.SetViewportAndScissor(viewport, scissor);
                 }
                 RenderObjects( gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kOpaque );

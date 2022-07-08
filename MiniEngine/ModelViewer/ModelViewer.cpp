@@ -220,6 +220,16 @@ void ModelViewer::Update( float deltaT )
     else if (GameInput::IsFirstPressed(GameInput::kRShoulder))
         DebugZoom.Increment();
 
+    if (GameInput::IsFirstPressed(GameInput::kKey_right))
+    {
+        Sponza::SetNextGBufferOutput();
+    }
+    
+    if (GameInput::IsFirstPressed(GameInput::kKey_left))
+    {
+        Sponza::SetPreviousGBufferOutput();
+    }
+
     m_CameraController->Update(deltaT);
 
     GraphicsContext& gfxContext = GraphicsContext::Begin(L"Scene Update");
