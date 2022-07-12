@@ -220,6 +220,16 @@ void ModelViewer::Update( float deltaT )
     else if (GameInput::IsFirstPressed(GameInput::kRShoulder))
         DebugZoom.Increment();
 
+    if (GameInput::IsFirstPressed(GameInput::kKey_1))
+    {
+        Sponza::SetRenderType(eRenderType::FORWARD);
+    }
+
+    if (GameInput::IsFirstPressed(GameInput::kKey_2))
+    {
+        Sponza::SetRenderType(eRenderType::DEFERRED);
+    }
+
     if (GameInput::IsFirstPressed(GameInput::kKey_right))
     {
         Sponza::SetNextGBufferOutput();
@@ -306,6 +316,10 @@ void ModelViewer::RenderScene( void )
 		sorter.SetScissor(scissor);
 		sorter.SetDepthStencilTarget(g_SceneDepthBuffer);
 		sorter.AddRenderTarget(g_SceneColorBuffer);
+        for (size_t i = 0; i < Graphics::GBUFFER_COUNT; ++i)
+        {
+            sorter.AddRenderTarget(g_aSceneGBuffers[i]);
+        }
 
         m_ModelInst.Render(sorter);
 

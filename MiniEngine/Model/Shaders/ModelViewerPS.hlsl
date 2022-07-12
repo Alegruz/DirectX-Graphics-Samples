@@ -14,11 +14,15 @@
 #include "Lighting.hlsli"
 
 #if !defined(GBUFFER_DEPTH) && !defined(GBUFFER_NORMAL)
+#if !defined(GBUFFER_SPECULAR)
 Texture2D<float3> texDiffuse		: register(t0);
+#endif
+#if !defined(GBUFFER_ALBEDO)
 Texture2D<float3> texSpecular		: register(t1);
 //Texture2D<float4> texEmissive		: register(t2);
 #endif
-#if !defined(GBUFFER_DEPTH)
+#endif
+#if !defined(GBUFFER_DEPTH) && !defined(GBUFFER_ALBEDO) && !defined(GBUFFER_SPECULAR)
 Texture2D<float3> texNormal			: register(t3);
 //Texture2D<float4> texLightmap		: register(t4);
 //Texture2D<float4> texReflection	: register(t5);
@@ -34,18 +38,20 @@ struct VSOutput
 #if !defined(GBUFFER_DEPTH)
 	sample float3 worldPos : WorldPos;
     sample float2 uv : TexCoord0;
+#if !defined(GBUFFER_ALBEDO) && !defined(GBUFFER_SPECULAR)
 	sample float3 viewDir : TexCoord1;
 	sample float3 shadowCoord : TexCoord2;
 	sample float3 normal : Normal;
 	sample float3 tangent : Tangent;
     sample float3 bitangent : Bitangent;
 #endif
+#endif
 };
 
 struct MRT
 {
 	float3 Color : SV_Target0;
-#if !defined(GBUFFER_DEPTH) && !defined(GBUFFER_NORMAL)
+#if !defined(GBUFFER_DEPTH) && !defined(GBUFFER_NORMAL) && !defined(GBUFFER_ALBEDO) && !defined(GBUFFER_SPECULAR)
 	float4 Normal : SV_Target1;
 #endif
 };
@@ -56,22 +62,26 @@ MRT main(VSOutput vsOutput)
 	MRT mrt;
 	
 #if !defined(GBUFFER_DEPTH)
-#if !defined(GBUFFER_NORMAL)
+#if !defined(GBUFFER_NORMAL) && !defined(GBUFFER_ALBEDO) && !defined(GBUFFER_SPECULAR)
 	uint2 pixelPos = uint2(vsOutput.position.xy);
 #endif
 	
-# define SAMPLE_TEX(texName) texName.Sample(defaultSampler, vsOutput.uv)
+#define SAMPLE_TEX(texName) texName.Sample(defaultSampler, vsOutput.uv)
 	
-#if !defined(GBUFFER_NORMAL)
+#if !defined(GBUFFER_NORMAL) && !defined(GBUFFER_SPECULAR)
     float3 diffuseAlbedo = SAMPLE_TEX(texDiffuse);
 	
+#if !defined(GBUFFER_ALBEDO)
     float3 colorSum = 0;
 	{
         float ao = texSSAO[pixelPos];
 	    colorSum += ApplyAmbientLight( diffuseAlbedo, ao, AmbientColor );
     }
 #endif
-	
+#endif
+
+#if !defined(GBUFFER_ALBEDO)
+#if !defined(GBUFFER_SPECULAR)
     float gloss = 128.0;
     float3 normal;
     {
@@ -80,10 +90,14 @@ MRT main(VSOutput vsOutput)
         float3x3 tbn = float3x3(normalize(vsOutput.tangent), normalize(vsOutput.bitangent), normalize(vsOutput.normal));
         normal = normalize(mul(normal, tbn));
     }
+#endif
 	
 #if !defined(GBUFFER_NORMAL)
+#if !defined(GBUFFER_SPECULAR)
     float3 specularAlbedo = float3( 0.56, 0.56, 0.56 );
+#endif
     float specularMask = SAMPLE_TEX(texSpecular).g;
+#if !defined(GBUFFER_SPECULAR)
     float3 viewDir = normalize(vsOutput.viewDir);
     colorSum += ApplyDirectionalLight( diffuseAlbedo, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection, SunColor, vsOutput.shadowCoord, texShadow );
 
@@ -98,11 +112,17 @@ MRT main(VSOutput vsOutput)
 		);
 #endif
 #endif
+#endif
+#endif
 	
 #ifdef GBUFFER_DEPTH
 	mrt.Color = sqrt(sqrt(vsOutput.position.z / vsOutput.position.w));
 #elif defined(GBUFFER_NORMAL)
 	mrt.Color = normal;
+#elif defined(GBUFFER_ALBEDO)
+	mrt.Color = diffuseAlbedo;
+#elif defined(GBUFFER_SPECULAR)
+    mrt.Color = specularMask;
 #else
     mrt.Normal = float4(normal, 0);
     mrt.Color = colorSum;

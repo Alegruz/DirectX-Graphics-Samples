@@ -21,8 +21,10 @@
 
 namespace Graphics
 {
+    extern constexpr const size_t GBUFFER_COUNT = 3;
     extern DepthBuffer g_SceneDepthBuffer;  // D32_FLOAT_S8_UINT
     extern ColorBuffer g_SceneColorBuffer;  // R11G11B10_FLOAT
+    extern ColorBuffer g_aSceneGBuffers[GBUFFER_COUNT];
     extern ColorBuffer g_SceneNormalBuffer; // R16G16B16A16_FLOAT
     extern ColorBuffer g_PostEffectsBuffer; // R32_UINT (to support Read-Modify-Write with a UAV)
     extern ColorBuffer g_OverlayBuffer;     // R8G8B8A8_UNORM

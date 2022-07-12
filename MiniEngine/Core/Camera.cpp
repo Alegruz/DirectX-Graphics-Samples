@@ -39,9 +39,23 @@ void BaseCamera::SetLookDirection( Vector3 forward, Vector3 up )
 void BaseCamera::Update()
 {
     m_PreviousViewProjMatrix = m_ViewProjMatrix;
+    m_PreviousViewOrthoMatrix = m_BaseViewOrthoMatrix;
 
     m_ViewMatrix = Matrix4(~m_CameraToWorld);
+    if (bIsFirst)
+    {
+        m_BaseViewMatrix = m_ViewMatrix;
+        bIsFirst = FALSE;
+    }
+    //m_ViewMatrix = Matrix4(
+    //    Vector4(1.0f, 0.0f, 0.0f, 0.0f),
+    //    Vector4(0.0f, 1.0f, 0.0f, 0.0f),
+    //    Vector4(0.0f, 0.0f, 1.0f, 0.0f),
+    //    Vector4(0.0f, 0.0f, 0.0f, 1.0f)
+    //);
+    //m_BaseViewMatrix = m_ViewMatrix;
     m_ViewProjMatrix = m_ProjMatrix * m_ViewMatrix;
+    m_BaseViewOrthoMatrix = m_OrthoMatrix * m_BaseViewMatrix;
     m_ReprojectMatrix = m_PreviousViewProjMatrix * Invert(GetViewProjMatrix());
 
     m_FrustumVS = Frustum( m_ProjMatrix );
@@ -56,6 +70,11 @@ void Camera::UpdateProjMatrix( void )
 
     float Q1, Q2;
 
+    float OrthoX = X;
+    float OrthoY = Y;
+
+    float height = 2.0f * m_NearClip * std::tanf(m_VerticalFOV * 0.5f);
+    float width = height * m_AspectRatio;
     // ReverseZ puts far plane at Z=0 and near plane at Z=1.  This is never a bad idea, and it's
     // actually a great idea with F32 depth buffers to redistribute precision more evenly across
     // the entire range.  It requires clearing Z to 0.0f and using a GREATER variant depth test.
@@ -87,10 +106,26 @@ void Camera::UpdateProjMatrix( void )
         }
     }
 
+    OrthoX /= m_NearClip;
+    OrthoY /= m_NearClip;
+
     SetProjMatrix( Matrix4(
         Vector4( X, 0.0f, 0.0f, 0.0f ),
         Vector4( 0.0f, Y, 0.0f, 0.0f ),
         Vector4( 0.0f, 0.0f, Q1, -1.0f ),
         Vector4( 0.0f, 0.0f, Q2, 0.0f )
         ) );
+    XMMATRIX orthoMatrix = XMMatrixOrthographicLH(width, height, m_NearClip, m_FarClip);
+    SetOrthoMatrix(Matrix4(
+        Vector4(XMVectorGetX(orthoMatrix.r[0]), XMVectorGetY(orthoMatrix.r[0]), XMVectorGetZ(orthoMatrix.r[0]), XMVectorGetW(orthoMatrix.r[0])),
+        Vector4(XMVectorGetX(orthoMatrix.r[1]), XMVectorGetY(orthoMatrix.r[1]), XMVectorGetZ(orthoMatrix.r[1]), XMVectorGetW(orthoMatrix.r[1])),
+        Vector4(XMVectorGetX(orthoMatrix.r[2]), XMVectorGetY(orthoMatrix.r[2]), XMVectorGetZ(orthoMatrix.r[2]), XMVectorGetW(orthoMatrix.r[2])),
+        Vector4(XMVectorGetX(orthoMatrix.r[3]), XMVectorGetY(orthoMatrix.r[3]), XMVectorGetZ(orthoMatrix.r[3]), XMVectorGetW(orthoMatrix.r[3]))
+    ));
+    //SetOrthoMatrix(Matrix4(
+    //    Vector4(OrthoX, 0.0f, 0.0f, 0.0f),
+    //    Vector4(0.0f, OrthoY, 0.0f, 0.0f),
+    //    Vector4(0.0f, 0.0f, 1.0f, 0.0f),
+    //    Vector4(0.0f, 0.0f, 0.0f, 1.0f)
+    //));
 }

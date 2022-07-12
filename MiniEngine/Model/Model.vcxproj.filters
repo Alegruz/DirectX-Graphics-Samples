@@ -199,5 +199,20 @@
     <FxCompile Include="Shaders\GBufferNormalPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\..\MiniEngine\MiniEngine\Model\Shaders\DeferredPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\MiniEngine\MiniEngine\Model\Shaders\GBufferAlbedoPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\MiniEngine\MiniEngine\Model\Shaders\GBufferSpecularPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\MiniEngine\MiniEngine\Model\Shaders\GBufferLightVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\MiniEngine\MiniEngine\Model\Shaders\GBufferLightPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

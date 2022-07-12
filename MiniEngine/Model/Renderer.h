@@ -41,6 +41,7 @@ namespace Renderer
 
     extern std::vector<GraphicsPSO> sm_PSOs;
     extern RootSignature m_RootSig;
+    extern RootSignature m_GBufferRootSig;
     extern DescriptorHeap s_TextureHeap;
     extern DescriptorHeap s_SamplerHeap;
     extern DescriptorHandle m_CommonTextures;
@@ -54,6 +55,7 @@ namespace Renderer
         kCommonSRVs,
         kCommonCBV,
         kSkinMatrices,
+        kGBufferSRVs,
 
         kNumRootBindings
     };

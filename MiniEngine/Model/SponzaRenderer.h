@@ -26,11 +26,20 @@ namespace Math
     class Vector3;
 }
 
-enum class eGBufferType : UINT8
+enum class eRenderType : UINT8
 {
     FORWARD,
+    DEFERRED,
+    COUNT,
+};
+
+enum class eGBufferType : UINT8
+{
+    GBUFFER,
     DEPTH,
     NORMAL,
+    ALBEDO,
+    SPECULAR,
     COUNT,
 };
 
@@ -49,6 +58,7 @@ namespace Sponza
 
     const ModelH3D& GetModel();
 
+    void SetRenderType(eRenderType renderType) noexcept;
     void SetNextGBufferOutput();
     void SetPreviousGBufferOutput();
 

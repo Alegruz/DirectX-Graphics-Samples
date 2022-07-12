@@ -22,6 +22,7 @@ namespace Graphics
 {
     DepthBuffer g_SceneDepthBuffer;
     ColorBuffer g_SceneColorBuffer;
+    ColorBuffer g_aSceneGBuffers[GBUFFER_COUNT];
     ColorBuffer g_SceneNormalBuffer;
     ColorBuffer g_PostEffectsBuffer;
     ColorBuffer g_VelocityBuffer;
@@ -83,6 +84,7 @@ namespace Graphics
     ColorBuffer g_GenMipsBuffer;
 
     DXGI_FORMAT DefaultHdrColorFormat = DXGI_FORMAT_R11G11B10_FLOAT;
+    DXGI_FORMAT DefaultGBufferFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 #define T2X_COLOR_FORMAT DXGI_FORMAT_R10G10B10A2_UNORM
@@ -111,6 +113,12 @@ void Graphics::InitializeRenderingBuffers( uint32_t bufferWidth, uint32_t buffer
     esram.PushStack();
 
         g_SceneColorBuffer.Create( L"Main Color Buffer", bufferWidth, bufferHeight, 1, DefaultHdrColorFormat, esram );
+
+        for (size_t i = 0; i < GBUFFER_COUNT; ++i)
+        {
+            g_aSceneGBuffers[i].Create(L"G-Buffer " + std::to_wstring(i), bufferWidth, bufferHeight, 1, DefaultGBufferFormat, esram);
+        }
+
         g_SceneNormalBuffer.Create( L"Normals Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, esram );
         g_VelocityBuffer.Create( L"Motion Vectors", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT );
         g_PostEffectsBuffer.Create( L"Post Effects Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT );
@@ -245,6 +253,10 @@ void Graphics::DestroyRenderingBuffers()
 {
     g_SceneDepthBuffer.Destroy();
     g_SceneColorBuffer.Destroy();
+    for (size_t i = 0; i < GBUFFER_COUNT; ++i)
+    {
+        g_aSceneGBuffers[i].Destroy();
+    }
     g_SceneNormalBuffer.Destroy();
     g_VelocityBuffer.Destroy();
     g_OverlayBuffer.Destroy();
