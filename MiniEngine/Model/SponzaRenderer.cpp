@@ -51,7 +51,7 @@ namespace Sponza
     void RenderLightShadows(GraphicsContext& gfxContext, const Camera& camera);
 
     enum eObjectFilter { kOpaque = 0x1, kCutout = 0x2, kTransparent = 0x4, kAll = 0xF, kNone = 0x0 };
-    void RenderDeferredObjects(GraphicsContext& Context, const Matrix4& ViewProjMat, const Vector3& viewerPos, eObjectFilter Filter = kAll);
+    void RenderDeferredObjects(GraphicsContext& Context, const Camera& camera, const Vector3& viewerPos, eObjectFilter Filter = kAll);
     void RenderObjects( GraphicsContext& Context, const Matrix4& ViewProjMat, const Vector3& viewerPos, eObjectFilter Filter = kAll );
 
     GraphicsPSO m_DepthPSO = { (L"Sponza: Depth PSO") };
@@ -198,9 +198,6 @@ void Sponza::Startup( Camera& Camera )
     m_GBufferPSO.Finalize();
 
     m_GBufferLightPSO = m_ModelPSO;
-    m_GBufferLightPSO.SetDepthStencilState(DepthStateDisabled);
-    m_GBufferLightPSO.SetInputLayout(_countof(gBufferVertElem), gBufferVertElem);
-    m_GBufferLightPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
     m_GBufferLightPSO.SetRenderTargetFormat(ColorFormat, DepthFormat);
     m_GBufferLightPSO.SetVertexShader(g_pGBufferLightVS, sizeof(g_pGBufferLightVS));
     m_GBufferLightPSO.SetPixelShader(g_pGBufferLightPS, sizeof(g_pGBufferLightPS));
@@ -258,12 +255,14 @@ void Sponza::Startup( Camera& Camera )
 
     Lighting::CreateRandomLights(m_Model.GetBoundingBox().GetMin(), m_Model.GetBoundingBox().GetMax());
 
-    m_GBufferSRVs = Renderer::s_TextureHeap.Alloc(1);
+    m_GBufferSRVs = Renderer::s_TextureHeap.Alloc(4);
 
-    uint32_t DestCount = 2;
-    uint32_t SourceCounts[] = { 1, 1 };
+    uint32_t DestCount = 4;
+    uint32_t SourceCounts[] = { 1, 1, 1, 1 };
     D3D12_CPU_DESCRIPTOR_HANDLE aGBuffers[] =
     {
+        g_aSceneGBuffers[0].GetSRV(),
+        g_aSceneGBuffers[1].GetSRV(),
         g_aSceneGBuffers[2].GetSRV(),
         g_SceneNormalBuffer.GetSRV(),
     };
@@ -439,50 +438,68 @@ void Sponza::Cleanup( void )
     TextureManager::Shutdown();
 }
 
-void Sponza::RenderDeferredObjects(GraphicsContext& gfxContext, const Matrix4& ViewProjMat, const Vector3& viewerPos, eObjectFilter Filter)
+void Sponza::RenderDeferredObjects(GraphicsContext& gfxContext, const Camera& camera, const Vector3& viewerPos, eObjectFilter Filter)
 {
+    //XMMATRIX ortho = XMMatrixTranspose(XMMatrixOrthographicLH(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight(), camera.GetNearClip(), camera.GetFarClip()));
+    //Matrix4 orthoMatrix(
+    //    Vector4(XMVectorGetX(ortho.r[0]), XMVectorGetY(ortho.r[0]), XMVectorGetZ(ortho.r[0]), XMVectorGetW(ortho.r[0])),
+    //    Vector4(XMVectorGetX(ortho.r[1]), XMVectorGetY(ortho.r[1]), XMVectorGetZ(ortho.r[1]), XMVectorGetW(ortho.r[1])),
+    //    Vector4(XMVectorGetX(ortho.r[2]), XMVectorGetY(ortho.r[2]), XMVectorGetZ(ortho.r[2]), XMVectorGetW(ortho.r[2])),
+    //    Vector4(XMVectorGetX(ortho.r[3]), XMVectorGetY(ortho.r[3]), XMVectorGetZ(ortho.r[3]), XMVectorGetW(ortho.r[3]))
+    //);
+    //WCHAR szDebugMsg[64];
+    //swprintf_s(szDebugMsg, L"(%f, %f, %f, %f)\n", XMVectorGetX(ortho.r[0]), XMVectorGetY(ortho.r[0]), XMVectorGetZ(ortho.r[0]), XMVectorGetW(ortho.r[0]));
+    //OutputDebugString(szDebugMsg);
+    //swprintf_s(szDebugMsg, L"(%f, %f, %f, %f)\n", XMVectorGetX(ortho.r[1]), XMVectorGetY(ortho.r[1]), XMVectorGetZ(ortho.r[1]), XMVectorGetW(ortho.r[1]));
+    //OutputDebugString(szDebugMsg);
+    //swprintf_s(szDebugMsg, L"(%f, %f, %f, %f)\n", XMVectorGetX(ortho.r[2]), XMVectorGetY(ortho.r[2]), XMVectorGetZ(ortho.r[2]), XMVectorGetW(ortho.r[2]));
+    //OutputDebugString(szDebugMsg);
+    //swprintf_s(szDebugMsg, L"(%f, %f, %f, %f)\n", XMVectorGetX(ortho.r[3]), XMVectorGetY(ortho.r[3]), XMVectorGetZ(ortho.r[3]), XMVectorGetW(ortho.r[3]));
+    //OutputDebugString(szDebugMsg);
     struct VSConstants
     {
         Matrix4 modelToProjection;
         Matrix4 modelToShadow;
         XMFLOAT3 viewerPos;
     } vsConstants;
-    vsConstants.modelToProjection = ViewProjMat;
+    vsConstants.modelToProjection = camera.GetViewProjMatrix();
     vsConstants.modelToShadow = m_SunShadow.GetShadowMatrix();
     XMStoreFloat3(&vsConstants.viewerPos, viewerPos);
 
-    gfxContext.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    //gfxContext.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
     gfxContext.SetDynamicConstantBufferView(Renderer::kMeshConstants, sizeof(vsConstants), &vsConstants);
 
     gfxContext.SetDescriptorTable(Renderer::kGBufferSRVs, m_GBufferSRVs);
 
-    gfxContext.DrawIndexed(NUM_GBUFFER_INDICES, 0, 0);
-    gfxContext.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    __declspec(align(16)) uint32_t materialIdx = 0xFFFFFFFFul;
 
-    //for (uint32_t meshIndex = 0; meshIndex < m_Model.GetMeshCount(); meshIndex++)
-    //{
-    //    const ModelH3D::Mesh& mesh = m_Model.GetMesh(meshIndex);
+    uint32_t VertexStride = m_Model.GetVertexStride();
 
-    //    uint32_t indexCount = mesh.indexCount;
-    //    uint32_t startIndex = mesh.indexDataByteOffset / sizeof(uint16_t);
-    //    uint32_t baseVertex = mesh.vertexDataByteOffset / VertexStride;
+    for (uint32_t meshIndex = 0; meshIndex < m_Model.GetMeshCount(); meshIndex++)
+    {
+        const ModelH3D::Mesh& mesh = m_Model.GetMesh(meshIndex);
 
-    //    
+        uint32_t indexCount = mesh.indexCount;
+        uint32_t startIndex = mesh.indexDataByteOffset / sizeof(uint16_t);
+        uint32_t baseVertex = mesh.vertexDataByteOffset / VertexStride;
 
-    //    if (mesh.materialIndex != materialIdx)
-    //    {
-    //        if (m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kCutout) ||
-    //            !m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kOpaque))
-    //            continue;
+        if (mesh.materialIndex != materialIdx)
+        {
+            if (m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kCutout) ||
+                !m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kOpaque))
+                continue;
 
-    //        materialIdx = mesh.materialIndex;
-    //        gfxContext.SetDescriptorTable(Renderer::kMaterialSRVs, m_Model.GetSRVs(materialIdx));
+            materialIdx = mesh.materialIndex;
+            gfxContext.SetDescriptorTable(Renderer::kMaterialSRVs, m_Model.GetSRVs(materialIdx));
 
-    //        gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(uint32_t), &materialIdx);
-    //    }
+            gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(uint32_t), &materialIdx);
+        }
 
-    //    gfxContext.DrawIndexed(indexCount, startIndex, baseVertex);
-    //}
+        gfxContext.DrawIndexed(indexCount, startIndex, baseVertex);
+    }
+
+    //gfxContext.DrawIndexed(NUM_GBUFFER_INDICES, 0, 0);
+    //gfxContext.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 void Sponza::RenderObjects( GraphicsContext& gfxContext, const Matrix4& ViewProjMat, const Vector3& viewerPos, eObjectFilter Filter )
@@ -706,12 +723,6 @@ void Sponza::RenderScene(
 
                 gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
 
-                gfxContext.SetPipelineState(m_CutoutModelPSO);
-                D3D12_CPU_DESCRIPTOR_HANDLE rtvs[]{ g_SceneColorBuffer.GetRTV(), g_SceneNormalBuffer.GetRTV() };
-                gfxContext.SetRenderTargets(ARRAYSIZE(rtvs), rtvs, g_SceneDepthBuffer.GetDSV_DepthReadOnly());
-                gfxContext.SetViewportAndScissor(viewport, scissor);
-                RenderObjects(gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kCutout);
-
                 {
                     switch (m_CurrentRenderType)
                     {
@@ -746,27 +757,29 @@ void Sponza::RenderScene(
 
                             for (size_t i = 0; i < GBUFFER_COUNT; ++i)
                             {
-                                gfxContext.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_GENERIC_READ, true);
+                                gfxContext.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
                             }
                             //gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_GENERIC_READ, true);
 
-                            uint32_t DestCount = 2;
-                            uint32_t SourceCounts[] = { 1, 1 };
+                            uint32_t DestCount = 4;
+                            uint32_t SourceCounts[] = { 1, 1, 1, 1, };
 
                             D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
                             {
                                 g_aSceneGBuffers[0].GetSRV(),
                                 g_aSceneGBuffers[1].GetSRV(),
+                                g_aSceneGBuffers[2].GetSRV(),
+                                g_SceneNormalBuffer.GetSRV(),
                             };
 
-                            DescriptorHandle dest = Renderer::m_CommonTextures + 8 * Renderer::s_TextureHeap.GetDescriptorSize();
+                            //DescriptorHandle dest = Renderer::m_CommonTextures + 8 * Renderer::s_TextureHeap.GetDescriptorSize();
 
-                            g_Device->CopyDescriptors(1, &dest, &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+                            //g_Device->CopyDescriptors(1, &dest, &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-                            SourceTextures[0] = g_aSceneGBuffers[2].GetSRV();
-                            SourceTextures[1] = g_SceneNormalBuffer.GetSRV();
+                            //SourceTextures[0] = g_aSceneGBuffers[2].GetSRV();
+                            //SourceTextures[1] = g_SceneNormalBuffer.GetSRV();
 
-                            dest = m_GBufferSRVs;
+                            DescriptorHandle dest = m_GBufferSRVs;
 
                             g_Device->CopyDescriptors(
                                 1, 
@@ -779,12 +792,14 @@ void Sponza::RenderScene(
                             );
 
 
-                            gfxContext.SetIndexBuffer(m_GBufferIndexBuffer);
-                            gfxContext.SetVertexBuffer(0, m_GBufferVertexBuffer);
+                            //gfxContext.SetIndexBuffer(m_GBufferIndexBuffer);
+                            //gfxContext.SetVertexBuffer(0, m_GBufferVertexBuffer);
+                            gfxContext.SetDescriptorTable(Renderer::kCommonSRVs, Renderer::m_CommonTextures);
+                            gfxContext.SetDynamicConstantBufferView(Renderer::kMaterialConstants, sizeof(psConstants), &psConstants);
 
                             gfxContext.SetPipelineState(m_GBufferLightPSO);
-                            //gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
-                            gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV());
+                            gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
+                            //gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV());
                         }
                     }
                         break;
@@ -806,9 +821,9 @@ void Sponza::RenderScene(
                 case eRenderType::DEFERRED:
                     if (m_CurrentBufferType == eGBufferType::GBUFFER)
                     {
-                        RenderDeferredObjects(gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kOpaque);
-                        gfxContext.SetIndexBuffer(m_Model.GetIndexBuffer());
-                        gfxContext.SetVertexBuffer(0, m_Model.GetVertexBuffer());
+                        RenderDeferredObjects(gfxContext, camera, camera.GetPosition(), Sponza::kOpaque);
+                        //gfxContext.SetIndexBuffer(m_Model.GetIndexBuffer());
+                        //gfxContext.SetVertexBuffer(0, m_Model.GetVertexBuffer());
                     }
                     else
                     {
@@ -822,6 +837,11 @@ void Sponza::RenderScene(
                     break;
                 }
             }
+            gfxContext.SetPipelineState(m_CutoutModelPSO);
+            D3D12_CPU_DESCRIPTOR_HANDLE rtvs[]{ g_SceneColorBuffer.GetRTV(), g_SceneNormalBuffer.GetRTV() };
+            gfxContext.SetRenderTargets(ARRAYSIZE(rtvs), rtvs, g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+            gfxContext.SetViewportAndScissor(viewport, scissor);
+            RenderObjects(gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kCutout);
         }
     }
 }

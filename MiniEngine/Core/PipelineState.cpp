@@ -80,6 +80,17 @@ void GraphicsPSO::SetDepthTargetFormat(DXGI_FORMAT DSVFormat, UINT MsaaCount, UI
     SetRenderTargetFormats(0, nullptr, DSVFormat, MsaaCount, MsaaQuality );
 }
 
+void GraphicsPSO::SetRenderTargetFormat(DXGI_FORMAT RTVFormat, UINT MsaaCount, UINT MsaaQuality)
+{
+    ASSERT(RTVFormat != DXGI_FORMAT_UNKNOWN);
+    m_PSODesc.RTVFormats[0] = RTVFormat;
+    for (UINT i = 1; i < m_PSODesc.NumRenderTargets; ++i)
+        m_PSODesc.RTVFormats[i] = DXGI_FORMAT_UNKNOWN;
+    m_PSODesc.NumRenderTargets = 1;
+    m_PSODesc.SampleDesc.Count = MsaaCount;
+    m_PSODesc.SampleDesc.Quality = MsaaQuality;
+}
+
 void GraphicsPSO::SetRenderTargetFormat( DXGI_FORMAT RTVFormat, DXGI_FORMAT DSVFormat, UINT MsaaCount, UINT MsaaQuality )
 {
     SetRenderTargetFormats(1, &RTVFormat, DSVFormat, MsaaCount, MsaaQuality );

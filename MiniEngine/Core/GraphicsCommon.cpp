@@ -61,6 +61,7 @@ namespace Graphics
     }
 
     D3D12_RASTERIZER_DESC RasterizerDefault;	// Counter-clockwise
+    D3D12_RASTERIZER_DESC RasterizerLightPassDefault;	// Counter-clockwise
     D3D12_RASTERIZER_DESC RasterizerDefaultMsaa;
     D3D12_RASTERIZER_DESC RasterizerDefaultCw;	// Clockwise winding
     D3D12_RASTERIZER_DESC RasterizerDefaultCwMsaa;
@@ -173,6 +174,9 @@ void Graphics::InitializeCommonState(void)
     RasterizerDefault.AntialiasedLineEnable = FALSE;
     RasterizerDefault.ForcedSampleCount = 0;
     RasterizerDefault.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+    RasterizerLightPassDefault = RasterizerDefault;
+    RasterizerLightPassDefault.DepthClipEnable = FALSE;
 
     RasterizerDefaultMsaa = RasterizerDefault;
     RasterizerDefaultMsaa.MultisampleEnable = TRUE;

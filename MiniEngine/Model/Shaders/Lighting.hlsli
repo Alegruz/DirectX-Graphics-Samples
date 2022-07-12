@@ -325,6 +325,9 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
     uint2 tilePos = GetTilePos(pixelPos, InvTileDim.xy);
     uint tileIndex = GetTileIndex(tilePos, TileCount.x);
     uint tileOffset = GetTileOffset(tileIndex);
+    
+    //colorSum = float3(tilePos, 1.0f);
+    //return;
 
     // Light Grid Preloading setup
     uint lightBitMaskGroups[4] = { 0, 0, 0, 0 };

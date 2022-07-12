@@ -222,8 +222,8 @@ void Renderer::Initialize(void)
     // Allocate a descriptor table for the common textures
     m_CommonTextures = s_TextureHeap.Alloc(10);
 
-    uint32_t DestCount = 10;
-    uint32_t SourceCounts[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+    uint32_t DestCount = 8;
+    uint32_t SourceCounts[] = { 1, 1, 1, 1, 1, 1, 1, 1, };
 
     D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
     {
@@ -235,8 +235,8 @@ void Renderer::Initialize(void)
         Lighting::m_LightShadowArray.GetSRV(),
         Lighting::m_LightGrid.GetSRV(),
         Lighting::m_LightGridBitMask.GetSRV(),
-        g_aSceneGBuffers[0].GetSRV(),
-        g_aSceneGBuffers[1].GetSRV(),
+        //g_aSceneGBuffers[0].GetSRV(),
+        //g_aSceneGBuffers[1].GetSRV(),
     };
 
     g_Device->CopyDescriptors(1, &m_CommonTextures, &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
