@@ -13,6 +13,15 @@
 #include "Common.hlsli"
 #include "Lighting.hlsli"
 
+cbuffer StartVertex : register(b1)
+{
+    uint materialIdx;
+    float4x4 ModelToProjection;
+    float4x4 InvProj;
+    float4x4 modelToShadow;
+    float3 ViewerPos;
+};
+
 //Texture2D<float3> texDiffuse : register(t0);
 //Texture2D<float3> texSpecular : register(t1);
 //Texture2D<float4> texEmissive		: register(t2);
@@ -21,64 +30,70 @@
 //Texture2D<float4> texReflection	: register(t5);
 Texture2D<float> texSSAO : register(t12);
 Texture2D<float> texShadow : register(t13);
-Texture2D<float4> gbufferRtv0	: register(t21);
-Texture2D<float4> gbufferRtv1	: register(t22);
-Texture2D<float4> gbufferRtv2	: register(t23);
-Texture2D<float4> gbufferNormal : register(t24);
+Texture2D<float> texDepth : register(t18);
 
+// GBuffers
+Texture2D<float4> texWorldPos	: register(t21);
+Texture2D<float4> texNormalDepth	: register(t22);
+Texture2D<float4> texAlbedo	: register(t23);
+Texture2D<float4> texSpecular : register(t24);
 
 struct VSOutput
 {
-	sample float4 position : SV_Position;
+	sample float4 projPos : SV_Position;
 	sample float3 worldPos : WorldPos;
     sample float2 uv : TexCoord0;
-	sample float3 viewDir : TexCoord1;
-	sample float3 shadowCoord : TexCoord2;
-};
-
-struct MRT
-{
-	float3 Color : SV_Target0;
 };
 
 [RootSignature(Renderer_RootSig)]
-MRT main(VSOutput vsOutput)
+float3 main(VSOutput vsOutput) : SV_Target
 {
-	MRT mrt;
+    float3 color = 0.0;
 	
-	uint2 pixelPos = uint2(vsOutput.position.xy);
+	uint2 pixelPos = uint2(vsOutput.projPos.xy);
+	
+    float depth = texDepth[pixelPos];
+    if (depth <= 0.0)
+    {
+        color = 0.0;
+        return color;
+    }
+    float4 worldPos = texWorldPos[pixelPos];
 	
 #define SAMPLE_TEX(texName) texName.Sample(defaultSampler, vsOutput.uv)
 	
-    //float4 rtv0Data = SAMPLE_TEX(gbufferRtv0);
-    float4 rtv0Data = gbufferRtv0[pixelPos];
-    float3 diffuseAlbedo = rtv0Data.rgb;
-    float specularMask = rtv0Data.w;
+    //float4 rtv0Data = SAMPLE_TEX(texWorldPos);
+    float4 albedoData = texAlbedo[pixelPos];
+    float3 diffuseAlbedo = albedoData.rgb;
 	
     float3 colorSum = 0;
 	{
         float ao = texSSAO[pixelPos];
 	    colorSum += ApplyAmbientLight( diffuseAlbedo, ao, AmbientColor );
     }
-	
-    float gloss = gbufferRtv1[pixelPos].x;
-    float3 normal = gbufferNormal[pixelPos].xyz;
+    
+    float gloss = texSpecular[pixelPos].a;
+    float specularMask = texSpecular[pixelPos].g;
+    float3 normal = texNormalDepth[pixelPos].xyz;
 	
     float3 specularAlbedo = float3( 0.56, 0.56, 0.56 );
-    float3 viewDir = normalize(vsOutput.viewDir);
-    colorSum += ApplyDirectionalLight(diffuseAlbedo, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection, SunColor, vsOutput.shadowCoord, texShadow);
+    float3 viewDir = normalize(worldPos.xyz - ViewerPos);
+    float3 shadowCoord = mul(modelToShadow, float4(worldPos.xyz, 1.0)).xyz;
+    colorSum += ApplyDirectionalLight(diffuseAlbedo, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection, SunColor, shadowCoord, texShadow);
 	
-	ShadeLights(colorSum, pixelPos,
+	ShadeLights(
+		colorSum, 
+		pixelPos,
 		diffuseAlbedo,
 		specularAlbedo,
 		specularMask,
 		gloss,
 		normal,
 		viewDir,
-		vsOutput.worldPos
+		worldPos.xyz
 		);
 	
-    mrt.Color = colorSum;
+    color = colorSum;
 	
-	return mrt;
+    return color;
 }

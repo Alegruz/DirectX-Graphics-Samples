@@ -193,10 +193,10 @@
     <FxCompile Include="Shaders\DefaultNoUV1SkinVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\GBufferDepthPS.hlsl">
+    <FxCompile Include="Shaders\GBufferNormalDepthPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\GBufferNormalPS.hlsl">
+    <FxCompile Include="Shaders\GBufferWorldPosPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\DeferredPS.hlsl">

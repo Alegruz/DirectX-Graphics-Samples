@@ -10,5 +10,5 @@
 //
 // Author(s):	James Stanard
 
-#define GBUFFER_DEPTH
+#define GBUFFER_NORMAL_DEPTH
 #include "ModelViewerPS.hlsl"

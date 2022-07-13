@@ -33,16 +33,6 @@ enum class eRenderType : UINT8
     COUNT,
 };
 
-enum class eGBufferType : UINT8
-{
-    GBUFFER,
-    DEPTH,
-    NORMAL,
-    ALBEDO,
-    SPECULAR,
-    COUNT,
-};
-
 namespace Sponza
 {
     void Startup( Math::Camera& camera );

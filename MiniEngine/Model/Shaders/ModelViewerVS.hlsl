@@ -17,13 +17,17 @@
 cbuffer VSConstants : register(b0)
 {
     float4x4 modelToProjection;
-    float4x4 modelToShadow;
-    float3 ViewerPos;
+    //float4x4 modelToShadow;
+    //float3 ViewerPos;
 };
 
 cbuffer StartVertex : register(b1)
 {
     uint materialIdx;
+    float4x4 ModelToProjection;
+    float4x4 InvProj;
+    float4x4 modelToShadow;
+    float3 ViewerPos;
 };
 
 struct VSInput
@@ -38,6 +42,7 @@ struct VSInput
 struct VSOutput
 {
     float4 position : SV_Position;
+    float3 projPosition : ProjPos;
     float3 worldPos : WorldPos;
     float2 texCoord : TexCoord0;
     float3 viewDir : TexCoord1;
@@ -56,6 +61,7 @@ VSOutput main(VSInput vsInput, uint vertexID : SV_VertexID)
     VSOutput vsOutput;
 
     vsOutput.position = mul(modelToProjection, float4(vsInput.position, 1.0));
+    vsOutput.projPosition = vsOutput.position;
     vsOutput.worldPos = vsInput.position;
     vsOutput.texCoord = vsInput.texcoord0;
     vsOutput.viewDir = vsInput.position - ViewerPos;

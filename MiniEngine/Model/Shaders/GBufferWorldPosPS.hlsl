@@ -10,5 +10,5 @@
 //
 // Author(s):	James Stanard
 
-#define GBUFFER_NORMAL
+#define GBUFFER_WORLD_POS
 #include "ModelViewerPS.hlsl"

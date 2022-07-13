@@ -22,7 +22,7 @@ namespace Graphics
 {
     DepthBuffer g_SceneDepthBuffer;
     ColorBuffer g_SceneColorBuffer;
-    ColorBuffer g_aSceneGBuffers[GBUFFER_COUNT];
+    ColorBuffer g_aSceneGBuffers[static_cast<size_t>(eGBufferType::COUNT)];
     ColorBuffer g_SceneNormalBuffer;
     ColorBuffer g_PostEffectsBuffer;
     ColorBuffer g_VelocityBuffer;
@@ -85,6 +85,10 @@ namespace Graphics
 
     DXGI_FORMAT DefaultHdrColorFormat = DXGI_FORMAT_R11G11B10_FLOAT;
     DXGI_FORMAT DefaultGBufferFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
+    DXGI_FORMAT GBufferPositionFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+    DXGI_FORMAT GBufferNormalDepthFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+    DXGI_FORMAT GBufferAlbedoFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+    DXGI_FORMAT GBufferSpecularFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
 }
 
 #define T2X_COLOR_FORMAT DXGI_FORMAT_R10G10B10A2_UNORM
@@ -114,10 +118,10 @@ void Graphics::InitializeRenderingBuffers( uint32_t bufferWidth, uint32_t buffer
 
         g_SceneColorBuffer.Create( L"Main Color Buffer", bufferWidth, bufferHeight, 1, DefaultHdrColorFormat, esram );
 
-        for (size_t i = 0; i < GBUFFER_COUNT; ++i)
-        {
-            g_aSceneGBuffers[i].Create(L"G-Buffer " + std::to_wstring(i), bufferWidth, bufferHeight, 1, DefaultGBufferFormat, esram);
-        }
+        g_aSceneGBuffers[static_cast<size_t>(eGBufferType::WORLD_POS)].Create(L"G-Buffer Position", bufferWidth, bufferHeight, 1, GBufferPositionFormat, esram);
+        g_aSceneGBuffers[static_cast<size_t>(eGBufferType::NORMAL_DEPTH)].Create(L"G-Buffer Normal Depth", bufferWidth, bufferHeight, 1, GBufferNormalDepthFormat, esram);
+        g_aSceneGBuffers[static_cast<size_t>(eGBufferType::ALBEDO)].Create(L"G-Buffer Albedo", bufferWidth, bufferHeight, 1, GBufferAlbedoFormat, esram);
+        g_aSceneGBuffers[static_cast<size_t>(eGBufferType::SPECULAR)].Create(L"G-Buffer Specular", bufferWidth, bufferHeight, 1, GBufferSpecularFormat, esram);
 
         g_SceneNormalBuffer.Create( L"Normals Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, esram );
         g_VelocityBuffer.Create( L"Motion Vectors", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT );
@@ -253,7 +257,7 @@ void Graphics::DestroyRenderingBuffers()
 {
     g_SceneDepthBuffer.Destroy();
     g_SceneColorBuffer.Destroy();
-    for (size_t i = 0; i < GBUFFER_COUNT; ++i)
+    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
     {
         g_aSceneGBuffers[i].Destroy();
     }

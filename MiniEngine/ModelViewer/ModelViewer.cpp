@@ -316,7 +316,7 @@ void ModelViewer::RenderScene( void )
 		sorter.SetScissor(scissor);
 		sorter.SetDepthStencilTarget(g_SceneDepthBuffer);
 		sorter.AddRenderTarget(g_SceneColorBuffer);
-        for (size_t i = 0; i < Graphics::GBUFFER_COUNT; ++i)
+        for (size_t i = 0; i < static_cast<size_t>(Graphics::eGBufferType::COUNT); ++i)
         {
             sorter.AddRenderTarget(g_aSceneGBuffers[i]);
         }

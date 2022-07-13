@@ -25,6 +25,7 @@ Texture2D<float> texShadow : register(t13);
 struct VSOutput
 {
 	sample float4 position : SV_Position;
+    sample float3 projPos : ProjPos;
 	sample float3 worldPos : WorldPos;
     sample float2 uv : TexCoord0;
 	sample float3 viewDir : TexCoord1;
@@ -36,10 +37,10 @@ struct VSOutput
 
 struct MRT
 {
-	float4 Rtv0 : SV_Target0;
-    float4 Rtv1 : SV_Target1;
-    float4 Rtv2 : SV_Target2;
-    float4 Normal : SV_Target3;
+	float4 WorldPos : SV_Target0;
+    float4 NormalDepth : SV_Target1;
+    float4 Albedo : SV_Target2;
+    float4 Specular : SV_Target3;
 };
 
 [RootSignature(Renderer_RootSig)]
@@ -51,11 +52,10 @@ MRT main(VSOutput vsOutput)
 	
 # define SAMPLE_TEX(texName) texName.Sample(defaultSampler, vsOutput.uv)
 	
-    mrt.Rtv0 = float4(SAMPLE_TEX(texDiffuse), SAMPLE_TEX(texSpecular).g);
+    //mrt.WorldPos = float4(SAMPLE_TEX(texDiffuse), SAMPLE_TEX(texSpecular).g);
+    mrt.WorldPos = float4(vsOutput.worldPos, 1.0f);
     
     float gloss = 128.0;
-    
-    mrt.Rtv1 = gloss;
     float3 normal;
     {
         normal = SAMPLE_TEX(texNormal) * 2.0 - 1.0;
@@ -63,7 +63,10 @@ MRT main(VSOutput vsOutput)
         float3x3 tbn = float3x3(normalize(vsOutput.tangent), normalize(vsOutput.bitangent), normalize(vsOutput.normal));
         normal = normalize(mul(normal, tbn));
     }
-    mrt.Normal = float4(normal, 0.0f);
+    mrt.NormalDepth = float4(normal, vsOutput.position.z / vsOutput.position.w);
+    mrt.Albedo = float4(SAMPLE_TEX(texDiffuse), 0.0f);
+    float3 specular = SAMPLE_TEX(texSpecular);
+    mrt.Specular = float4(specular, gloss);
     
 	return mrt;
 }
