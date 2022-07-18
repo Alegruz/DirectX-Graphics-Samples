@@ -277,6 +277,8 @@ void ModelViewer::Update( float deltaT )
     m_MainScissor.top = 0;
     m_MainScissor.right = (LONG)g_SceneColorBuffer.GetWidth();
     m_MainScissor.bottom = (LONG)g_SceneColorBuffer.GetHeight();
+
+    Sponza::Update(deltaT);
 }
 
 void ModelViewer::RenderScene( void )

@@ -62,6 +62,7 @@ namespace Sponza
         const D3D12_RECT& scissor,
         bool skipDiffusePass = false,
         bool skipShadowMap = false );
+    void Update(float deltaTime);
 
     const ModelH3D& GetModel();
 

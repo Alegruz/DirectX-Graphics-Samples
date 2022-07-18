@@ -73,6 +73,15 @@
 #include "CompiledShaders/KillzoneGBufferNormalPS.h"
 #include "CompiledShaders/KillzoneGBufferSpecularIntensityPS.h"
 #include "CompiledShaders/KillzoneGBufferSunOcclusionPS.h"
+
+#include "CompiledShaders/KillzoneGBufferDepthClusteredPS.h"
+#include "CompiledShaders/KillzoneGBufferDiffuseAlbedoClusteredPS.h"
+#include "CompiledShaders/KillzoneGBufferGlossClusteredPS.h"
+#include "CompiledShaders/KillzoneGBufferLightAccumulationClusteredPS.h"
+#include "CompiledShaders/KillzoneGBufferMotionVectorClusteredPS.h"
+#include "CompiledShaders/KillzoneGBufferNormalClusteredPS.h"
+#include "CompiledShaders/KillzoneGBufferSpecularIntensityClusteredPS.h"
+#include "CompiledShaders/KillzoneGBufferSunOcclusionClusteredPS.h"
 #endif
 
 using namespace Math;
@@ -84,7 +93,9 @@ namespace Sponza
 
     enum eObjectFilter { kOpaque = 0x1, kCutout = 0x2, kTransparent = 0x4, kAll = 0xF, kNone = 0x0 };
     void RenderDeferredObjects(GraphicsContext& Context, const Camera& camera, const Vector3& viewerPos, eObjectFilter Filter = kAll);
-    void RenderObjects( GraphicsContext& Context, const Matrix4& ViewProjMat, const Vector3& viewerPos, eObjectFilter Filter = kAll );
+    void RenderDeferredClusteredObjects(GraphicsContext& Context, const Camera& camera, const Vector3& viewerPos, eObjectFilter Filter = kAll);
+    //void RenderObjects( GraphicsContext& Context, const Camera& camera, const Vector3& viewerPos, eObjectFilter Filter = kAll );
+    void RenderObjects(GraphicsContext& Context, const Matrix4& ViewProjMatrix, const Vector3& viewerPos, eObjectFilter Filter = kAll);
 
     GraphicsPSO m_DepthPSO = { (L"Sponza: Depth PSO") };
     GraphicsPSO m_CutoutDepthPSO = { (L"Sponza: Cutout Depth PSO") };
@@ -213,15 +224,15 @@ namespace Sponza
             { g_pGBufferGlossPS,    sizeof(g_pGBufferGlossPS)    },
             { g_pGBufferLightPS,    sizeof(g_pGBufferLightPS)    },
 #elif KILLZONE_GBUFFER
-            { g_pKillzoneGBufferDepthPS,               sizeof(g_pKillzoneGBufferDepthPS)              },
-            { g_pKillzoneGBufferLightAccumulationPS,   sizeof(g_pKillzoneGBufferLightAccumulationPS)  },
-            { g_pKillzoneGBufferGlossPS,               sizeof(g_pKillzoneGBufferGlossPS)              },
-            { g_pKillzoneGBufferNormalPS,              sizeof(g_pKillzoneGBufferNormalPS)             },
-            { g_pKillzoneGBufferMotionVectorPS,        sizeof(g_pKillzoneGBufferMotionVectorPS)       },
-            { g_pKillzoneGBufferSpecularIntensityPS,   sizeof(g_pKillzoneGBufferSpecularIntensityPS)  },
-            { g_pKillzoneGBufferDiffuseAlbedoPS,       sizeof(g_pKillzoneGBufferDiffuseAlbedoPS)      },
-            { g_pKillzoneGBufferSunOcclusionPS,        sizeof(g_pKillzoneGBufferSunOcclusionPS)       },
-            { g_pKillzoneGBufferLightClusteredPS,      sizeof(g_pKillzoneGBufferLightClusteredPS)     },
+            { g_pKillzoneGBufferDepthClusteredPS,               sizeof(g_pKillzoneGBufferDepthClusteredPS)              },
+            { g_pKillzoneGBufferLightAccumulationClusteredPS,   sizeof(g_pKillzoneGBufferLightAccumulationClusteredPS)  },
+            { g_pKillzoneGBufferGlossClusteredPS,               sizeof(g_pKillzoneGBufferGlossClusteredPS)              },
+            { g_pKillzoneGBufferNormalClusteredPS,              sizeof(g_pKillzoneGBufferNormalClusteredPS)             },
+            { g_pKillzoneGBufferMotionVectorClusteredPS,        sizeof(g_pKillzoneGBufferMotionVectorClusteredPS)       },
+            { g_pKillzoneGBufferSpecularIntensityClusteredPS,   sizeof(g_pKillzoneGBufferSpecularIntensityClusteredPS)  },
+            { g_pKillzoneGBufferDiffuseAlbedoClusteredPS,       sizeof(g_pKillzoneGBufferDiffuseAlbedoClusteredPS)      },
+            { g_pKillzoneGBufferSunOcclusionClusteredPS,        sizeof(g_pKillzoneGBufferSunOcclusionClusteredPS)       },
+            { g_pKillzoneGBufferLightClusteredPS,               sizeof(g_pKillzoneGBufferLightClusteredPS)     },
 #endif
         },
     };
@@ -501,7 +512,7 @@ const ModelH3D& Sponza::GetModel()
 
 void Sponza::SetRenderType(eRenderType renderType) noexcept
 {
-    assert(renderType != eRenderType::COUNT);
+    ASSERT(renderType != eRenderType::COUNT);
 
     switch (renderType)
     {
@@ -585,21 +596,21 @@ void Sponza::SetRenderType(eRenderType renderType) noexcept
             OutputDebugString(L"\tGBUFFER PASS\n");
             break;
         default:
-            assert(false);
+            ASSERT(false);
             break;
         }
         break;
     case eRenderType::COUNT:
         // intentional fallthrough
     default:
-        assert(false);
+        ASSERT(false);
         break;
     }
 
     switch (m_CurrentLightType)
     {
     case eLightType::TILED:
-        OutputDebugString(L"\tTIELD LIGHTS PASS\n");
+        OutputDebugString(L"\tTILED LIGHTS PASS\n");
         break;
     case eLightType::CLUSTERED:
         OutputDebugString(L"\tCLUSTERED LIGHTS PASS\n");
@@ -607,7 +618,7 @@ void Sponza::SetRenderType(eRenderType renderType) noexcept
     case eLightType::COUNT:
         // Intentional fallthrough
     default:
-        assert(false);
+        ASSERT(false);
         break;
     }
 
@@ -697,7 +708,7 @@ void Sponza::SetNextBufferOutput()
             OutputDebugString(L"\tGBUFFER PASS\n");
             break;
         default:
-            assert(false);
+            ASSERT(false);
             break;
         }
         break;
@@ -791,7 +802,7 @@ void Sponza::SetPreviousBufferOutput()
             OutputDebugString(L"\tGBUFFER PASS\n");
             break;
         default:
-            assert(false);
+            ASSERT(false);
             break;
         }
         break;
@@ -808,15 +819,43 @@ void Sponza::SetNextLightType()
     switch (m_CurrentLightType)
     {
     case eLightType::TILED:
-        OutputDebugString(L"\tTIELD LIGHTS PASS\n");
-        break;
+    {
+        uint32_t DestCount = 2;
+        uint32_t SourceCounts[] = { 1, 1 };
+
+        D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
+        {
+            Lighting::m_LightGrid.GetSRV(),         // 16
+            Lighting::m_LightGridBitMask.GetSRV(),  // 17
+            //g_aSceneGBuffers[0].GetSRV(),
+            //g_aSceneGBuffers[1].GetSRV(),
+        };
+
+        g_Device->CopyDescriptors(1, &(Renderer::m_CommonTextures + 6 * Renderer::s_TextureHeap.GetDescriptorSize()), &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        OutputDebugString(L"\tTILED LIGHTS PASS\n");
+    }
+    break;
     case eLightType::CLUSTERED:
+    {
+        uint32_t DestCount = 2;
+        uint32_t SourceCounts[] = { 1, 1 };
+
+        D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
+        {
+            Lighting::m_LightCluster.GetSRV(),         // 16
+            Lighting::m_LightClusterBitMask.GetSRV(),  // 17
+            //g_aSceneGBuffers[0].GetSRV(),
+            //g_aSceneGBuffers[1].GetSRV(),
+        };
+
+        g_Device->CopyDescriptors(1, &(Renderer::m_CommonTextures + 6 * Renderer::s_TextureHeap.GetDescriptorSize()), &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         OutputDebugString(L"\tCLUSTERED LIGHTS PASS\n");
-        break;
+    }
+    break;
     case eLightType::COUNT:
         // Intentional fallthrough
     default:
-        assert(false);
+        ASSERT(false);
         break;
     }
 }
@@ -827,15 +866,43 @@ void Sponza::SetPreviousLightType()
     switch (m_CurrentLightType)
     {
     case eLightType::TILED:
-        OutputDebugString(L"\tTIELD LIGHTS PASS\n");
+    {
+        uint32_t DestCount = 2;
+        uint32_t SourceCounts[] = { 1, 1 };
+
+        D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
+        {
+            Lighting::m_LightGrid.GetSRV(),         // 16
+            Lighting::m_LightGridBitMask.GetSRV(),  // 17
+            //g_aSceneGBuffers[0].GetSRV(),
+            //g_aSceneGBuffers[1].GetSRV(),
+        };
+
+        g_Device->CopyDescriptors(1, &(Renderer::m_CommonTextures + 6 * Renderer::s_TextureHeap.GetDescriptorSize()), &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        OutputDebugString(L"\tTILED LIGHTS PASS\n");
+    }
         break;
     case eLightType::CLUSTERED:
+    {
+        uint32_t DestCount = 2;
+        uint32_t SourceCounts[] = { 1, 1 };
+
+        D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
+        {
+            Lighting::m_LightCluster.GetSRV(),         // 16
+            Lighting::m_LightClusterBitMask.GetSRV(),  // 17
+            //g_aSceneGBuffers[0].GetSRV(),
+            //g_aSceneGBuffers[1].GetSRV(),
+        };
+
+        g_Device->CopyDescriptors(1, &(Renderer::m_CommonTextures + 6 * Renderer::s_TextureHeap.GetDescriptorSize()), &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         OutputDebugString(L"\tCLUSTERED LIGHTS PASS\n");
+    }
         break;
     case eLightType::COUNT:
         // Intentional fallthrough
     default:
-        assert(false);
+        ASSERT(false);
         break;
     }
 }
@@ -870,7 +937,6 @@ void Sponza::RenderDeferredObjects(GraphicsContext& gfxContext, const Camera& ca
         UINT MaterialIdx;
         Matrix4 ModelToProjection;
         Matrix4 InvViewProj;
-        //Matrix4 InvView;
         Matrix4 modelToShadow;
         XMFLOAT3 ViewerPos;
     } commonConstants;
@@ -889,26 +955,82 @@ void Sponza::RenderDeferredObjects(GraphicsContext& gfxContext, const Camera& ca
     //    Vector4(-1.0f, 1.0f, 0, 1.0f)
     //);
     //XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetProjMatrix()), camera.GetProjMatrix());
-    XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
-    //XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewMatrix()), camera.GetViewMatrix());    
+    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
+    XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetProjMatrix()), camera.GetProjMatrix());
 
+    commonConstants.InvViewProj = Matrix4(
+        Vector4(invViewProj.r[0]),
+        Vector4(invViewProj.r[1]),
+        Vector4(invViewProj.r[2]),
+        Vector4(invViewProj.r[3])
+    );
+    commonConstants.modelToShadow = m_SunShadow.GetShadowMatrix();
+    XMStoreFloat3(&commonConstants.ViewerPos, viewerPos);
+
+    //gfxContext.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    gfxContext.SetDynamicConstantBufferView(Renderer::kMeshConstants, sizeof(vsConstants), &vsConstants);
+    gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(CommonConstants), &commonConstants);
+
+    gfxContext.SetDescriptorTable(Renderer::kGBufferSRVs, m_GBufferSRVs);
+    gfxContext.DrawIndexed(NUM_GBUFFER_INDICES, 0, 0);
+}
+
+void Sponza::RenderDeferredClusteredObjects(GraphicsContext& gfxContext, const Camera& camera, const Vector3& viewerPos, eObjectFilter Filter)
+{
+    //XMMATRIX ortho = XMMatrixTranspose(XMMatrixOrthographicLH(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight(), camera.GetNearClip(), camera.GetFarClip()));
+    //Matrix4 orthoMatrix(
+    //    Vector4(XMVectorGetX(ortho.r[0]), XMVectorGetY(ortho.r[0]), XMVectorGetZ(ortho.r[0]), XMVectorGetW(ortho.r[0])),
+    //    Vector4(XMVectorGetX(ortho.r[1]), XMVectorGetY(ortho.r[1]), XMVectorGetZ(ortho.r[1]), XMVectorGetW(ortho.r[1])),
+    //    Vector4(XMVectorGetX(ortho.r[2]), XMVectorGetY(ortho.r[2]), XMVectorGetZ(ortho.r[2]), XMVectorGetW(ortho.r[2])),
+    //    Vector4(XMVectorGetX(ortho.r[3]), XMVectorGetY(ortho.r[3]), XMVectorGetZ(ortho.r[3]), XMVectorGetW(ortho.r[3]))
+    //);
+    //WCHAR szDebugMsg[64];
+    //swprintf_s(szDebugMsg, L"(%f, %f, %f, %f)\n", XMVectorGetX(ortho.r[0]), XMVectorGetY(ortho.r[0]), XMVectorGetZ(ortho.r[0]), XMVectorGetW(ortho.r[0]));
+    //OutputDebugString(szDebugMsg);
+    //swprintf_s(szDebugMsg, L"(%f, %f, %f, %f)\n", XMVectorGetX(ortho.r[1]), XMVectorGetY(ortho.r[1]), XMVectorGetZ(ortho.r[1]), XMVectorGetW(ortho.r[1]));
+    //OutputDebugString(szDebugMsg);
+    //swprintf_s(szDebugMsg, L"(%f, %f, %f, %f)\n", XMVectorGetX(ortho.r[2]), XMVectorGetY(ortho.r[2]), XMVectorGetZ(ortho.r[2]), XMVectorGetW(ortho.r[2]));
+    //OutputDebugString(szDebugMsg);
+    //swprintf_s(szDebugMsg, L"(%f, %f, %f, %f)\n", XMVectorGetX(ortho.r[3]), XMVectorGetY(ortho.r[3]), XMVectorGetZ(ortho.r[3]), XMVectorGetW(ortho.r[3]));
+    //OutputDebugString(szDebugMsg);
+    struct CommonConstants
+    {
+        UINT MaterialIdx;
+        Matrix4 ModelToProjection;
+        Matrix4 InvViewProj;
+        //Matrix4 InvProj;
+        Matrix4 modelToShadow;
+        XMFLOAT3 ViewerPos;
+    } commonConstants;
+
+    struct VSConstants
+    {
+        Matrix4 modelToProjection;
+    } vsConstants;
+    vsConstants.modelToProjection = camera.GetViewProjMatrix();
+    commonConstants.ModelToProjection = camera.GetViewProjMatrix();
+
+    //Matrix4 matScreen = Matrix4(
+    //    Vector4(2.0f / g_SceneColorBuffer.GetWidth(), 0, 0, 0),
+    //    Vector4(0, -2.0f / g_SceneColorBuffer.GetHeight(), 0, 0),
+    //    Vector4(0, 0, 1.0f, 0),
+    //    Vector4(-1.0f, 1.0f, 0, 1.0f)
+    //);
+    //XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetProjMatrix()), camera.GetProjMatrix());
+    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
+    //XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetProjMatrix()), camera.GetProjMatrix());
+
+    commonConstants.InvViewProj = Matrix4(
+        Vector4(invViewProj.r[0]),
+        Vector4(invViewProj.r[1]),
+        Vector4(invViewProj.r[2]),
+        Vector4(invViewProj.r[3])
+    );
     //commonConstants.InvProj = Matrix4(
     //    Vector4(invProj.r[0]),
     //    Vector4(invProj.r[1]),
     //    Vector4(invProj.r[2]),
     //    Vector4(invProj.r[3])
-    //);
-    commonConstants.InvViewProj = Matrix4(
-        Vector4(invProj.r[0]),
-        Vector4(invProj.r[1]),
-        Vector4(invProj.r[2]),
-        Vector4(invProj.r[3])
-    );
-    //commonConstants.InvView = Matrix4(
-    //    Vector4(invView.r[0]),
-    //    Vector4(invView.r[1]),
-    //    Vector4(invView.r[2]),
-    //    Vector4(invView.r[3])
     //);
     commonConstants.modelToShadow = m_SunShadow.GetShadowMatrix();
     XMStoreFloat3(&commonConstants.ViewerPos, viewerPos);
@@ -921,15 +1043,77 @@ void Sponza::RenderDeferredObjects(GraphicsContext& gfxContext, const Camera& ca
     gfxContext.DrawIndexed(NUM_GBUFFER_INDICES, 0, 0);
 }
 
-void Sponza::RenderObjects( GraphicsContext& gfxContext, const Matrix4& ViewProjMat, const Vector3& viewerPos, eObjectFilter Filter )
+//void Sponza::RenderObjects( GraphicsContext& gfxContext, const Camera& camera, const Vector3& viewerPos, eObjectFilter Filter )
+//{
+//    struct VSConstants
+//    {
+//        Matrix4 modelToProjection;
+//        Matrix4 modelToView;
+//        //Matrix4 modelToShadow;
+//        //XMFLOAT3 viewerPos;
+//    } vsConstants;
+//    vsConstants.modelToProjection = camera.GetViewProjMatrix();
+//    vsConstants.modelToView = camera.GetViewMatrix();
+//    //vsConstants.modelToShadow = m_SunShadow.GetShadowMatrix();
+//    //XMStoreFloat3(&vsConstants.viewerPos, viewerPos);
+//
+//    struct CommonConstants
+//    {
+//        UINT MaterialIdx;
+//        Matrix4 ModelToProjection;
+//        Matrix4 InvViewProj;
+//        //Matrix4 InvView;
+//        Matrix4 modelToShadow;
+//        XMFLOAT3 ViewerPos;
+//    } commonConstants;
+//    commonConstants.ModelToProjection = camera.GetViewProjMatrix();
+//    commonConstants.modelToShadow = m_SunShadow.GetShadowMatrix();
+//    XMStoreFloat3(&commonConstants.ViewerPos, viewerPos);
+//
+//    gfxContext.SetDynamicConstantBufferView(Renderer::kMeshConstants, sizeof(vsConstants), &vsConstants);
+//    gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(CommonConstants), &commonConstants);
+//
+//    //__declspec(align(16)) uint32_t materialIdx = 0xFFFFFFFFul;
+//    commonConstants.MaterialIdx = 0xFFFFFFFFul;
+//
+//    uint32_t VertexStride = m_Model.GetVertexStride();
+//
+//    for (uint32_t meshIndex = 0; meshIndex < m_Model.GetMeshCount(); meshIndex++)
+//    {
+//        const ModelH3D::Mesh& mesh = m_Model.GetMesh(meshIndex);
+//
+//        uint32_t indexCount = mesh.indexCount;
+//        uint32_t startIndex = mesh.indexDataByteOffset / sizeof(uint16_t);
+//        uint32_t baseVertex = mesh.vertexDataByteOffset / VertexStride;
+//
+//        if (mesh.materialIndex != commonConstants.MaterialIdx)
+//        {
+//            if ( m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kCutout) ||
+//                !m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kOpaque) )
+//                continue;
+//
+//            commonConstants.MaterialIdx = mesh.materialIndex;
+//            gfxContext.SetDescriptorTable(Renderer::kMaterialSRVs, m_Model.GetSRVs(commonConstants.MaterialIdx));
+//
+//            //gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(uint32_t), &materialIdx);
+//            gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(CommonConstants), &commonConstants);
+//        }
+//
+//        gfxContext.DrawIndexed(indexCount, startIndex, baseVertex);
+//    }
+//}
+
+void Sponza::RenderObjects(GraphicsContext& gfxContext, const Matrix4& ViewProjMatrix, const Vector3& viewerPos, eObjectFilter Filter)
 {
     struct VSConstants
     {
         Matrix4 modelToProjection;
+        //Matrix4 modelToView;
         //Matrix4 modelToShadow;
         //XMFLOAT3 viewerPos;
     } vsConstants;
-    vsConstants.modelToProjection = ViewProjMat;
+    vsConstants.modelToProjection = ViewProjMatrix;
+    //vsConstants.modelToView = camera.GetViewMatrix();
     //vsConstants.modelToShadow = m_SunShadow.GetShadowMatrix();
     //XMStoreFloat3(&vsConstants.viewerPos, viewerPos);
 
@@ -942,12 +1126,12 @@ void Sponza::RenderObjects( GraphicsContext& gfxContext, const Matrix4& ViewProj
         Matrix4 modelToShadow;
         XMFLOAT3 ViewerPos;
     } commonConstants;
-    commonConstants.ModelToProjection = ViewProjMat;
+    commonConstants.ModelToProjection = ViewProjMatrix;
     commonConstants.modelToShadow = m_SunShadow.GetShadowMatrix();
     XMStoreFloat3(&commonConstants.ViewerPos, viewerPos);
 
     gfxContext.SetDynamicConstantBufferView(Renderer::kMeshConstants, sizeof(vsConstants), &vsConstants);
-    gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(CommonConstants), &commonConstants);
+    //gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(CommonConstants), &commonConstants);
 
     //__declspec(align(16)) uint32_t materialIdx = 0xFFFFFFFFul;
     commonConstants.MaterialIdx = 0xFFFFFFFFul;
@@ -962,13 +1146,16 @@ void Sponza::RenderObjects( GraphicsContext& gfxContext, const Matrix4& ViewProj
         uint32_t startIndex = mesh.indexDataByteOffset / sizeof(uint16_t);
         uint32_t baseVertex = mesh.vertexDataByteOffset / VertexStride;
 
+        //if (mesh.materialIndex != materialIdx)
         if (mesh.materialIndex != commonConstants.MaterialIdx)
         {
-            if ( m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kCutout) ||
-                !m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kOpaque) )
+            if (m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kCutout) ||
+                !m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kOpaque))
                 continue;
 
+            //materialIdx = mesh.materialIndex;
             commonConstants.MaterialIdx = mesh.materialIndex;
+            //gfxContext.SetDescriptorTable(Renderer::kMaterialSRVs, m_Model.GetSRVs(materialIdx));
             gfxContext.SetDescriptorTable(Renderer::kMaterialSRVs, m_Model.GetSRVs(commonConstants.MaterialIdx));
 
             //gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(uint32_t), &materialIdx);
@@ -1044,12 +1231,32 @@ void Sponza::RenderScene(
     psConstants.sunLight = Vector3(1.0f, 1.0f, 1.0f) * m_SunLightIntensity;
     psConstants.ambientLight = Vector3(1.0f, 1.0f, 1.0f) * m_AmbientIntensity;
     psConstants.ShadowTexelSize[0] = 1.0f / g_ShadowBuffer.GetWidth();
-    psConstants.InvTileDim[0] = 1.0f / Lighting::LightGridDim;
-    psConstants.InvTileDim[1] = 1.0f / Lighting::LightGridDim;
-    psConstants.TileCount[0] = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), Lighting::LightGridDim);
-    psConstants.TileCount[1] = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), Lighting::LightGridDim);
-    psConstants.FirstLightIndex[0] = Lighting::m_FirstConeLight;
-    psConstants.FirstLightIndex[1] = Lighting::m_FirstConeShadowedLight;
+    switch (m_CurrentLightType)
+    {
+    case eLightType::TILED:
+        psConstants.InvTileDim[0] = 1.0f / Lighting::LightGridDim;
+        psConstants.InvTileDim[1] = 1.0f / Lighting::LightGridDim;
+        psConstants.TileCount[0] = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), Lighting::LightGridDim);
+        psConstants.TileCount[1] = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), Lighting::LightGridDim);
+        psConstants.FirstLightIndex[0] = Lighting::m_FirstConeLight;
+        psConstants.FirstLightIndex[1] = Lighting::m_FirstConeShadowedLight;
+        break;
+    case eLightType::CLUSTERED:
+        psConstants.InvTileDim[0] = 1.0f / Lighting::aLightClusterDimensions[static_cast<size_t>(Lighting::LightClusterType)][0];
+        psConstants.InvTileDim[1] = 1.0f / Lighting::aLightClusterDimensions[static_cast<size_t>(Lighting::LightClusterType)][0];
+        psConstants.InvTileDim[2] = 1.0f / Lighting::aLightClusterDimensions[static_cast<size_t>(Lighting::LightClusterType)][1];
+        psConstants.TileCount[0] = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), Lighting::aLightClusterDimensions[static_cast<size_t>(Lighting::LightClusterType)][0]);
+        psConstants.TileCount[1] = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), Lighting::aLightClusterDimensions[static_cast<size_t>(Lighting::LightClusterType)][0]);
+        psConstants.TileCount[2] = Lighting::aLightClusterDimensions[static_cast<size_t>(Lighting::LightClusterType)][1];
+        psConstants.FirstLightIndex[0] = Lighting::m_FirstConeLight;
+        psConstants.FirstLightIndex[1] = Lighting::m_FirstConeShadowedLight;
+        break;
+    case eLightType::COUNT:
+        // intentional fallthrough
+    default:
+        ASSERT(false);
+        break;
+    }
 	psConstants.FrameIndexMod2 = FrameIndex;
 
     // Set the default state for command lists
@@ -1096,7 +1303,20 @@ void Sponza::RenderScene(
 
     if (!skipDiffusePass)
     {
-        Lighting::FillLightGrid(gfxContext, camera);
+        switch (m_CurrentLightType)
+        {
+        case eLightType::TILED:
+            Lighting::FillLightGrid(gfxContext, camera);
+            break;
+        case eLightType::CLUSTERED:
+            Lighting::FillLightCluster(gfxContext, camera);
+            break;
+        case eLightType::COUNT:
+            // intentional fallthrough
+        default:
+            ASSERT(false);
+            break;
+        }
 
         if (!SSAO::DebugDraw)
         {
@@ -1201,7 +1421,7 @@ void Sponza::RenderScene(
                     case eRenderType::COUNT:
                         // intentional fallthrough
                     default:
-                        assert(false);
+                        ASSERT(false);
                         break;
                     }
 
@@ -1217,14 +1437,28 @@ void Sponza::RenderScene(
                 case eRenderType::DEFERRED:
                     gfxContext.SetPipelineState(m_aGBufferPSOs[static_cast<size_t>(m_CurrentLightType)][static_cast<size_t>(m_CurrentGBufferType)]);
                     gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV());
-                    RenderDeferredObjects(gfxContext, camera, camera.GetPosition(), Sponza::kOpaque);
+                    switch (m_CurrentLightType)
+                    {
+                    case eLightType::TILED:
+                        RenderDeferredObjects(gfxContext, camera, camera.GetPosition(), Sponza::kOpaque);
+                        break;
+                    case eLightType::CLUSTERED:
+                        RenderDeferredClusteredObjects(gfxContext, camera, camera.GetPosition(), Sponza::kOpaque);
+                        break;
+                    case eLightType::COUNT:
+                        // intentional fallthrough
+                    default:
+                        ASSERT(false);
+                        break;
+                    }
+                    
                     gfxContext.SetIndexBuffer(m_Model.GetIndexBuffer());
                     gfxContext.SetVertexBuffer(0, m_Model.GetVertexBuffer());
                     break;
                 case eRenderType::COUNT:
                     // intentional fallthrough
                 default:
-                    assert(false);
+                    ASSERT(false);
                     break;
                 }
 
@@ -1235,8 +1469,13 @@ void Sponza::RenderScene(
                 D3D12_CPU_DESCRIPTOR_HANDLE rtvs[]{ g_SceneColorBuffer.GetRTV(), g_SceneNormalBuffer.GetRTV() };
                 gfxContext.SetRenderTargets(ARRAYSIZE(rtvs), rtvs, g_SceneDepthBuffer.GetDSV_DepthReadOnly());
                 gfxContext.SetViewportAndScissor(viewport, scissor);
-                RenderObjects( gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kCutout );
+                RenderObjects( gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kCutout);
             }
         }
     }
+}
+
+void Sponza::Update(float deltaTime)
+{
+    Lighting::UpdateLights(deltaTime);
 }

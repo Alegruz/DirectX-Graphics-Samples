@@ -135,7 +135,6 @@ float3 main(VSOutput vsOutput) : SV_Target
 		worldPos.xyz
 		);
     return color;
-    
     uint2 tilePos = GetTilePos(pixelPos, InvTileDim.xy);
     uint tileIndex = GetTileIndex(tilePos, TileCount.x);
     uint tileOffset = GetTileOffset(tileIndex);
@@ -173,25 +172,15 @@ float3 main(VSOutput vsOutput) : SV_Target
     
     // sphere
     uint n;
+    float3 colorSum = 0;
     for (n = 0; n < tileLightCountSphere; n++, tileLightLoadOffset += 4)
     {
         uint lightIndex = lightGrid.Load(tileLightLoadOffset);
         LightData lightData = lightBuffer[lightIndex];
         
-        //color += ApplyPointLight(POINT_LIGHT_ARGS);
-        float3 lightDir = lightData.pos - worldPos.xyz;
-        float lightDistSq = dot(lightDir, lightDir);
-        float invLightDist = rsqrt(lightDistSq);
-        lightDir *= invLightDist;
-        
-        float distanceFalloff = lightData.radiusSq * (invLightDist * invLightDist);
-        distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
-        
-        float3 halfVec = normalize(lightDir - viewDir);
-        float nDotH = saturate(dot(halfVec, normal));
-        
-        return nDotH;
+        colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
     }
+    return colorSum;
 	
     return float3(1.0f, 0.0f, 0.0f);
 }

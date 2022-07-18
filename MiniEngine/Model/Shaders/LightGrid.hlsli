@@ -14,6 +14,7 @@
 // keep in sync with C code
 #define MAX_LIGHTS 192
 #define TILE_SIZE (4 + MAX_LIGHTS * 4)
+#define CLUSTER_SIZE (4 + MAX_LIGHTS * 4)
 
 struct LightData
 {
@@ -33,11 +34,23 @@ uint2 GetTilePos(float2 pos, float2 invTileDim)
 {
     return pos * invTileDim;
 }
+uint3 GetClusterPos(float3 pos, float3 invTileDim)
+{
+    return uint3(pos.xy * invTileDim.xy, pos.z / invTileDim.z);
+}
 uint GetTileIndex(uint2 tilePos, uint tileCountX)
 {
     return tilePos.y * tileCountX + tilePos.x;
 }
+uint GetClusterIndex(uint3 clusterPos, uint2 clusterCount)
+{
+    return clusterPos.z * clusterCount.y * clusterCount.x + clusterPos.y * clusterCount.x + clusterPos.x;
+}
 uint GetTileOffset(uint tileIndex)
 {
     return tileIndex * TILE_SIZE;
+}
+uint GetClusterOffset(uint clusterIndex)
+{
+    return clusterIndex * CLUSTER_SIZE;
 }
