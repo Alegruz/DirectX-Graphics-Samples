@@ -220,7 +220,7 @@ void Renderer::Initialize(void)
     Lighting::InitializeResources();
 
     // Allocate a descriptor table for the common textures
-    m_CommonTextures = s_TextureHeap.Alloc(10);
+    m_CommonTextures = s_TextureHeap.Alloc(9);
 
     uint32_t DestCount = 9;
     uint32_t SourceCounts[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, };

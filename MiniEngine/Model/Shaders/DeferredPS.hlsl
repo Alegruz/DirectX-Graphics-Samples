@@ -25,7 +25,6 @@ Texture2D<float> texShadow : register(t13);
 struct VSOutput
 {
 	sample float4 position : SV_Position;
-    sample float3 projPos : ProjPos;
 	sample float3 worldPos : WorldPos;
     sample float2 uv : TexCoord0;
 	sample float3 viewDir : TexCoord1;

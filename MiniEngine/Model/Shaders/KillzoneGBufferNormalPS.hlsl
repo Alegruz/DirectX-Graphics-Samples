@@ -10,5 +10,5 @@
 //
 // Author(s):	James Stanard
 
-#define GBUFFER_SPECULAR (1)
-#include "GBufferLightPS.hlsl"
+#define NORMAL (1)
+#include "KillzoneGBufferLightTiledPS.hlsl"

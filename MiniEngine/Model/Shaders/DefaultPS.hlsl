@@ -244,7 +244,6 @@ float4 main(VSOutput vsOutput) : SV_Target0
 {
     // Load and modulate textures
     float4 baseColor = baseColorFactor * baseColorTexture.Sample(baseColorSampler, UVSET(BASECOLOR));
-    return baseColor;
     float2 metallicRoughness = metallicRoughnessFactor * 
         metallicRoughnessTexture.Sample(metallicRoughnessSampler, UVSET(METALLICROUGHNESS)).bg;
     float occlusion = occlusionTexture.Sample(occlusionSampler, UVSET(OCCLUSION));

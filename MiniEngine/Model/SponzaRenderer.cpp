@@ -31,17 +31,49 @@
 // From ModelViewer
 #include "LightManager.h"
 
-#include "CompiledShaders/DeferredPS.h"
 #include "CompiledShaders/DepthViewerVS.h"
 #include "CompiledShaders/DepthViewerPS.h"
 #include "CompiledShaders/ModelViewerVS.h"
-#include "CompiledShaders/ModelViewerPS.h"
-#include "CompiledShaders/GBufferAlbedoPS.h"
+
+// Tiled
+#include "CompiledShaders/ModelViewerTiledPS.h"
+
+// Clustered
+#include "CompiledShaders/ModelViewerClusteredPS.h"
+
+#include "CompiledShaders/ModelViewerDiffuseAlbedoPS.h"
+#include "CompiledShaders/ModelViewerGlossPS.h"
+#include "CompiledShaders/ModelViewerNormalPS.h"
+#include "CompiledShaders/ModelViewerSpecularIntensityPS.h"
+#include "CompiledShaders/ModelViewerWorldPosPS.h"
+
 #include "CompiledShaders/GBufferLightVS.h"
+#if SIMPLE_GBUFFER
+#include "CompiledShaders/DeferredPS.h"
+#include "CompiledShaders/GBufferAlbedoPS.h"
+#include "CompiledShaders/GBufferDepthPS.h"
+#include "CompiledShaders/GBufferGlossPS.h"
 #include "CompiledShaders/GBufferLightPS.h"
-#include "CompiledShaders/GBufferNormalDepthPS.h"
+#include "CompiledShaders/GBufferNormalPS.h"
 #include "CompiledShaders/GBufferSpecularPS.h"
 #include "CompiledShaders/GBufferWorldPosPS.h"
+#elif KILLZONE_GBUFFER
+// Tiled
+#include "CompiledShaders/KillzoneGBufferLightTiledPS.h"
+
+// Clustered
+#include "CompiledShaders/KillzoneGBufferLightClusteredPS.h"
+
+#include "CompiledShaders/KillzoneDeferredPS.h"
+#include "CompiledShaders/KillzoneGBufferDepthPS.h"
+#include "CompiledShaders/KillzoneGBufferDiffuseAlbedoPS.h"
+#include "CompiledShaders/KillzoneGBufferGlossPS.h"
+#include "CompiledShaders/KillzoneGBufferLightAccumulationPS.h"
+#include "CompiledShaders/KillzoneGBufferMotionVectorPS.h"
+#include "CompiledShaders/KillzoneGBufferNormalPS.h"
+#include "CompiledShaders/KillzoneGBufferSpecularIntensityPS.h"
+#include "CompiledShaders/KillzoneGBufferSunOcclusionPS.h"
+#endif
 
 using namespace Math;
 using namespace Graphics;
@@ -56,27 +88,150 @@ namespace Sponza
 
     GraphicsPSO m_DepthPSO = { (L"Sponza: Depth PSO") };
     GraphicsPSO m_CutoutDepthPSO = { (L"Sponza: Cutout Depth PSO") };
-    GraphicsPSO m_ModelPSO = { (L"Sponza: Color PSO") };
     GraphicsPSO m_CutoutModelPSO = { (L"Sponza: Cutout Color PSO") };
     GraphicsPSO m_ShadowPSO(L"Sponza: Shadow PSO");
     GraphicsPSO m_CutoutShadowPSO(L"Sponza: Cutout Shadow PSO");
 
     GraphicsPSO m_GBufferPSO = { (L"Sponza: GBuffer PSO") };
-    GraphicsPSO m_GBufferLightPSO = { (L"Sponza: GBuffer Light PSO") };
 
-    GraphicsPSO m_aGBufferPSOs[static_cast<size_t>(eGBufferType::COUNT)] =
+    GraphicsPSO m_aForwardPSOs[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eForwardType::COUNT) + 1] =
     {
-        { (L"Sponza: GBuffer World Position PSO") },
-        { (L"Sponza: GBuffer Normal Depth PSO") },
-        { (L"Sponza: GBuffer Albedo PSO") },
-        { (L"Sponza: GBuffer Specular PSO") },
+        {
+            { (L"Sponza: Tiled World Position PSO") },
+            { (L"Sponza: Tiled Diffuse Albedo PSO") },
+            { (L"Sponza: Tiled Glossiness PSO") },
+            { (L"Sponza: Tiled Normal PSO") },
+            { (L"Sponza: Tiled Specular Intensity PSO") },
+            { (L"Sponza: Tiled Color PSO") },
+        },
+        {
+            { (L"Sponza: Clustered World Position PSO") },
+            { (L"Sponza: Clustered Diffuse Albedo PSO") },
+            { (L"Sponza: Clustered Glossiness PSO") },
+            { (L"Sponza: Clustered Normal PSO") },
+            { (L"Sponza: Clustered Specular Intensity PSO") },
+            { (L"Sponza: Clustered Color PSO") },
+        },
+    };
+
+    GraphicsPSO m_aGBufferPSOs[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eGBufferDataType::COUNT) + 1] =
+    {
+        {
+#if SIMPLE_GBUFFER
+            { (L"Sponza: Tiled GBuffer RT0 World Position PSO") },
+            { (L"Sponza: Tiled GBuffer RT1 Normal PSO") },
+            { (L"Sponza: Tiled GBuffer RT1 Depth PSO") },
+            { (L"Sponza: Tiled GBuffer RT2 Albedo PSO") },
+            { (L"Sponza: Tiled GBuffer RT3 Specular PSO") },
+            { (L"Sponza: Tiled GBuffer RT3 Gloss PSO") },
+            { (L"Sponza: Tiled GBuffer Light PSO") },
+#elif KILLZONE_GBUFFER
+            { (L"Sponza: Tiled GBuffer Depth PSO") },
+            { (L"Sponza: Tiled GBuffer RT0 Lighting Accumulation PSO") },
+            { (L"Sponza: Tiled GBuffer RT0 Intensity PSO") },
+            { (L"Sponza: Tiled GBuffer RT1 Normal PSO") },
+            { (L"Sponza: Tiled GBuffer RT2 Motion Vector PSO") },
+            { (L"Sponza: Tiled GBuffer RT2 Specular Intensity PSO") },
+            { (L"Sponza: Tiled GBuffer RT3 Diffuse Albedo PSO") },
+            { (L"Sponza: Tiled GBuffer RT3 Sun-Occlusion PSO") },
+            { (L"Sponza: Tiled GBuffer Light PSO") },
+#endif
+        },
+        {
+#if SIMPLE_GBUFFER
+            { (L"Sponza: Clustered GBuffer RT0 World Position PSO") },
+            { (L"Sponza: Clustered GBuffer RT1 Normal PSO") },
+            { (L"Sponza: Clustered GBuffer RT1 Depth PSO") },
+            { (L"Sponza: Clustered GBuffer RT2 Albedo PSO") },
+            { (L"Sponza: Clustered GBuffer RT3 Specular PSO") },
+            { (L"Sponza: Clustered GBuffer RT3 Gloss PSO") },
+            { (L"Sponza: Clustered GBuffer Light PSO") },
+#elif KILLZONE_GBUFFER
+            { (L"Sponza: Clustered GBuffer Depth PSO") },
+            { (L"Sponza: Clustered GBuffer RT0 Lighting Accumulation PSO") },
+            { (L"Sponza: Clustered GBuffer RT0 Intensity PSO") },
+            { (L"Sponza: Clustered GBuffer RT1 Normal PSO") },
+            { (L"Sponza: Clustered GBuffer RT2 Motion Vector PSO") },
+            { (L"Sponza: Clustered GBuffer RT2 Specular Intensity PSO") },
+            { (L"Sponza: Clustered GBuffer RT3 Diffuse Albedo PSO") },
+            { (L"Sponza: Clustered GBuffer RT3 Sun-Occlusion PSO") },
+            { (L"Sponza: Clustered GBuffer Light PSO") },
+#endif
+        },
+    };
+
+    std::pair<const unsigned char* const, size_t> m_aForwardPixelShaders[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eForwardType::COUNT) + 1] =
+    {
+        {
+            { g_pModelViewerWorldPosPS,            sizeof(g_pModelViewerWorldPosPS)            },
+            { g_pModelViewerDiffuseAlbedoPS,       sizeof(g_pModelViewerDiffuseAlbedoPS)       },
+            { g_pModelViewerGlossPS,               sizeof(g_pModelViewerGlossPS)               },
+            { g_pModelViewerNormalPS,              sizeof(g_pModelViewerNormalPS)              },
+            { g_pModelViewerSpecularIntensityPS,   sizeof(g_pModelViewerSpecularIntensityPS)   },
+            { g_pModelViewerTiledPS,               sizeof(g_pModelViewerTiledPS)               },
+        },
+        {
+            { g_pModelViewerWorldPosPS,             sizeof(g_pModelViewerWorldPosPS)            },
+            { g_pModelViewerDiffuseAlbedoPS,        sizeof(g_pModelViewerDiffuseAlbedoPS)       },
+            { g_pModelViewerGlossPS,                sizeof(g_pModelViewerGlossPS)               },
+            { g_pModelViewerNormalPS,               sizeof(g_pModelViewerNormalPS)              },
+            { g_pModelViewerSpecularIntensityPS,    sizeof(g_pModelViewerSpecularIntensityPS)   },
+            { g_pModelViewerClusteredPS,            sizeof(g_pModelViewerClusteredPS)           },
+        },
+    };
+
+    std::pair<const unsigned char* const, size_t> m_aGBufferPixelShaders[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eGBufferDataType::COUNT) + 1] =
+    {
+        {
+ #if SIMPLE_GBUFFER
+            { g_pGBufferWorldPosPS, sizeof(g_pGBufferWorldPosPS) },
+            { g_pGBufferNormalPS,   sizeof(g_pGBufferNormalPS)   },
+            { g_pGBufferDepthPS,    sizeof(g_pGBufferDepthPS)    },
+            { g_pGBufferAlbedoPS,   sizeof(g_pGBufferAlbedoPS)   },
+            { g_pGBufferSpecularPS, sizeof(g_pGBufferSpecularPS) },
+            { g_pGBufferGlossPS,    sizeof(g_pGBufferGlossPS)    },
+            { g_pGBufferLightPS,    sizeof(g_pGBufferLightPS)    },
+#elif KILLZONE_GBUFFER
+            { g_pKillzoneGBufferDepthPS,               sizeof(g_pKillzoneGBufferDepthPS)              },
+            { g_pKillzoneGBufferLightAccumulationPS,   sizeof(g_pKillzoneGBufferLightAccumulationPS)  },
+            { g_pKillzoneGBufferGlossPS,               sizeof(g_pKillzoneGBufferGlossPS)              },
+            { g_pKillzoneGBufferNormalPS,              sizeof(g_pKillzoneGBufferNormalPS)             },
+            { g_pKillzoneGBufferMotionVectorPS,        sizeof(g_pKillzoneGBufferMotionVectorPS)       },
+            { g_pKillzoneGBufferSpecularIntensityPS,   sizeof(g_pKillzoneGBufferSpecularIntensityPS)  },
+            { g_pKillzoneGBufferDiffuseAlbedoPS,       sizeof(g_pKillzoneGBufferDiffuseAlbedoPS)      },
+            { g_pKillzoneGBufferSunOcclusionPS,        sizeof(g_pKillzoneGBufferSunOcclusionPS)       },
+            { g_pKillzoneGBufferLightTiledPS,          sizeof(g_pKillzoneGBufferLightTiledPS)         },
+#endif
+        },
+        {
+ #if SIMPLE_GBUFFER
+            { g_pGBufferWorldPosPS, sizeof(g_pGBufferWorldPosPS) },
+            { g_pGBufferNormalPS,   sizeof(g_pGBufferNormalPS)   },
+            { g_pGBufferDepthPS,    sizeof(g_pGBufferDepthPS)    },
+            { g_pGBufferAlbedoPS,   sizeof(g_pGBufferAlbedoPS)   },
+            { g_pGBufferSpecularPS, sizeof(g_pGBufferSpecularPS) },
+            { g_pGBufferGlossPS,    sizeof(g_pGBufferGlossPS)    },
+            { g_pGBufferLightPS,    sizeof(g_pGBufferLightPS)    },
+#elif KILLZONE_GBUFFER
+            { g_pKillzoneGBufferDepthPS,               sizeof(g_pKillzoneGBufferDepthPS)              },
+            { g_pKillzoneGBufferLightAccumulationPS,   sizeof(g_pKillzoneGBufferLightAccumulationPS)  },
+            { g_pKillzoneGBufferGlossPS,               sizeof(g_pKillzoneGBufferGlossPS)              },
+            { g_pKillzoneGBufferNormalPS,              sizeof(g_pKillzoneGBufferNormalPS)             },
+            { g_pKillzoneGBufferMotionVectorPS,        sizeof(g_pKillzoneGBufferMotionVectorPS)       },
+            { g_pKillzoneGBufferSpecularIntensityPS,   sizeof(g_pKillzoneGBufferSpecularIntensityPS)  },
+            { g_pKillzoneGBufferDiffuseAlbedoPS,       sizeof(g_pKillzoneGBufferDiffuseAlbedoPS)      },
+            { g_pKillzoneGBufferSunOcclusionPS,        sizeof(g_pKillzoneGBufferSunOcclusionPS)       },
+            { g_pKillzoneGBufferLightClusteredPS,      sizeof(g_pKillzoneGBufferLightClusteredPS)     },
+#endif
+        },
     };
 
     DescriptorHandle m_GBufferSRVs;
 
     eRenderType m_CurrentRenderType = eRenderType::FORWARD;
-    eGBufferType m_CurrentBufferType = eGBufferType::COUNT;
-    //eGBufferType m_CurrentBufferType = eGBufferType::GBUFFER;
+    eForwardType m_CurrentForwardType = eForwardType::COUNT;
+    eGBufferDataType m_CurrentGBufferType = eGBufferDataType::COUNT;
+    eLightType m_CurrentLightType = eLightType::TILED;
 
     // These are used at runtime during rendering
     struct GBufferVertex
@@ -114,7 +269,6 @@ namespace Sponza
 void Sponza::Startup( Camera& Camera )
 {
     DXGI_FORMAT ColorFormat = g_SceneColorBuffer.GetFormat();
-    //DXGI_FORMAT GBufferFormat = g_aSceneGBuffers[0].GetFormat();
     DXGI_FORMAT NormalFormat = g_SceneNormalBuffer.GetFormat();
     DXGI_FORMAT DepthFormat = g_SceneDepthBuffer.GetFormat();
     //DXGI_FORMAT ShadowFormat = g_ShadowBuffer.GetFormat();
@@ -126,12 +280,6 @@ void Sponza::Startup( Camera& Camera )
         { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-    };
-
-    D3D12_INPUT_ELEMENT_DESC gBufferVertElem[] =
-    {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
 
     // Depth-only (2x rate)
@@ -166,14 +314,34 @@ void Sponza::Startup( Camera& Camera )
     DXGI_FORMAT formats[2] = { ColorFormat, NormalFormat };
 
     // Full color pass
-    m_ModelPSO = m_DepthPSO;
-    m_ModelPSO.SetBlendState(BlendDisable);
-    m_ModelPSO.SetDepthStencilState(DepthStateTestEqual);
-    m_ModelPSO.SetRenderTargetFormats(2, formats, DepthFormat);
-    //m_ModelPSO.SetRenderTargetFormats(0, nullptr, DepthFormat);
-    m_ModelPSO.SetVertexShader( g_pModelViewerVS, sizeof(g_pModelViewerVS) );
-    m_ModelPSO.SetPixelShader( g_pModelViewerPS, sizeof(g_pModelViewerPS) );
-    m_ModelPSO.Finalize();
+    m_aForwardPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eForwardType::COUNT)] = m_DepthPSO;
+    m_aForwardPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eForwardType::COUNT)].SetBlendState(BlendDisable);
+    m_aForwardPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eForwardType::COUNT)].SetDepthStencilState(DepthStateTestEqual);
+    m_aForwardPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eForwardType::COUNT)].SetRenderTargetFormats(2, formats, DepthFormat);
+    m_aForwardPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eForwardType::COUNT)].SetVertexShader( g_pModelViewerVS, sizeof(g_pModelViewerVS) );
+    m_aForwardPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eForwardType::COUNT)].SetPixelShader(
+        m_aForwardPixelShaders[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eForwardType::COUNT)].first,
+        m_aForwardPixelShaders[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eForwardType::COUNT)].second
+    );
+    m_aForwardPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eForwardType::COUNT)].Finalize();
+
+    m_CutoutModelPSO = m_aForwardPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eForwardType::COUNT)];
+    m_CutoutModelPSO.SetRasterizerState(RasterizerTwoSided);
+    m_CutoutModelPSO.Finalize();
+
+    for (size_t i = 0; i < static_cast<size_t>(eLightType::COUNT); ++i)
+    {
+        for (size_t j = 0; j < static_cast<size_t>(eForwardType::COUNT) + 1; ++j)
+        {
+            if (i == static_cast<size_t>(eLightType::TILED) && j == static_cast<size_t>(eForwardType::COUNT))
+            {
+                continue;
+            }
+            m_aForwardPSOs[i][j] = m_aForwardPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eForwardType::COUNT)];
+            m_aForwardPSOs[i][j].SetPixelShader(m_aForwardPixelShaders[i][j].first, m_aForwardPixelShaders[i][j].second);
+            m_aForwardPSOs[i][j].Finalize();
+        }
+    }
 
     std::vector<DXGI_FORMAT> gbufferFormats;
     gbufferFormats.reserve(static_cast<size_t>(eGBufferType::COUNT));
@@ -182,59 +350,42 @@ void Sponza::Startup( Camera& Camera )
         gbufferFormats.push_back(g_aSceneGBuffers[i].GetFormat());
     }
 
-    m_GBufferPSO = m_ModelPSO;
+    m_GBufferPSO = m_aForwardPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eForwardType::COUNT)];
+    m_GBufferPSO.SetBlendState(BlendDisable);
     m_GBufferPSO.SetRenderTargetFormats(static_cast<size_t>(eGBufferType::COUNT), gbufferFormats.data(), DepthFormat);
+#if SIMPLE_GBUFFER
     m_GBufferPSO.SetPixelShader(g_pDeferredPS, sizeof(g_pDeferredPS));
+#endif
+    m_GBufferPSO.SetPixelShader(g_pKillzoneDeferredPS, sizeof(g_pKillzoneDeferredPS));
     m_GBufferPSO.Finalize();
 
-    m_GBufferLightPSO = m_ModelPSO;
-    m_GBufferLightPSO.SetRasterizerState(RasterizerLightPassDefault);
-    m_GBufferLightPSO.SetDepthStencilState(DepthStateDisabled);
+    m_aGBufferPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eGBufferDataType::COUNT)] = m_aForwardPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eForwardType::COUNT)];
+    m_aGBufferPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eGBufferDataType::COUNT)].SetRasterizerState(RasterizerLightPassDefault);
+    m_aGBufferPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eGBufferDataType::COUNT)].SetDepthStencilState(DepthStateDisabled);
     //m_GBufferLightPSO.SetRenderTargetFormat(ColorFormat, DepthFormat);
-    m_GBufferLightPSO.SetRenderTargetFormat(ColorFormat);
-    m_GBufferLightPSO.SetVertexShader(g_pGBufferLightVS, sizeof(g_pGBufferLightVS));
-    m_GBufferLightPSO.SetPixelShader(g_pGBufferLightPS, sizeof(g_pGBufferLightPS));
-    m_GBufferLightPSO.Finalize();
-
-    m_aGBufferPSOs[static_cast<size_t>(eGBufferType::NORMAL_DEPTH)] = m_ModelPSO;
-    m_aGBufferPSOs[static_cast<size_t>(eGBufferType::NORMAL_DEPTH)].SetRenderTargetFormats(
-        1, 
-        &g_aSceneGBuffers[static_cast<size_t>(eGBufferType::NORMAL_DEPTH)].GetFormat(), 
-        DepthFormat
+    m_aGBufferPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eGBufferDataType::COUNT)].SetRenderTargetFormat(ColorFormat);
+    m_aGBufferPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eGBufferDataType::COUNT)].SetVertexShader(g_pGBufferLightVS, sizeof(g_pGBufferLightVS));
+    m_aGBufferPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eGBufferDataType::COUNT)].SetPixelShader(
+        m_aGBufferPixelShaders[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eGBufferDataType::COUNT)].first, 
+        m_aGBufferPixelShaders[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eGBufferDataType::COUNT)].second
     );
-    m_aGBufferPSOs[static_cast<size_t>(eGBufferType::NORMAL_DEPTH)].SetPixelShader(g_pGBufferNormalDepthPS, sizeof(g_pGBufferNormalDepthPS));
-    m_aGBufferPSOs[static_cast<size_t>(eGBufferType::NORMAL_DEPTH)].Finalize();
+    m_aGBufferPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eGBufferDataType::COUNT)].Finalize();
 
-    m_aGBufferPSOs[static_cast<size_t>(eGBufferType::WORLD_POS)] = m_aGBufferPSOs[static_cast<size_t>(eGBufferType::NORMAL_DEPTH)];
-    m_aGBufferPSOs[static_cast<size_t>(eGBufferType::WORLD_POS)].SetRenderTargetFormats(
-        1,
-        &g_aSceneGBuffers[static_cast<size_t>(eGBufferType::WORLD_POS)].GetFormat(),
-        DepthFormat
-    );
-    m_aGBufferPSOs[static_cast<size_t>(eGBufferType::WORLD_POS)].SetPixelShader(g_pGBufferWorldPosPS, sizeof(g_pGBufferWorldPosPS));
-    m_aGBufferPSOs[static_cast<size_t>(eGBufferType::WORLD_POS)].Finalize();
+    for (size_t i = 0; i < static_cast<size_t>(eLightType::COUNT); ++i)
+    {
+        for (size_t j = 0; j < static_cast<size_t>(eGBufferDataType::COUNT) + 1; ++j)
+        {
+            if (i == static_cast<size_t>(eLightType::TILED) && j == static_cast<size_t>(eGBufferDataType::COUNT))
+            {
+                continue;
+            }
 
-    m_aGBufferPSOs[static_cast<size_t>(eGBufferType::ALBEDO)] = m_aGBufferPSOs[static_cast<size_t>(eGBufferType::NORMAL_DEPTH)];
-    m_aGBufferPSOs[static_cast<size_t>(eGBufferType::ALBEDO)].SetRenderTargetFormats(
-        1,
-        &g_aSceneGBuffers[static_cast<size_t>(eGBufferType::ALBEDO)].GetFormat(),
-        DepthFormat
-    );
-    m_aGBufferPSOs[static_cast<size_t>(eGBufferType::ALBEDO)].SetPixelShader(g_pGBufferAlbedoPS, sizeof(g_pGBufferAlbedoPS));
-    m_aGBufferPSOs[static_cast<size_t>(eGBufferType::ALBEDO)].Finalize();
-
-    m_aGBufferPSOs[static_cast<size_t>(eGBufferType::SPECULAR)] = m_aGBufferPSOs[static_cast<size_t>(eGBufferType::NORMAL_DEPTH)];
-    m_aGBufferPSOs[static_cast<size_t>(eGBufferType::SPECULAR)].SetRenderTargetFormats(
-        1,
-        &g_aSceneGBuffers[static_cast<size_t>(eGBufferType::SPECULAR)].GetFormat(),
-        DepthFormat
-    );
-    m_aGBufferPSOs[static_cast<size_t>(eGBufferType::SPECULAR)].SetPixelShader(g_pGBufferSpecularPS, sizeof(g_pGBufferSpecularPS));
-    m_aGBufferPSOs[static_cast<size_t>(eGBufferType::SPECULAR)].Finalize();
-
-    m_CutoutModelPSO = m_ModelPSO;
-    m_CutoutModelPSO.SetRasterizerState(RasterizerTwoSided);
-    m_CutoutModelPSO.Finalize();
+            m_aGBufferPSOs[i][j] = m_aGBufferPSOs[static_cast<size_t>(eLightType::TILED)][static_cast<size_t>(eGBufferDataType::COUNT)];
+            m_aGBufferPSOs[i][j].SetPixelShader(m_aGBufferPixelShaders[i][j].first, m_aGBufferPixelShaders[i][j].second);
+            m_aGBufferPSOs[i][j].Finalize();
+            // m_aGBufferPixelShaders
+        }
+    }
 
     ASSERT(m_Model.Load(L"Sponza/sponza.h3d"), "Failed to load model");
     ASSERT(m_Model.GetMeshCount() > 0, "Model contains no meshes");
@@ -279,10 +430,10 @@ void Sponza::Startup( Camera& Camera )
     }
 
     Graphics::g_Device->CopyDescriptors(
-        1, 
-        &m_GBufferSRVs, 
+        1,
+        &m_GBufferSRVs,
         &DestCount,
-        DestCount, 
+        DestCount,
         aGBuffers.data(),
         SourceCounts.data(),
         D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
@@ -356,24 +507,81 @@ void Sponza::SetRenderType(eRenderType renderType) noexcept
     {
     case eRenderType::FORWARD:
         OutputDebugString(L"FORWARD RENDERING PIPELINE\n");
+        switch (m_CurrentForwardType)
+        {
+        case eForwardType::WORLD_POS:
+            OutputDebugString(L"\tWORLD POS PASS\n");
+            break;
+        case eForwardType::DIFFUSE_ALBEDO:
+            OutputDebugString(L"\tDIFFUSE ALBEDO PASS\n");
+            break;
+        case eForwardType::GLOSS:
+            OutputDebugString(L"\tGLOSSINESS PASS\n");
+            break;
+        case eForwardType::NORMAL:
+            OutputDebugString(L"\tNORMAL PASS\n");
+            break;
+        case eForwardType::SPECULAR_INTENSITY:
+            OutputDebugString(L"\tSPECULAR INTENSITY PASS\n");
+            break;
+        case eForwardType::COUNT:
+            OutputDebugString(L"\tCOLOR PASS\n");
+            break;
+        default:
+            break;
+        }
+        break;
         break;
     case eRenderType::DEFERRED:
         OutputDebugString(L"DEFERRED RENDERING PIPELINE\n");
-        switch (m_CurrentBufferType)
+        switch (m_CurrentGBufferType)
         {
-        case eGBufferType::WORLD_POS:
-            OutputDebugString(L"\tWORLD POS PASS\n");
+#if SIMPLE_GBUFFER
+        case eGBufferDataType::RT0_WORLD_POS:
+            OutputDebugString(L"\tRT0: WORLD POS PASS\n");
             break;
-        case eGBufferType::NORMAL_DEPTH:
-            OutputDebugString(L"\tNORMAL DEPTH PASS\n");
+        case eGBufferDataType::RT1_NORMAL:
+            OutputDebugString(L"\tRT1: NORMAL PASS\n");
             break;
-        case eGBufferType::ALBEDO:
-            OutputDebugString(L"\tALBEDO PASS\n");
+        case eGBufferDataType::RT1_DEPTH:
+            OutputDebugString(L"\tRT1: DEPTH PASS\n");
             break;
-        case eGBufferType::SPECULAR:
-            OutputDebugString(L"\tSPECULAR PASS\n");
+        case eGBufferDataType::RT2_ALBEDO:
+            OutputDebugString(L"\tRT2: ALBEDO PASS\n");
             break;
-        case eGBufferType::COUNT:
+        case eGBufferDataType::RT3_SPECULAR:
+            OutputDebugString(L"\tRT3: SPECULAR PASS\n");
+            break;
+        case eGBufferDataType::RT3_GLOSS:
+            OutputDebugString(L"\tRT3: GLOSS PASS\n");
+            break;
+#elif KILLZONE_GBUFFER
+        case eGBufferDataType::DEPTH:
+            OutputDebugString(L"\tDEPTH PASS\n");
+            break;
+        case eGBufferDataType::RT0_LIGHT_ACCUMULATION:
+            OutputDebugString(L"\tRT0: LIGHT ACCUMULATION PASS\n");
+            break;
+        case eGBufferDataType::RT0_INTENSITY:
+            OutputDebugString(L"\tRT0: INTENSITY PASS\n");
+            break;
+        case eGBufferDataType::RT1_NORMAL:
+            OutputDebugString(L"\tRT1: NORMAL PASS\n");
+            break;
+        case eGBufferDataType::RT2_MOTION_VECTORS:
+            OutputDebugString(L"\tRT2: MOTION VECTORS PASS\n");
+            break;
+        case eGBufferDataType::RT2_SPEC_INTENSITY:
+            OutputDebugString(L"\tRT2: SPECULAR INTENSITY PASS\n");
+            break;
+        case eGBufferDataType::RT3_DIFFUSE_ALBEDO:
+            OutputDebugString(L"\tRT3: DIFFUSE ALBEDO PASS\n");
+            break;
+        case eGBufferDataType::RT3_SUN_OCCLUSION:
+            OutputDebugString(L"\tRT3: SUN OCCLUSION PASS\n");
+            break;
+#endif
+        case eGBufferDataType::COUNT:
             OutputDebugString(L"\tGBUFFER PASS\n");
             break;
         default:
@@ -388,55 +596,244 @@ void Sponza::SetRenderType(eRenderType renderType) noexcept
         break;
     }
 
+    switch (m_CurrentLightType)
+    {
+    case eLightType::TILED:
+        OutputDebugString(L"\tTIELD LIGHTS PASS\n");
+        break;
+    case eLightType::CLUSTERED:
+        OutputDebugString(L"\tCLUSTERED LIGHTS PASS\n");
+        break;
+    case eLightType::COUNT:
+        // Intentional fallthrough
+    default:
+        assert(false);
+        break;
+    }
+
     m_CurrentRenderType = renderType;
 }
 
-void Sponza::SetNextGBufferOutput()
+void Sponza::SetNextBufferOutput()
 {
-    m_CurrentBufferType = static_cast<eGBufferType>((static_cast<size_t>(m_CurrentBufferType) + 1) % (static_cast<size_t>(eGBufferType::COUNT) + 1));
-    switch (m_CurrentBufferType)
+    switch (m_CurrentRenderType)
     {
-    case eGBufferType::WORLD_POS:
-        OutputDebugString(L"\tWORLD POS PASS\n");
+    case eRenderType::FORWARD:
+        m_CurrentForwardType = static_cast<eForwardType>((static_cast<size_t>(m_CurrentForwardType) + 1) % (static_cast<size_t>(eForwardType::COUNT) + 1));
+        switch (m_CurrentForwardType)
+        {
+        case eForwardType::WORLD_POS:
+            OutputDebugString(L"\tWORLD POS PASS\n");
+            break;
+        case eForwardType::DIFFUSE_ALBEDO:
+            OutputDebugString(L"\tDIFFUSE ALBEDO PASS\n");
+            break;
+        case eForwardType::GLOSS:
+            OutputDebugString(L"\tGLOSSINESS PASS\n");
+            break;
+        case eForwardType::NORMAL:
+            OutputDebugString(L"\tNORMAL PASS\n");
+            break;
+        case eForwardType::SPECULAR_INTENSITY:
+            OutputDebugString(L"\tSPECULAR INTENSITY PASS\n");
+            break;
+        case eForwardType::COUNT:
+            OutputDebugString(L"\tCOLOR PASS\n");
+            break;
+        default:
+            break;
+        }
         break;
-    case eGBufferType::NORMAL_DEPTH:
-        OutputDebugString(L"\tNORMAL DEPTH PASS\n");
+    case eRenderType::DEFERRED:
+        m_CurrentGBufferType = static_cast<eGBufferDataType>((static_cast<size_t>(m_CurrentGBufferType) + 1) % (static_cast<size_t>(eGBufferDataType::COUNT) + 1));
+        switch (m_CurrentGBufferType)
+        {
+#if SIMPLE_GBUFFER
+        case eGBufferDataType::RT0_WORLD_POS:
+            OutputDebugString(L"\tRT0: WORLD POS PASS\n");
+            break;
+        case eGBufferDataType::RT1_NORMAL:
+            OutputDebugString(L"\tRT1: NORMAL PASS\n");
+            break;
+        case eGBufferDataType::RT1_DEPTH:
+            OutputDebugString(L"\tRT1: DEPTH PASS\n");
+            break;
+        case eGBufferDataType::RT2_ALBEDO:
+            OutputDebugString(L"\tRT2: ALBEDO PASS\n");
+            break;
+        case eGBufferDataType::RT3_SPECULAR:
+            OutputDebugString(L"\tRT3: SPECULAR PASS\n");
+            break;
+        case eGBufferDataType::RT3_GLOSS:
+            OutputDebugString(L"\tRT3: GLOSS PASS\n");
+            break;
+#elif KILLZONE_GBUFFER
+        case eGBufferDataType::DEPTH:
+            OutputDebugString(L"\tDEPTH PASS\n");
+            break;
+        case eGBufferDataType::RT0_LIGHT_ACCUMULATION:
+            OutputDebugString(L"\tRT0: LIGHT ACCUMULATION PASS\n");
+            break;
+        case eGBufferDataType::RT0_INTENSITY:
+            OutputDebugString(L"\tRT0: INTENSITY PASS\n");
+            break;
+        case eGBufferDataType::RT1_NORMAL:
+            OutputDebugString(L"\tRT1: NORMAL PASS\n");
+            break;
+        case eGBufferDataType::RT2_MOTION_VECTORS:
+            OutputDebugString(L"\tRT2: MOTION VECTORS PASS\n");
+            break;
+        case eGBufferDataType::RT2_SPEC_INTENSITY:
+            OutputDebugString(L"\tRT2: SPECULAR INTENSITY PASS\n");
+            break;
+        case eGBufferDataType::RT3_DIFFUSE_ALBEDO:
+            OutputDebugString(L"\tRT3: DIFFUSE ALBEDO PASS\n");
+            break;
+        case eGBufferDataType::RT3_SUN_OCCLUSION:
+            OutputDebugString(L"\tRT3: SUN OCCLUSION PASS\n");
+            break;
+#endif
+        case eGBufferDataType::COUNT:
+            OutputDebugString(L"\tGBUFFER PASS\n");
+            break;
+        default:
+            assert(false);
+            break;
+        }
         break;
-    case eGBufferType::ALBEDO:
-        OutputDebugString(L"\tALBEDO PASS\n");
+    case eRenderType::COUNT:
         break;
-    case eGBufferType::SPECULAR:
-        OutputDebugString(L"\tSPECULAR PASS\n");
+    default:
         break;
-    case eGBufferType::COUNT:
-        OutputDebugString(L"\tGBUFFER PASS\n");
+    }
+}
+
+void Sponza::SetPreviousBufferOutput()
+{
+    switch (m_CurrentRenderType)
+    {
+    case eRenderType::FORWARD:
+        m_CurrentForwardType = static_cast<eForwardType>((static_cast<size_t>(m_CurrentForwardType) + static_cast<size_t>(eForwardType::COUNT)) % (static_cast<size_t>(eForwardType::COUNT) + 1));
+        switch (m_CurrentForwardType)
+        {
+        case eForwardType::WORLD_POS:
+            OutputDebugString(L"\tWORLD POS PASS\n");
+            break;
+        case eForwardType::DIFFUSE_ALBEDO:
+            OutputDebugString(L"\tDIFFUSE ALBEDO PASS\n");
+            break;
+        case eForwardType::GLOSS:
+            OutputDebugString(L"\tGLOSSINESS PASS\n");
+            break;
+        case eForwardType::NORMAL:
+            OutputDebugString(L"\tNORMAL PASS\n");
+            break;
+        case eForwardType::SPECULAR_INTENSITY:
+            OutputDebugString(L"\tSPECULAR INTENSITY PASS\n");
+            break;
+        case eForwardType::COUNT:
+            OutputDebugString(L"\tCOLOR PASS\n");
+            break;
+        default:
+            break;
+        }
         break;
+    case eRenderType::DEFERRED:
+        m_CurrentGBufferType = static_cast<eGBufferDataType>((static_cast<size_t>(m_CurrentGBufferType) + static_cast<size_t>(eGBufferDataType::COUNT)) % (static_cast<size_t>(eGBufferDataType::COUNT) + 1));
+        switch (m_CurrentGBufferType)
+        {
+#if SIMPLE_GBUFFER
+        case eGBufferDataType::RT0_WORLD_POS:
+            OutputDebugString(L"\tRT0: WORLD POS PASS\n");
+            break;
+        case eGBufferDataType::RT1_NORMAL:
+            OutputDebugString(L"\tRT1: NORMAL PASS\n");
+            break;
+        case eGBufferDataType::RT1_DEPTH:
+            OutputDebugString(L"\tRT1: DEPTH PASS\n");
+            break;
+        case eGBufferDataType::RT2_ALBEDO:
+            OutputDebugString(L"\tRT2: ALBEDO PASS\n");
+            break;
+        case eGBufferDataType::RT3_SPECULAR:
+            OutputDebugString(L"\tRT3: SPECULAR PASS\n");
+            break;
+        case eGBufferDataType::RT3_GLOSS:
+            OutputDebugString(L"\tRT3: GLOSS PASS\n");
+            break;
+#elif KILLZONE_GBUFFER
+        case eGBufferDataType::DEPTH:
+            OutputDebugString(L"\tDEPTH PASS\n");
+            break;
+        case eGBufferDataType::RT0_LIGHT_ACCUMULATION:
+            OutputDebugString(L"\tRT0: LIGHT ACCUMULATION PASS\n");
+            break;
+        case eGBufferDataType::RT0_INTENSITY:
+            OutputDebugString(L"\tRT0: INTENSITY PASS\n");
+            break;
+        case eGBufferDataType::RT1_NORMAL:
+            OutputDebugString(L"\tRT1: NORMAL PASS\n");
+            break;
+        case eGBufferDataType::RT2_MOTION_VECTORS:
+            OutputDebugString(L"\tRT2: MOTION VECTORS PASS\n");
+            break;
+        case eGBufferDataType::RT2_SPEC_INTENSITY:
+            OutputDebugString(L"\tRT2: SPECULAR INTENSITY PASS\n");
+            break;
+        case eGBufferDataType::RT3_DIFFUSE_ALBEDO:
+            OutputDebugString(L"\tRT3: DIFFUSE ALBEDO PASS\n");
+            break;
+        case eGBufferDataType::RT3_SUN_OCCLUSION:
+            OutputDebugString(L"\tRT3: SUN OCCLUSION PASS\n");
+            break;
+#endif
+        case eGBufferDataType::COUNT:
+            OutputDebugString(L"\tGBUFFER PASS\n");
+            break;
+        default:
+            assert(false);
+            break;
+        }
+        break;
+    case eRenderType::COUNT:
+        break;
+    default:
+        break;
+    }
+}
+
+void Sponza::SetNextLightType()
+{
+    m_CurrentLightType = static_cast<eLightType>((static_cast<size_t>(m_CurrentLightType) + 1) % (static_cast<size_t>(eLightType::COUNT)));
+    switch (m_CurrentLightType)
+    {
+    case eLightType::TILED:
+        OutputDebugString(L"\tTIELD LIGHTS PASS\n");
+        break;
+    case eLightType::CLUSTERED:
+        OutputDebugString(L"\tCLUSTERED LIGHTS PASS\n");
+        break;
+    case eLightType::COUNT:
+        // Intentional fallthrough
     default:
         assert(false);
         break;
     }
 }
 
-void Sponza::SetPreviousGBufferOutput()
+void Sponza::SetPreviousLightType()
 {
-    m_CurrentBufferType = static_cast<eGBufferType>((static_cast<size_t>(m_CurrentBufferType) + static_cast<size_t>(eGBufferType::COUNT)) % (static_cast<size_t>(eGBufferType::COUNT) + 1));
-    switch (m_CurrentBufferType)
+    m_CurrentLightType = static_cast<eLightType>((static_cast<size_t>(m_CurrentLightType) + static_cast<size_t>(eLightType::COUNT) - 1) % (static_cast<size_t>(eLightType::COUNT)));
+    switch (m_CurrentLightType)
     {
-    case eGBufferType::WORLD_POS:
-        OutputDebugString(L"\tWORLD POS PASS\n");
+    case eLightType::TILED:
+        OutputDebugString(L"\tTIELD LIGHTS PASS\n");
         break;
-    case eGBufferType::NORMAL_DEPTH:
-        OutputDebugString(L"\tNORMAL DEPTH PASS\n");
+    case eLightType::CLUSTERED:
+        OutputDebugString(L"\tCLUSTERED LIGHTS PASS\n");
         break;
-    case eGBufferType::ALBEDO:
-        OutputDebugString(L"\tALBEDO PASS\n");
-        break;
-    case eGBufferType::SPECULAR:
-        OutputDebugString(L"\tSPECULAR PASS\n");
-        break;
-    case eGBufferType::COUNT:
-        OutputDebugString(L"\tGBUFFER PASS\n");
-        break;
+    case eLightType::COUNT:
+        // Intentional fallthrough
     default:
         assert(false);
         break;
@@ -445,14 +842,6 @@ void Sponza::SetPreviousGBufferOutput()
 
 void Sponza::Cleanup( void )
 {
-    m_GBufferGeometryBuffer.Destroy();
-
-    delete[] m_pGBufferVertexData;
-    delete[] m_pGBufferIndexData;
-
-    m_pGBufferVertexData = nullptr;
-    m_pGBufferIndexData = nullptr;
-
     m_Model.Clear();
     Lighting::Shutdown();
     TextureManager::Shutdown();
@@ -480,7 +869,8 @@ void Sponza::RenderDeferredObjects(GraphicsContext& gfxContext, const Camera& ca
     {
         UINT MaterialIdx;
         Matrix4 ModelToProjection;
-        Matrix4 InvProj;
+        Matrix4 InvViewProj;
+        //Matrix4 InvView;
         Matrix4 modelToShadow;
         XMFLOAT3 ViewerPos;
     } commonConstants;
@@ -492,24 +882,34 @@ void Sponza::RenderDeferredObjects(GraphicsContext& gfxContext, const Camera& ca
     vsConstants.modelToProjection = camera.GetViewProjMatrix();
     commonConstants.ModelToProjection = camera.GetViewProjMatrix();
 
-    Matrix4 matScreen = Matrix4(
-        Vector4(2.0f / g_SceneColorBuffer.GetWidth(), 0, 0, 0),
-        Vector4(0, -2.0f / g_SceneColorBuffer.GetHeight(), 0, 0),
-        Vector4(0, 0, 1.0f, 0),
-        Vector4(-1.0f, 1.0f, 0, 1.0f)
-    );
-    XMMATRIX matrix = XMMatrixTranspose(
-        //XMMATRIX(matScreen) * 
-        XMMatrixInverse(&XMMatrixDeterminant(camera.GetProjMatrix()), camera.GetProjMatrix()) * 
-        XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewMatrix()), camera.GetViewMatrix())
-    );
+    //Matrix4 matScreen = Matrix4(
+    //    Vector4(2.0f / g_SceneColorBuffer.GetWidth(), 0, 0, 0),
+    //    Vector4(0, -2.0f / g_SceneColorBuffer.GetHeight(), 0, 0),
+    //    Vector4(0, 0, 1.0f, 0),
+    //    Vector4(-1.0f, 1.0f, 0, 1.0f)
+    //);
+    //XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetProjMatrix()), camera.GetProjMatrix());
+    XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
+    //XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewMatrix()), camera.GetViewMatrix());    
 
-    commonConstants.InvProj = Matrix4(
-        Vector4(matrix.r[0]),
-        Vector4(matrix.r[1]),
-        Vector4(matrix.r[2]),
-        Vector4(matrix.r[3])
+    //commonConstants.InvProj = Matrix4(
+    //    Vector4(invProj.r[0]),
+    //    Vector4(invProj.r[1]),
+    //    Vector4(invProj.r[2]),
+    //    Vector4(invProj.r[3])
+    //);
+    commonConstants.InvViewProj = Matrix4(
+        Vector4(invProj.r[0]),
+        Vector4(invProj.r[1]),
+        Vector4(invProj.r[2]),
+        Vector4(invProj.r[3])
     );
+    //commonConstants.InvView = Matrix4(
+    //    Vector4(invView.r[0]),
+    //    Vector4(invView.r[1]),
+    //    Vector4(invView.r[2]),
+    //    Vector4(invView.r[3])
+    //);
     commonConstants.modelToShadow = m_SunShadow.GetShadowMatrix();
     XMStoreFloat3(&commonConstants.ViewerPos, viewerPos);
 
@@ -523,44 +923,34 @@ void Sponza::RenderDeferredObjects(GraphicsContext& gfxContext, const Camera& ca
 
 void Sponza::RenderObjects( GraphicsContext& gfxContext, const Matrix4& ViewProjMat, const Vector3& viewerPos, eObjectFilter Filter )
 {
-    __declspec(align(16)) struct CommonConstants
-    {
-        UINT MaterialIdx;
-        Matrix4 ModelToProjection;
-        Matrix4 InvProj;
-        Matrix4 modelToShadow;
-        XMFLOAT3 ViewerPos;
-    } commonConstants;
-    commonConstants.MaterialIdx = 0xFFFFFFFFul;
-
     struct VSConstants
     {
         Matrix4 modelToProjection;
+        //Matrix4 modelToShadow;
+        //XMFLOAT3 viewerPos;
     } vsConstants;
     vsConstants.modelToProjection = ViewProjMat;
+    //vsConstants.modelToShadow = m_SunShadow.GetShadowMatrix();
+    //XMStoreFloat3(&vsConstants.viewerPos, viewerPos);
+
+    struct CommonConstants
+    {
+        UINT MaterialIdx;
+        Matrix4 ModelToProjection;
+        Matrix4 InvViewProj;
+        //Matrix4 InvView;
+        Matrix4 modelToShadow;
+        XMFLOAT3 ViewerPos;
+    } commonConstants;
     commonConstants.ModelToProjection = ViewProjMat;
-
-    Matrix4 matScreen = Matrix4(
-        Vector4(2.0f / g_SceneColorBuffer.GetWidth(), 0, 0, 0),
-        Vector4(0, -2.0f / g_SceneColorBuffer.GetHeight(), 0, 0),
-        Vector4(0, 0, 1.0f, 0),
-        Vector4(-1.0f, 1.0f, 0, 1.0f)
-    );
-    XMMATRIX matrix = XMMatrixTranspose(
-        //XMMATRIX(matScreen) * 
-        XMMatrixInverse(&XMMatrixDeterminant(ViewProjMat), ViewProjMat)
-    );
-
-    commonConstants.InvProj = Matrix4(
-        Vector4(matrix.r[0]),
-        Vector4(matrix.r[1]),
-        Vector4(matrix.r[2]),
-        Vector4(matrix.r[3])
-    );
     commonConstants.modelToShadow = m_SunShadow.GetShadowMatrix();
     XMStoreFloat3(&commonConstants.ViewerPos, viewerPos);
 
     gfxContext.SetDynamicConstantBufferView(Renderer::kMeshConstants, sizeof(vsConstants), &vsConstants);
+    gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(CommonConstants), &commonConstants);
+
+    //__declspec(align(16)) uint32_t materialIdx = 0xFFFFFFFFul;
+    commonConstants.MaterialIdx = 0xFFFFFFFFul;
 
     uint32_t VertexStride = m_Model.GetVertexStride();
 
@@ -574,14 +964,14 @@ void Sponza::RenderObjects( GraphicsContext& gfxContext, const Matrix4& ViewProj
 
         if (mesh.materialIndex != commonConstants.MaterialIdx)
         {
-            if (m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kCutout) ||
-                !m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kOpaque))
+            if ( m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kCutout) ||
+                !m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kOpaque) )
                 continue;
 
             commonConstants.MaterialIdx = mesh.materialIndex;
-
             gfxContext.SetDescriptorTable(Renderer::kMaterialSRVs, m_Model.GetSRVs(commonConstants.MaterialIdx));
 
+            //gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(uint32_t), &materialIdx);
             gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(CommonConstants), &commonConstants);
         }
 
@@ -766,80 +1156,48 @@ void Sponza::RenderScene(
                 gfxContext.SetDescriptorTable(Renderer::kCommonSRVs, Renderer::m_CommonTextures);
                 gfxContext.SetDynamicConstantBufferView(Renderer::kMaterialConstants, sizeof(psConstants), &psConstants);
 
-                gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
-
                 {
+                    //gfxContext.SetPipelineState(m_ModelPSO);
+                    //gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
+                    //D3D12_CPU_DESCRIPTOR_HANDLE rtvs[]{ g_SceneColorBuffer.GetRTV(), g_SceneNormalBuffer.GetRTV() };
+                    //gfxContext.SetRenderTargets(ARRAYSIZE(rtvs), rtvs, g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+                    //gfxContext.SetViewportAndScissor(viewport, scissor);
                     switch (m_CurrentRenderType)
                     {
                     case eRenderType::FORWARD:
                     {
-                        gfxContext.SetPipelineState(m_ModelPSO);
+                        gfxContext.SetPipelineState(m_aForwardPSOs[static_cast<size_t>(m_CurrentLightType)][static_cast<size_t>(m_CurrentForwardType)]);
+                        gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
                         D3D12_CPU_DESCRIPTOR_HANDLE rtvs[]{ g_SceneColorBuffer.GetRTV(), g_SceneNormalBuffer.GetRTV() };
                         gfxContext.SetRenderTargets(ARRAYSIZE(rtvs), rtvs, g_SceneDepthBuffer.GetDSV_DepthReadOnly());
                     }
-                        break;
+                    break;
                     case eRenderType::DEFERRED:
                     {
-                        if (m_CurrentBufferType != ::eGBufferType::COUNT)
+                        std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvs;
+                        rtvs.reserve(static_cast<size_t>(eGBufferType::COUNT));
+                        for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
                         {
-                            gfxContext.SetPipelineState(m_aGBufferPSOs[static_cast<size_t>(m_CurrentBufferType)]);
-                            D3D12_CPU_DESCRIPTOR_HANDLE rtvs[]{ g_SceneColorBuffer.GetRTV(), };
-                            gfxContext.SetRenderTargets(ARRAYSIZE(rtvs), rtvs, g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+                            rtvs.push_back(g_aSceneGBuffers[i].GetRTV());
                         }
-                        else
+                        gfxContext.SetPipelineState(m_GBufferPSO);
+                        gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
+                        gfxContext.SetRenderTargets(rtvs.size(), rtvs.data(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+                        gfxContext.SetViewportAndScissor(viewport, scissor);
+                        RenderObjects(gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kOpaque);
+
+                        for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
                         {
-                            std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvs;
-                            rtvs.reserve(static_cast<size_t>(eGBufferType::COUNT));
-                            for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-                            {
-                                rtvs.push_back(g_aSceneGBuffers[i].GetRTV());
-                            }
-                            gfxContext.SetPipelineState(m_GBufferPSO);
-                            gfxContext.SetRenderTargets(rtvs.size(), rtvs.data(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
-                            gfxContext.SetViewportAndScissor(viewport, scissor);
-                            RenderObjects(gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kOpaque);
-
-                            for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-                            {
-                                gfxContext.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
-                            }
-                            //gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_GENERIC_READ, true);
-
-                            //uint32_t DestCount = 4;
-                            //uint32_t SourceCounts[] = { 1, 1, 1, 1, };
-
-                            //D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
-                            //{
-                            //    g_aSceneGBuffers[0].GetSRV(),
-                            //    g_aSceneGBuffers[1].GetSRV(),
-                            //    g_aSceneGBuffers[2].GetSRV(),
-                            //    g_SceneNormalBuffer.GetSRV(),
-                            //};
-
-                            //DescriptorHandle dest = m_GBufferSRVs;
-
-                            //g_Device->CopyDescriptors(
-                            //    1, 
-                            //    &dest, 
-                            //    &DestCount, 
-                            //    DestCount, 
-                            //    SourceTextures,
-                            //    SourceCounts,
-                            //    D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
-                            //);
-
-
-                            gfxContext.SetIndexBuffer(m_GBufferIndexBuffer);
-                            gfxContext.SetVertexBuffer(0, m_GBufferVertexBuffer);
-                            gfxContext.SetDescriptorTable(Renderer::kCommonSRVs, Renderer::m_CommonTextures);
-                            gfxContext.SetDynamicConstantBufferView(Renderer::kMaterialConstants, sizeof(psConstants), &psConstants);
-                            gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_GENERIC_READ);
-                            gfxContext.SetPipelineState(m_GBufferLightPSO);
-                            //gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
-                            gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV());
+                            gfxContext.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
                         }
+
+                        gfxContext.SetIndexBuffer(m_GBufferIndexBuffer);
+                        gfxContext.SetVertexBuffer(0, m_GBufferVertexBuffer);
+                        gfxContext.SetDescriptorTable(Renderer::kCommonSRVs, Renderer::m_CommonTextures);
+                        gfxContext.SetDynamicConstantBufferView(Renderer::kMaterialConstants, sizeof(psConstants), &psConstants);
+                        gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_GENERIC_READ);
                     }
-                        break;
+                    break;
                     case eRenderType::COUNT:
                         // intentional fallthrough
                     default:
@@ -850,22 +1208,18 @@ void Sponza::RenderScene(
                     //gfxContext.SetRenderTargets(0, nullptr, g_SceneDepthBuffer.GetDSV_DepthReadOnly());
                     gfxContext.SetViewportAndScissor(viewport, scissor);
                 }
+                
                 switch (m_CurrentRenderType)
                 {
                 case eRenderType::FORWARD:
                     RenderObjects(gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kOpaque);
                     break;
                 case eRenderType::DEFERRED:
-                    if (m_CurrentBufferType == eGBufferType::COUNT)
-                    {
-                        RenderDeferredObjects(gfxContext, camera, camera.GetPosition(), Sponza::kOpaque);
-                        gfxContext.SetIndexBuffer(m_Model.GetIndexBuffer());
-                        gfxContext.SetVertexBuffer(0, m_Model.GetVertexBuffer());
-                    }
-                    else
-                    {
-                        RenderObjects(gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kOpaque);
-                    }
+                    gfxContext.SetPipelineState(m_aGBufferPSOs[static_cast<size_t>(m_CurrentLightType)][static_cast<size_t>(m_CurrentGBufferType)]);
+                    gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV());
+                    RenderDeferredObjects(gfxContext, camera, camera.GetPosition(), Sponza::kOpaque);
+                    gfxContext.SetIndexBuffer(m_Model.GetIndexBuffer());
+                    gfxContext.SetVertexBuffer(0, m_Model.GetVertexBuffer());
                     break;
                 case eRenderType::COUNT:
                     // intentional fallthrough
@@ -873,12 +1227,16 @@ void Sponza::RenderScene(
                     assert(false);
                     break;
                 }
+
+                //RenderObjects( gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kOpaque );
+
+                gfxContext.SetPipelineState(m_CutoutModelPSO);
+                gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
+                D3D12_CPU_DESCRIPTOR_HANDLE rtvs[]{ g_SceneColorBuffer.GetRTV(), g_SceneNormalBuffer.GetRTV() };
+                gfxContext.SetRenderTargets(ARRAYSIZE(rtvs), rtvs, g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+                gfxContext.SetViewportAndScissor(viewport, scissor);
+                RenderObjects( gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kCutout );
             }
-            gfxContext.SetPipelineState(m_CutoutModelPSO);
-            D3D12_CPU_DESCRIPTOR_HANDLE rtvs[]{ g_SceneColorBuffer.GetRTV(), g_SceneNormalBuffer.GetRTV() };
-            gfxContext.SetRenderTargets(ARRAYSIZE(rtvs), rtvs, g_SceneDepthBuffer.GetDSV_DepthReadOnly());
-            gfxContext.SetViewportAndScissor(viewport, scissor);
-            RenderObjects(gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kCutout);
         }
     }
 }

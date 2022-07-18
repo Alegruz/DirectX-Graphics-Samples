@@ -167,6 +167,18 @@ float3 ApplyPointLight(
     float distanceFalloff = lightRadiusSq * (invLightDist * invLightDist);
     distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
 
+    //float3 commonLight = ApplyLightCommon(
+    //    diffuseColor,
+    //    specularColor,
+    //    specularMask,
+    //    gloss,
+    //    normal,
+    //    viewDir,
+    //    lightDir,
+    //    lightColor
+    //    );
+    //
+    //return distanceFalloff * commonLight;
     return distanceFalloff * ApplyLightCommon(
         diffuseColor,
         specularColor,
@@ -325,9 +337,6 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
     uint2 tilePos = GetTilePos(pixelPos, InvTileDim.xy);
     uint tileIndex = GetTileIndex(tilePos, TileCount.x);
     uint tileOffset = GetTileOffset(tileIndex);
-    
-    //colorSum = float3(tilePos, 1.0f);
-    //return;
 
     // Light Grid Preloading setup
     uint lightBitMaskGroups[4] = { 0, 0, 0, 0 };
@@ -593,9 +602,11 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
     {
         uint lightIndex = lightGrid.Load(tileLightLoadOffset);
         LightData lightData = lightBuffer[lightIndex];
+        //float3 pointLight = ApplyPointLight(POINT_LIGHT_ARGS);
+        //colorSum += pointLight;
         colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
     }
-
+    
     // cone
     for (n = 0; n < tileLightCountCone; n++, tileLightLoadOffset += 4)
     {
@@ -603,7 +614,7 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
         LightData lightData = lightBuffer[lightIndex];
         colorSum += ApplyConeLight(CONE_LIGHT_ARGS);
     }
-
+    
     // cone w/ shadow map
     for (n = 0; n < tileLightCountConeShadowed; n++, tileLightLoadOffset += 4)
     {
@@ -612,4 +623,78 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
         colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
     }
 #endif
+}
+
+void ShadeForLoopLights(inout float3 colorSum, uint2 pixelPos,
+	float3 diffuseAlbedo, // Diffuse albedo
+	float3 specularAlbedo, // Specular albedo
+	float specularMask, // Where is it shiny or dingy?
+	float gloss,
+	float3 normal,
+	float3 viewDir,
+	float3 worldPos
+	)
+{
+    uint2 tilePos = GetTilePos(pixelPos, InvTileDim.xy);
+    uint tileIndex = GetTileIndex(tilePos, TileCount.x);
+    uint tileOffset = GetTileOffset(tileIndex);
+
+    // Light Grid Preloading setup
+    uint lightBitMaskGroups[4] = { 0, 0, 0, 0 };
+
+#define POINT_LIGHT_ARGS \
+    diffuseAlbedo, \
+    specularAlbedo, \
+    specularMask, \
+    gloss, \
+    normal, \
+    viewDir, \
+    worldPos, \
+    lightData.pos, \
+    lightData.radiusSq, \
+    lightData.color
+
+#define CONE_LIGHT_ARGS \
+    POINT_LIGHT_ARGS, \
+    lightData.coneDir, \
+    lightData.coneAngles
+
+#define SHADOWED_LIGHT_ARGS \
+    CONE_LIGHT_ARGS, \
+    lightData.shadowTextureMatrix, \
+    lightIndex
+
+    uint tileLightCount = lightGrid.Load(tileOffset + 0);
+    uint tileLightCountSphere = (tileLightCount >> 0) & 0xff;
+    uint tileLightCountCone = (tileLightCount >> 8) & 0xff;
+    uint tileLightCountConeShadowed = (tileLightCount >> 16) & 0xff;
+
+    uint tileLightLoadOffset = tileOffset + 4;
+
+    // sphere
+    uint n;
+    for (n = 0; n < tileLightCountSphere; n++, tileLightLoadOffset += 4)
+    {
+        uint lightIndex = lightGrid.Load(tileLightLoadOffset);
+        LightData lightData = lightBuffer[lightIndex];
+        //float3 pointLight = ApplyPointLight(POINT_LIGHT_ARGS);
+        //colorSum += pointLight;
+        colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
+    }
+    
+    // cone
+    for (n = 0; n < tileLightCountCone; n++, tileLightLoadOffset += 4)
+    {
+        uint lightIndex = lightGrid.Load(tileLightLoadOffset);
+        LightData lightData = lightBuffer[lightIndex];
+        colorSum += ApplyConeLight(CONE_LIGHT_ARGS);
+    }
+    
+    // cone w/ shadow map
+    for (n = 0; n < tileLightCountConeShadowed; n++, tileLightLoadOffset += 4)
+    {
+        uint lightIndex = lightGrid.Load(tileLightLoadOffset);
+        LightData lightData = lightBuffer[lightIndex];
+        colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
+    }
 }

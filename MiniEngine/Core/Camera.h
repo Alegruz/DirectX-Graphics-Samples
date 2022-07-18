@@ -45,7 +45,6 @@ namespace Math
         const Matrix4& GetViewMatrix() const { return m_ViewMatrix; }
         const Matrix4& GetProjMatrix() const { return m_ProjMatrix; }
         const Matrix4& GetViewProjMatrix() const { return m_ViewProjMatrix; }
-        const Matrix4& GetBaseViewOrthoMatrix() const { return m_BaseViewOrthoMatrix; }
         const Matrix4& GetReprojectionMatrix() const { return m_ReprojectMatrix; }
         const Frustum& GetViewSpaceFrustum() const { return m_FrustumVS; }
         const Frustum& GetWorldSpaceFrustum() const { return m_FrustumWS; }
@@ -55,7 +54,6 @@ namespace Math
         BaseCamera() : m_CameraToWorld(kIdentity), m_Basis(kIdentity) {}
 
         void SetProjMatrix( const Matrix4& ProjMat ) { m_ProjMatrix = ProjMat; }
-        void SetOrthoMatrix(const Matrix4& OrthoMat) { m_OrthoMatrix = OrthoMat; }
 
         OrthogonalTransform m_CameraToWorld;
 
@@ -66,22 +64,18 @@ namespace Math
         // to the right, +Y is up, and -Z is forward.  This has to match what the projection matrix expects, but you might
         // also need to know what the convention is if you work in view space in a shader.
         Matrix4 m_ViewMatrix;		// i.e. "World-to-View" matrix
-        Matrix4 m_BaseViewMatrix;
 
         // The projection matrix transforms view space to clip space.  Once division by W has occurred, the final coordinates
         // can be transformed by the viewport matrix to screen space.  The projection matrix is determined by the screen aspect 
         // and camera field of view.  A projection matrix can also be orthographic.  In that case, field of view would be defined
         // in linear units, not angles.
         Matrix4 m_ProjMatrix;		// i.e. "View-to-Projection" matrix
-        Matrix4 m_OrthoMatrix;
 
         // A concatenation of the view and projection matrices.
         Matrix4 m_ViewProjMatrix;	// i.e.  "World-To-Projection" matrix.
-        Matrix4 m_BaseViewOrthoMatrix;
 
         // The view-projection matrix from the previous frame
         Matrix4 m_PreviousViewProjMatrix;
-        Matrix4 m_PreviousViewOrthoMatrix;
 
         // Projects a clip-space coordinate to the previous frame (useful for temporal effects).
         Matrix4 m_ReprojectMatrix;
@@ -89,7 +83,6 @@ namespace Math
         Frustum m_FrustumVS;		// View-space view frustum
         Frustum m_FrustumWS;		// World-space view frustum
 
-        BOOL bIsFirst = TRUE;
     };
 
     class Camera : public BaseCamera
@@ -160,7 +153,6 @@ namespace Math
         UpdateProjMatrix();
 
         m_PreviousViewProjMatrix = m_ViewProjMatrix;
-        m_PreviousViewOrthoMatrix = m_BaseViewOrthoMatrix;
     }
 
 } // namespace Math

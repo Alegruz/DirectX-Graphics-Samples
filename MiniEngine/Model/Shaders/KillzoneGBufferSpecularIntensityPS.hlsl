@@ -10,5 +10,5 @@
 //
 // Author(s):	James Stanard
 
-#define GBUFFER_NORMAL_DEPTH
-#include "ModelViewerPS.hlsl"
+#define SPEC_INTENSITY (1)
+#include "KillzoneGBufferLightTiledPS.hlsl"

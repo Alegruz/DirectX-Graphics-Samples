@@ -18,6 +18,7 @@ cbuffer StartVertex : register(b1)
     uint materialIdx;
     float4x4 ModelToProjection;
     float4x4 InvProj;
+    float4x4 InvView;
     float4x4 modelToShadow;
     float3 ViewerPos;
 };
@@ -58,23 +59,37 @@ float3 main(VSOutput vsOutput) : SV_Target
         color = 0.0;
         return color;
     }
+#if GBUFFER_DEPTH
+    return sqrt(sqrt(depth));
+#endif
     float4 worldPos = texWorldPos[pixelPos];
-	
-#define SAMPLE_TEX(texName) texName.Sample(defaultSampler, vsOutput.uv)
-	
-    //float4 rtv0Data = SAMPLE_TEX(texWorldPos);
+#if GBUFFER_WORLD_POS
+    return normalize(worldPos.xyz);
+#endif
+    
     float4 albedoData = texAlbedo[pixelPos];
     float3 diffuseAlbedo = albedoData.rgb;
-	
+#if GBUFFER_ALBEDO
+    return diffuseAlbedo;
+#endif
+    float gloss = texSpecular[pixelPos].a;
+#if GBUFFER_GLOSS
+    return gloss / 256.0;
+#endif
+    float specularMask = texSpecular[pixelPos].g;
+#if GBUFFER_SPECULAR
+    return specularMask;
+#endif
+    float3 normal = texNormalDepth[pixelPos].xyz;
+#if GBUFFER_NORMAL
+    return normalize(normal);
+#endif
+    
     float3 colorSum = 0;
 	{
         float ao = texSSAO[pixelPos];
 	    colorSum += ApplyAmbientLight( diffuseAlbedo, ao, AmbientColor );
     }
-    
-    float gloss = texSpecular[pixelPos].a;
-    float specularMask = texSpecular[pixelPos].g;
-    float3 normal = texNormalDepth[pixelPos].xyz;
 	
     float3 specularAlbedo = float3( 0.56, 0.56, 0.56 );
     float3 viewDir = normalize(worldPos.xyz - ViewerPos);

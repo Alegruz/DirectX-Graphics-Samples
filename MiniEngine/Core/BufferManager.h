@@ -21,12 +21,44 @@
 
 namespace Graphics
 {
+#define SIMPLE_GBUFFER (0)
+#define KILLZONE_GBUFFER (1)
+
     enum class eGBufferType : UINT8
     {
+#if SIMPLE_GBUFFER
         WORLD_POS,
         NORMAL_DEPTH,
         ALBEDO,
         SPECULAR,
+#elif KILLZONE_GBUFFER
+        RT0,    // Light accumulation + intensity
+        RT1,    // Normal.XY
+        RT2,    // Motion Vectors + spec-intensity
+        RT3,    // diffuse albedo + sun-occlusion
+#endif
+        COUNT,
+    };
+
+    enum class eGBufferDataType : UINT8
+    {
+#if SIMPLE_GBUFFER
+        RT0_WORLD_POS,
+        RT1_NORMAL,
+        RT1_DEPTH,
+        RT2_ALBEDO,
+        RT3_SPECULAR,
+        RT3_GLOSS,
+#elif KILLZONE_GBUFFER
+        DEPTH,
+        RT0_LIGHT_ACCUMULATION,
+        RT0_INTENSITY,
+        RT1_NORMAL,
+        RT2_MOTION_VECTORS,
+        RT2_SPEC_INTENSITY,
+        RT3_DIFFUSE_ALBEDO,
+        RT3_SUN_OCCLUSION,
+#endif
         COUNT,
     };
 

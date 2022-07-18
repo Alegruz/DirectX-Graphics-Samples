@@ -10,5 +10,5 @@
 //
 // Author(s):	James Stanard
 
-#define GBUFFER_SPECULAR (1)
-#include "GBufferLightPS.hlsl"
+#define SPEC_INTENSITY (1)
+#include "ModelViewerTiledPS.hlsl"

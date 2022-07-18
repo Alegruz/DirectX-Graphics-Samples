@@ -167,7 +167,7 @@ void Graphics::Initialize(bool RequireDXRSupport)
 
     uint32_t useDebugLayers = 0;
     CommandLineArgs::GetInteger(L"debug", useDebugLayers);
-#if _DEBUG | USE_DEBUG_RUNTIME
+#if _DEBUG
     // Default to true for debug builds
     useDebugLayers = 1;
 #endif
@@ -219,10 +219,8 @@ void Graphics::Initialize(bool RequireDXRSupport)
     }
 
     // Obtain the DXGI factory
-    Microsoft::WRL::ComPtr<IDXGIFactory2> dxgiFactory2;
-    ASSERT_SUCCEEDED(CreateDXGIFactory2(dxgiFactoryFlags, MY_IID_PPV_ARGS(&dxgiFactory2)));
     Microsoft::WRL::ComPtr<IDXGIFactory6> dxgiFactory;
-    ASSERT_SUCCEEDED(dxgiFactory2.As(&dxgiFactory));
+    ASSERT_SUCCEEDED(CreateDXGIFactory2(dxgiFactoryFlags, MY_IID_PPV_ARGS(&dxgiFactory)));
 
     // Create the D3D graphics device
     Microsoft::WRL::ComPtr<IDXGIAdapter1> pAdapter;

@@ -10,5 +10,5 @@
 //
 // Author(s):	James Stanard
 
-#define GBUFFER_SPECULAR (1)
+#define GBUFFER_NORMAL (1)
 #include "GBufferLightPS.hlsl"

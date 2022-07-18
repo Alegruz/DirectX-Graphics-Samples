@@ -10,5 +10,5 @@
 //
 // Author(s):	James Stanard
 
-#define GBUFFER_ALBEDO
-#include "ModelViewerPS.hlsl"
+#define GBUFFER_ALBEDO (1)
+#include "GBufferLightPS.hlsl"

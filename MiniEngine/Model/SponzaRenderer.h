@@ -33,6 +33,23 @@ enum class eRenderType : UINT8
     COUNT,
 };
 
+enum class eForwardType : UINT8
+{
+    WORLD_POS,
+    DIFFUSE_ALBEDO,
+    GLOSS,
+    NORMAL,
+    SPECULAR_INTENSITY,
+    COUNT,
+};
+
+enum class eLightType : UINT8
+{
+    TILED,
+    CLUSTERED,
+    COUNT,
+};
+
 namespace Sponza
 {
     void Startup( Math::Camera& camera );
@@ -49,8 +66,10 @@ namespace Sponza
     const ModelH3D& GetModel();
 
     void SetRenderType(eRenderType renderType) noexcept;
-    void SetNextGBufferOutput();
-    void SetPreviousGBufferOutput();
+    void SetNextBufferOutput();
+    void SetPreviousBufferOutput();
+    void SetNextLightType();
+    void SetPreviousLightType();
 
     extern Math::Vector3 m_SunDirection;
     extern ShadowCamera m_SunShadow;

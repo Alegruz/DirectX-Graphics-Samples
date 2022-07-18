@@ -232,12 +232,22 @@ void ModelViewer::Update( float deltaT )
 
     if (GameInput::IsFirstPressed(GameInput::kKey_right))
     {
-        Sponza::SetNextGBufferOutput();
+        Sponza::SetNextBufferOutput();
     }
-    
+
     if (GameInput::IsFirstPressed(GameInput::kKey_left))
     {
-        Sponza::SetPreviousGBufferOutput();
+        Sponza::SetPreviousBufferOutput();
+    }
+
+    if (GameInput::IsFirstPressed(GameInput::kKey_up))
+    {
+        Sponza::SetNextLightType();
+    }
+
+    if (GameInput::IsFirstPressed(GameInput::kKey_down))
+    {
+        Sponza::SetPreviousLightType();
     }
 
     m_CameraController->Update(deltaT);
@@ -316,10 +326,6 @@ void ModelViewer::RenderScene( void )
 		sorter.SetScissor(scissor);
 		sorter.SetDepthStencilTarget(g_SceneDepthBuffer);
 		sorter.AddRenderTarget(g_SceneColorBuffer);
-        for (size_t i = 0; i < static_cast<size_t>(Graphics::eGBufferType::COUNT); ++i)
-        {
-            sorter.AddRenderTarget(g_aSceneGBuffers[i]);
-        }
 
         m_ModelInst.Render(sorter);
 
