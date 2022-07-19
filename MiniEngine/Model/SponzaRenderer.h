@@ -60,6 +60,7 @@ namespace Sponza
         const Math::Camera& camera,
         const D3D12_VIEWPORT& viewport,
         const D3D12_RECT& scissor,
+        //const Math::OrientedBox& boundingBox,
         bool skipDiffusePass = false,
         bool skipShadowMap = false );
     void Update(float deltaTime);

@@ -18,7 +18,7 @@ cbuffer StartVertex : register(b1)
     uint materialIdx;
     float4x4 ModelToProjection;
     float4x4 InvViewProj;
-    //float4x4 InvProj;
+    float4x4 InvProj;
     float4x4 modelToShadow;
     float3 ViewerPos;
 //    float NearZ;
@@ -65,9 +65,11 @@ float3 main(VSOutput vsOutput) : SV_Target
         color = 0.0;
         return color;
     }
+
 #if DEPTH
-    return sqrt(depth);
+    return depth;
 #endif
+    
     float4 rt0Data = texRt0[pixelPos];
     color = rt0Data.rgb;
     float gloss = rt0Data.a * 256.0;
@@ -98,6 +100,9 @@ float3 main(VSOutput vsOutput) : SV_Target
     clipSpacePosition.y *= -1.0f;
     float4 worldPos = mul(InvViewProj, clipSpacePosition);
     worldPos /= worldPos.w;
+    float4 viewPos = mul(InvProj, clipSpacePosition);
+    viewPos /= viewPos.w;
+    //return ((normalize(viewPos.xyz) + 1) * 0.5f).z;
     //if (dot(normal, normalize(ViewerPos - worldPos.xyz)) < 0.0)
     //{
     //    normal.z *= -1.0f;
@@ -123,69 +128,20 @@ float3 main(VSOutput vsOutput) : SV_Target
     float3 viewDir = normalize(worldPos.xyz - ViewerPos);
     float3 shadowCoord = mul(modelToShadow, float4(worldPos.xyz, 1.0)).xyz;
     
-	ShadeLights(
+    ShadeLights(
+	//ShadeLightsCpu(
 		color,
 		pixelPos,
 		diffuseAlbedo,
 		specularAlbedo,
-		specularMask,
+    	specularMask,
 		gloss,
 		normal,
 		viewDir,
 		worldPos.xyz,
         depth
 		);
-    return color;
-    
-    uint3 clusterPos = GetClusterPos(float3(pixelPos, depth), InvTileDim.xyz);
-    uint clusterIndex = GetClusterIndex(clusterPos, TileCount.xy);
-    uint clusterOffset = GetClusterOffset(clusterIndex);
 
-    // Light Grid Preloading setup
-    uint lightBitMaskGroups[4] = { 0, 0, 0, 0 };
-    
-#define POINT_LIGHT_ARGS \
-    diffuseAlbedo, \
-    specularAlbedo, \
-    specularMask, \
-    gloss, \
-    normal, \
-    viewDir, \
-    worldPos.xyz, \
-    lightData.pos, \
-    lightData.radiusSq, \
-    lightData.color
-
-#define CONE_LIGHT_ARGS \
-    POINT_LIGHT_ARGS, \
-    lightData.coneDir, \
-    lightData.coneAngles
-
-#define SHADOWED_LIGHT_ARGS \
-    CONE_LIGHT_ARGS, \
-    lightData.shadowTextureMatrix, \
-    lightIndex
-    
-    uint clusterLightCount = lightCluster.Load(clusterOffset + 0);
-    uint clusterLightCountSphere = (clusterLightCount >> 0) & 0xff;
-    uint clusterLightCountCone = (clusterLightCount >> 8) & 0xff;
-    uint clusterLightCountConeShadowed = (clusterLightCount >> 16) & 0xff;
-
-    uint clusterLightLoadOffset = clusterOffset + 4;
-    
-    //return sqrt(sqrt((float) (clusterLightCountSphere + clusterLightCountCone + clusterLightCountConeShadowed) / (float) MAX_LIGHTS));
-    
-    // sphere
-    uint n;
-    float3 colorSum = 0;
-    for (n = 0; n < clusterLightCountSphere; n++, clusterLightLoadOffset += 4)
-    {
-        uint lightIndex = lightCluster.Load(clusterLightLoadOffset);
-        LightData lightData = lightBuffer[lightIndex];
-        
-        colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
-    }
-    return colorSum;
-    
+    //return viewPos.z;
     return color;
 }

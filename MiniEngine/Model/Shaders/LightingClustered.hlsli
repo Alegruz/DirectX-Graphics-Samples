@@ -28,12 +28,14 @@ cbuffer PSConstants : register(b0)
     uint4 FirstLightIndex;
 
     uint FrameIndexMod2;
+    float3 Scale;
+    float3 Bias;
 }
 
 StructuredBuffer<LightData> lightBuffer : register(t14);
 Texture2DArray<float> lightShadowArrayTex : register(t15);
 ByteAddressBuffer lightCluster : register(t16);
-ByteAddressBuffer lightClusterBitMask : register(t17);
+//ByteAddressBuffer lightClusterBitMask : register(t17);
 
 void AntiAliasSpecular( inout float3 texNormal, inout float gloss )
 {
@@ -623,5 +625,309 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
         LightData lightData = lightBuffer[lightIndex];
         colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
     }
+#endif
+}
+
+void ShadeLightsCpu(inout float3 colorSum, uint2 pixelPos,
+	float3 diffuseAlbedo, // Diffuse albedo
+	float3 specularAlbedo, // Specular albedo
+	float specularMask, // Where is it shiny or dingy?
+	float gloss,
+	float3 normal,
+	float3 viewDir,
+	float3 worldPos,
+    float depth
+	)
+{
+    uint3 clusterPos = GetClusterPos(worldPos, Scale, Bias);
+
+    // Light Grid Preloading setup
+    uint lightBitMaskGroups[4] = { 0, 0, 0, 0 };
+#if defined(LIGHT_GRID_PRELOADING)
+    uint4 lightBitMask = lightClusterBitMask.Load4(tileIndex * 16);
+    
+    lightBitMaskGroups[0] = lightBitMask.x;
+    lightBitMaskGroups[1] = lightBitMask.y;
+    lightBitMaskGroups[2] = lightBitMask.z;
+    lightBitMaskGroups[3] = lightBitMask.w;
+#endif
+
+#define POINT_LIGHT_ARGS \
+    diffuseAlbedo, \
+    specularAlbedo, \
+    specularMask, \
+    gloss, \
+    normal, \
+    viewDir, \
+    worldPos, \
+    lightData.pos, \
+    lightData.radiusSq, \
+    lightData.color
+
+#define CONE_LIGHT_ARGS \
+    POINT_LIGHT_ARGS, \
+    lightData.coneDir, \
+    lightData.coneAngles
+
+#define SHADOWED_LIGHT_ARGS \
+    CONE_LIGHT_ARGS, \
+    lightData.shadowTextureMatrix, \
+    lightIndex
+
+#if defined(BIT_MASK)
+    uint64_t threadMask = Ballot64(tileIndex != ~0); // attempt to get starting exec mask
+
+    for (uint groupIndex = 0; groupIndex < 4; groupIndex++)
+    {
+        // combine across threads
+        uint groupBits = WaveOr(GetGroupBits(groupIndex, tileIndex, lightBitMaskGroups));
+
+        while (groupBits != 0)
+        {
+            uint bitIndex = PullNextBit(groupBits);
+            uint lightIndex = 32 * groupIndex + bitIndex;
+
+            LightData lightData = lightBuffer[lightIndex];
+
+            if (lightIndex < FirstLightIndex.x) // sphere
+            {
+                colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
+            }
+            else if (lightIndex < FirstLightIndex.y) // cone
+            {
+                colorSum += ApplyConeLight(CONE_LIGHT_ARGS);
+            }
+            else // cone w/ shadow map
+            {
+                colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
+            }
+        }
+    }
+
+#elif defined(BIT_MASK_SORTED)
+
+    // Get light type groups - these can be predefined as compile time constants to enable unrolling and better scheduling of vector reads
+    uint pointLightGroupTail		= POINT_LIGHT_GROUPS_TAIL;
+    uint spotLightGroupTail			= SPOT_LIGHT_GROUPS_TAIL;
+    uint spotShadowLightGroupTail	= SHADOWED_SPOT_LIGHT_GROUPS_TAIL;
+
+    uint groupBitsMasks[4] = { 0, 0, 0, 0 };
+    for (int i = 0; i < 4; i++)
+    {
+        // combine across threads
+        groupBitsMasks[i] = WaveOr(GetGroupBits(i, tileIndex, lightBitMaskGroups));
+    }
+
+    uint groupIndex;
+
+    for (groupIndex = 0; groupIndex < pointLightGroupTail; groupIndex++)
+    {
+        uint groupBits = groupBitsMasks[groupIndex];
+
+        while (groupBits != 0)
+        {
+            uint bitIndex = PullNextBit(groupBits);
+            uint lightIndex = 32 * groupIndex + bitIndex;
+
+            // sphere
+            LightData lightData = lightBuffer[lightIndex];
+            colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
+        }
+    }
+
+    for (groupIndex = pointLightGroupTail; groupIndex < spotLightGroupTail; groupIndex++)
+    {
+        uint groupBits = groupBitsMasks[groupIndex];
+
+        while (groupBits != 0)
+        {
+            uint bitIndex = PullNextBit(groupBits);
+            uint lightIndex = 32 * groupIndex + bitIndex;
+
+            // cone
+            LightData lightData = lightBuffer[lightIndex];
+            colorSum += ApplyConeLight(CONE_LIGHT_ARGS);
+        }
+    }
+
+    for (groupIndex = spotLightGroupTail; groupIndex < spotShadowLightGroupTail; groupIndex++)
+    {
+        uint groupBits = groupBitsMasks[groupIndex];
+
+        while (groupBits != 0)
+        {
+            uint bitIndex = PullNextBit(groupBits);
+            uint lightIndex = 32 * groupIndex + bitIndex;
+
+            // cone w/ shadow map
+            LightData lightData = lightBuffer[lightIndex];
+            colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
+        }
+    }
+
+#elif defined(SCALAR_LOOP)
+    uint64_t threadMask = Ballot64(tileOffset != ~0); // attempt to get starting exec mask
+    uint64_t laneBit = 1ull << WaveGetLaneIndex();
+
+    while ((threadMask & laneBit) != 0) // is this thread waiting to be processed?
+    { // exec is now the set of remaining threads
+        // grab the tile offset for the first active thread
+        uint uniformTileOffset = WaveReadLaneFirst(tileOffset);
+        // mask of which threads have the same tile offset as the first active thread
+        uint64_t uniformMask = Ballot64(tileOffset == uniformTileOffset);
+
+        if (any((uniformMask & laneBit) != 0)) // is this thread one of the current set of uniform threads?
+        {
+            uint tileLightCount = lightCluster.Load(uniformTileOffset + 0);
+            uint tileLightCountSphere = (tileLightCount >> 0) & 0xff;
+            uint tileLightCountCone = (tileLightCount >> 8) & 0xff;
+            uint tileLightCountConeShadowed = (tileLightCount >> 16) & 0xff;
+
+            uint tileLightLoadOffset = uniformTileOffset + 4;
+            uint n;
+
+            // sphere
+            for (n = 0; n < tileLightCountSphere; n++, tileLightLoadOffset += 4)
+            {
+                uint lightIndex = lightCluster.Load(tileLightLoadOffset);
+                LightData lightData = lightBuffer[lightIndex];
+                colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
+            }
+
+            // cone
+            for (n = 0; n < tileLightCountCone; n++, tileLightLoadOffset += 4)
+            {
+                uint lightIndex = lightCluster.Load(tileLightLoadOffset);
+                LightData lightData = lightBuffer[lightIndex];
+                colorSum += ApplyConeLight(CONE_LIGHT_ARGS);
+            }
+
+            // cone w/ shadow map
+            for (n = 0; n < tileLightCountConeShadowed; n++, tileLightLoadOffset += 4)
+            {
+                uint lightIndex = lightCluster.Load(tileLightLoadOffset);
+                LightData lightData = lightBuffer[lightIndex];
+                colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
+            }
+        }
+
+        // strip the current set of uniform threads from the exec mask for the next loop iteration
+        threadMask &= ~uniformMask;
+    }
+
+#elif defined(SCALAR_BRANCH)
+
+    if (Ballot64(tileOffset == WaveReadLaneFirst(tileOffset)) == ~0ull)
+    {
+        // uniform branch
+        tileOffset = WaveReadLaneFirst(tileOffset);
+
+        uint tileLightCount = lightCluster.Load(tileOffset + 0);
+        uint tileLightCountSphere = (tileLightCount >> 0) & 0xff;
+        uint tileLightCountCone = (tileLightCount >> 8) & 0xff;
+        uint tileLightCountConeShadowed = (tileLightCount >> 16) & 0xff;
+
+        uint tileLightLoadOffset = tileOffset + 4;
+        uint n;
+
+        // sphere
+        for (n = 0; n < tileLightCountSphere; n++, tileLightLoadOffset += 4)
+        {
+            uint lightIndex = lightCluster.Load(tileLightLoadOffset);
+            LightData lightData = lightBuffer[lightIndex];
+            colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
+        }
+
+        // cone
+        for (n = 0; n < tileLightCountCone; n++, tileLightLoadOffset += 4)
+        {
+            uint lightIndex = lightCluster.Load(tileLightLoadOffset);
+            LightData lightData = lightBuffer[lightIndex];
+            colorSum += ApplyConeLight(CONE_LIGHT_ARGS);
+        }
+
+        // cone w/ shadow map
+        for (n = 0; n < tileLightCountConeShadowed; n++, tileLightLoadOffset += 4)
+        {
+            uint lightIndex = lightCluster.Load(tileLightLoadOffset);
+            LightData lightData = lightBuffer[lightIndex];
+            colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
+        }
+    }
+    else
+    {
+        // divergent branch
+        uint tileLightCount = lightCluster.Load(tileOffset + 0);
+        uint tileLightCountSphere = (tileLightCount >> 0) & 0xff;
+        uint tileLightCountCone = (tileLightCount >> 8) & 0xff;
+        uint tileLightCountConeShadowed = (tileLightCount >> 16) & 0xff;
+
+        uint tileLightLoadOffset = tileOffset + 4;
+        uint n;
+
+        // sphere
+        for (n = 0; n < tileLightCountSphere; n++, tileLightLoadOffset += 4)
+        {
+            uint lightIndex = lightCluster.Load(tileLightLoadOffset);
+            LightData lightData = lightBuffer[lightIndex];
+            colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
+        }
+
+        // cone
+        for (n = 0; n < tileLightCountCone; n++, tileLightLoadOffset += 4)
+        {
+            uint lightIndex = lightCluster.Load(tileLightLoadOffset);
+            LightData lightData = lightBuffer[lightIndex];
+            colorSum += ApplyConeLight(CONE_LIGHT_ARGS);
+        }
+
+        // cone w/ shadow map
+        for (n = 0; n < tileLightCountConeShadowed; n++, tileLightLoadOffset += 4)
+        {
+            uint lightIndex = lightCluster.Load(tileLightLoadOffset);
+            LightData lightData = lightBuffer[lightIndex];
+            colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
+        }
+    }
+
+#else // SM 5.0 (no wave intrinsics)
+
+    uint lightMask = lightCluster.Load((clusterPos.z / InvTileDim.y) / InvTileDim.x + (clusterPos.y / InvTileDim.x) + clusterPos.x);
+
+    while (lightMask)
+    {
+        uint i = firstbitlow(lightMask);
+        lightMask &= ~(1 << i);
+        
+        LightData lightData = lightBuffer[i];
+        colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
+    }
+    
+    // sphere
+    //uint n;
+    //for (n = 0; n < clusterLightCountSphere; n++, clusterLightLoadOffset += 4)
+    //{
+    //    uint lightIndex = lightCluster.Load(clusterLightLoadOffset);
+    //    LightData lightData = lightBuffer[lightIndex];
+    //    //float3 pointLight = ApplyPointLight(POINT_LIGHT_ARGS);
+    //    //colorSum += pointLight;
+    //    colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
+    //}
+    
+    // cone
+    //for (n = 0; n < clusterLightCountCone; n++, clusterLightLoadOffset += 4)
+    //{
+    //    uint lightIndex = lightCluster.Load(clusterLightLoadOffset);
+    //    LightData lightData = lightBuffer[lightIndex];
+    //    colorSum += ApplyConeLight(CONE_LIGHT_ARGS);
+    //}
+    
+    // cone w/ shadow map
+    //for (n = 0; n < clusterLightCountConeShadowed; n++, clusterLightLoadOffset += 4)
+    //{
+    //    uint lightIndex = lightCluster.Load(clusterLightLoadOffset);
+    //    LightData lightData = lightBuffer[lightIndex];
+    //    colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
+    //}
 #endif
 }

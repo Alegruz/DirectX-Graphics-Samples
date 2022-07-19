@@ -94,7 +94,7 @@ namespace Sponza
     enum eObjectFilter { kOpaque = 0x1, kCutout = 0x2, kTransparent = 0x4, kAll = 0xF, kNone = 0x0 };
     void RenderDeferredObjects(GraphicsContext& Context, const Camera& camera, const Vector3& viewerPos, eObjectFilter Filter = kAll);
     void RenderDeferredClusteredObjects(GraphicsContext& Context, const Camera& camera, const Vector3& viewerPos, eObjectFilter Filter = kAll);
-    //void RenderObjects( GraphicsContext& Context, const Camera& camera, const Vector3& viewerPos, eObjectFilter Filter = kAll );
+    void RenderObjects( GraphicsContext& Context, const Camera& camera, const Vector3& viewerPos, eObjectFilter Filter = kAll );
     void RenderObjects(GraphicsContext& Context, const Matrix4& ViewProjMatrix, const Vector3& viewerPos, eObjectFilter Filter = kAll);
 
     GraphicsPSO m_DepthPSO = { (L"Sponza: Depth PSO") };
@@ -838,14 +838,14 @@ void Sponza::SetNextLightType()
     case eLightType::CLUSTERED:
     {
         uint32_t DestCount = 2;
-        uint32_t SourceCounts[] = { 1, 1 };
+        //uint32_t DestCount = 1;
+        uint32_t SourceCounts[] = { 1, 1, };
+        //uint32_t SourceCounts[] = { 1, };
 
         D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
         {
             Lighting::m_LightCluster.GetSRV(),         // 16
             Lighting::m_LightClusterBitMask.GetSRV(),  // 17
-            //g_aSceneGBuffers[0].GetSRV(),
-            //g_aSceneGBuffers[1].GetSRV(),
         };
 
         g_Device->CopyDescriptors(1, &(Renderer::m_CommonTextures + 6 * Renderer::s_TextureHeap.GetDescriptorSize()), &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -885,14 +885,14 @@ void Sponza::SetPreviousLightType()
     case eLightType::CLUSTERED:
     {
         uint32_t DestCount = 2;
-        uint32_t SourceCounts[] = { 1, 1 };
+        //uint32_t DestCount = 1;
+        uint32_t SourceCounts[] = { 1, 1, };
+        //uint32_t SourceCounts[] = { 1, };
 
         D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
         {
             Lighting::m_LightCluster.GetSRV(),         // 16
             Lighting::m_LightClusterBitMask.GetSRV(),  // 17
-            //g_aSceneGBuffers[0].GetSRV(),
-            //g_aSceneGBuffers[1].GetSRV(),
         };
 
         g_Device->CopyDescriptors(1, &(Renderer::m_CommonTextures + 6 * Renderer::s_TextureHeap.GetDescriptorSize()), &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -937,6 +937,7 @@ void Sponza::RenderDeferredObjects(GraphicsContext& gfxContext, const Camera& ca
         UINT MaterialIdx;
         Matrix4 ModelToProjection;
         Matrix4 InvViewProj;
+        Matrix4 InvProj;
         Matrix4 modelToShadow;
         XMFLOAT3 ViewerPos;
     } commonConstants;
@@ -963,6 +964,12 @@ void Sponza::RenderDeferredObjects(GraphicsContext& gfxContext, const Camera& ca
         Vector4(invViewProj.r[1]),
         Vector4(invViewProj.r[2]),
         Vector4(invViewProj.r[3])
+    );
+    commonConstants.InvProj = Matrix4(
+        Vector4(invProj.r[0]),
+        Vector4(invProj.r[1]),
+        Vector4(invProj.r[2]),
+        Vector4(invProj.r[3])
     );
     commonConstants.modelToShadow = m_SunShadow.GetShadowMatrix();
     XMStoreFloat3(&commonConstants.ViewerPos, viewerPos);
@@ -998,7 +1005,7 @@ void Sponza::RenderDeferredClusteredObjects(GraphicsContext& gfxContext, const C
         UINT MaterialIdx;
         Matrix4 ModelToProjection;
         Matrix4 InvViewProj;
-        //Matrix4 InvProj;
+        Matrix4 InvProj;
         Matrix4 modelToShadow;
         XMFLOAT3 ViewerPos;
     } commonConstants;
@@ -1018,7 +1025,7 @@ void Sponza::RenderDeferredClusteredObjects(GraphicsContext& gfxContext, const C
     //);
     //XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetProjMatrix()), camera.GetProjMatrix());
     XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
-    //XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetProjMatrix()), camera.GetProjMatrix());
+    XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetProjMatrix()), camera.GetProjMatrix());
 
     commonConstants.InvViewProj = Matrix4(
         Vector4(invViewProj.r[0]),
@@ -1026,12 +1033,12 @@ void Sponza::RenderDeferredClusteredObjects(GraphicsContext& gfxContext, const C
         Vector4(invViewProj.r[2]),
         Vector4(invViewProj.r[3])
     );
-    //commonConstants.InvProj = Matrix4(
-    //    Vector4(invProj.r[0]),
-    //    Vector4(invProj.r[1]),
-    //    Vector4(invProj.r[2]),
-    //    Vector4(invProj.r[3])
-    //);
+    commonConstants.InvProj = Matrix4(
+        Vector4(invProj.r[0]),
+        Vector4(invProj.r[1]),
+        Vector4(invProj.r[2]),
+        Vector4(invProj.r[3])
+    );
     commonConstants.modelToShadow = m_SunShadow.GetShadowMatrix();
     XMStoreFloat3(&commonConstants.ViewerPos, viewerPos);
 
@@ -1043,65 +1050,65 @@ void Sponza::RenderDeferredClusteredObjects(GraphicsContext& gfxContext, const C
     gfxContext.DrawIndexed(NUM_GBUFFER_INDICES, 0, 0);
 }
 
-//void Sponza::RenderObjects( GraphicsContext& gfxContext, const Camera& camera, const Vector3& viewerPos, eObjectFilter Filter )
-//{
-//    struct VSConstants
-//    {
-//        Matrix4 modelToProjection;
-//        Matrix4 modelToView;
-//        //Matrix4 modelToShadow;
-//        //XMFLOAT3 viewerPos;
-//    } vsConstants;
-//    vsConstants.modelToProjection = camera.GetViewProjMatrix();
-//    vsConstants.modelToView = camera.GetViewMatrix();
-//    //vsConstants.modelToShadow = m_SunShadow.GetShadowMatrix();
-//    //XMStoreFloat3(&vsConstants.viewerPos, viewerPos);
-//
-//    struct CommonConstants
-//    {
-//        UINT MaterialIdx;
-//        Matrix4 ModelToProjection;
-//        Matrix4 InvViewProj;
-//        //Matrix4 InvView;
-//        Matrix4 modelToShadow;
-//        XMFLOAT3 ViewerPos;
-//    } commonConstants;
-//    commonConstants.ModelToProjection = camera.GetViewProjMatrix();
-//    commonConstants.modelToShadow = m_SunShadow.GetShadowMatrix();
-//    XMStoreFloat3(&commonConstants.ViewerPos, viewerPos);
-//
-//    gfxContext.SetDynamicConstantBufferView(Renderer::kMeshConstants, sizeof(vsConstants), &vsConstants);
-//    gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(CommonConstants), &commonConstants);
-//
-//    //__declspec(align(16)) uint32_t materialIdx = 0xFFFFFFFFul;
-//    commonConstants.MaterialIdx = 0xFFFFFFFFul;
-//
-//    uint32_t VertexStride = m_Model.GetVertexStride();
-//
-//    for (uint32_t meshIndex = 0; meshIndex < m_Model.GetMeshCount(); meshIndex++)
-//    {
-//        const ModelH3D::Mesh& mesh = m_Model.GetMesh(meshIndex);
-//
-//        uint32_t indexCount = mesh.indexCount;
-//        uint32_t startIndex = mesh.indexDataByteOffset / sizeof(uint16_t);
-//        uint32_t baseVertex = mesh.vertexDataByteOffset / VertexStride;
-//
-//        if (mesh.materialIndex != commonConstants.MaterialIdx)
-//        {
-//            if ( m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kCutout) ||
-//                !m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kOpaque) )
-//                continue;
-//
-//            commonConstants.MaterialIdx = mesh.materialIndex;
-//            gfxContext.SetDescriptorTable(Renderer::kMaterialSRVs, m_Model.GetSRVs(commonConstants.MaterialIdx));
-//
-//            //gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(uint32_t), &materialIdx);
-//            gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(CommonConstants), &commonConstants);
-//        }
-//
-//        gfxContext.DrawIndexed(indexCount, startIndex, baseVertex);
-//    }
-//}
+void Sponza::RenderObjects( GraphicsContext& gfxContext, const Camera& camera, const Vector3& viewerPos, eObjectFilter Filter )
+{
+    struct VSConstants
+    {
+        Matrix4 modelToProjection;
+        Matrix4 modelToView;
+        //Matrix4 modelToShadow;
+        //XMFLOAT3 viewerPos;
+    } vsConstants;
+    vsConstants.modelToProjection = camera.GetViewProjMatrix();
+    vsConstants.modelToView = camera.GetViewMatrix();
+    //vsConstants.modelToShadow = m_SunShadow.GetShadowMatrix();
+    //XMStoreFloat3(&vsConstants.viewerPos, viewerPos);
+
+    struct CommonConstants
+    {
+        UINT MaterialIdx;
+        Matrix4 ModelToProjection;
+        Matrix4 InvViewProj;
+        Matrix4 InvProj;
+        Matrix4 modelToShadow;
+        XMFLOAT3 ViewerPos;
+    } commonConstants;
+    commonConstants.ModelToProjection = camera.GetViewProjMatrix();
+    commonConstants.modelToShadow = m_SunShadow.GetShadowMatrix();
+    XMStoreFloat3(&commonConstants.ViewerPos, viewerPos);
+
+    gfxContext.SetDynamicConstantBufferView(Renderer::kMeshConstants, sizeof(vsConstants), &vsConstants);
+    gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(CommonConstants), &commonConstants);
+
+    //__declspec(align(16)) uint32_t materialIdx = 0xFFFFFFFFul;
+    commonConstants.MaterialIdx = 0xFFFFFFFFul;
+
+    uint32_t VertexStride = m_Model.GetVertexStride();
+
+    for (uint32_t meshIndex = 0; meshIndex < m_Model.GetMeshCount(); meshIndex++)
+    {
+        const ModelH3D::Mesh& mesh = m_Model.GetMesh(meshIndex);
+
+        uint32_t indexCount = mesh.indexCount;
+        uint32_t startIndex = mesh.indexDataByteOffset / sizeof(uint16_t);
+        uint32_t baseVertex = mesh.vertexDataByteOffset / VertexStride;
+
+        if (mesh.materialIndex != commonConstants.MaterialIdx)
+        {
+            if ( m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kCutout) ||
+                !m_pMaterialIsCutout[mesh.materialIndex] && !(Filter & kOpaque) )
+                continue;
+
+            commonConstants.MaterialIdx = mesh.materialIndex;
+            gfxContext.SetDescriptorTable(Renderer::kMaterialSRVs, m_Model.GetSRVs(commonConstants.MaterialIdx));
+
+            //gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(uint32_t), &materialIdx);
+            gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(CommonConstants), &commonConstants);
+        }
+
+        gfxContext.DrawIndexed(indexCount, startIndex, baseVertex);
+    }
+}
 
 void Sponza::RenderObjects(GraphicsContext& gfxContext, const Matrix4& ViewProjMatrix, const Vector3& viewerPos, eObjectFilter Filter)
 {
@@ -1200,6 +1207,7 @@ void Sponza::RenderScene(
     const Camera& camera,
     const D3D12_VIEWPORT& viewport,
     const D3D12_RECT& scissor,
+    //const Math::OrientedBox& boundingBox,
     bool skipDiffusePass,
     bool skipShadowMap)
 {
@@ -1225,6 +1233,8 @@ void Sponza::RenderScene(
         uint32_t FirstLightIndex[4];
 
 		uint32_t FrameIndexMod2;
+        float Scale[3];
+        float Bias[3];
     } psConstants;
 
     psConstants.sunDirection = m_SunDirection;
@@ -1242,6 +1252,7 @@ void Sponza::RenderScene(
         psConstants.FirstLightIndex[1] = Lighting::m_FirstConeShadowedLight;
         break;
     case eLightType::CLUSTERED:
+    {
         psConstants.InvTileDim[0] = 1.0f / Lighting::aLightClusterDimensions[static_cast<size_t>(Lighting::LightClusterType)][0];
         psConstants.InvTileDim[1] = 1.0f / Lighting::aLightClusterDimensions[static_cast<size_t>(Lighting::LightClusterType)][0];
         psConstants.InvTileDim[2] = 1.0f / Lighting::aLightClusterDimensions[static_cast<size_t>(Lighting::LightClusterType)][1];
@@ -1250,6 +1261,15 @@ void Sponza::RenderScene(
         psConstants.TileCount[2] = Lighting::aLightClusterDimensions[static_cast<size_t>(Lighting::LightClusterType)][1];
         psConstants.FirstLightIndex[0] = Lighting::m_FirstConeLight;
         psConstants.FirstLightIndex[1] = Lighting::m_FirstConeShadowedLight;
+        Vector3 scale = Vector3(static_cast<float>(Lighting::aLightClusterDimensions[static_cast<size_t>(Lighting::LightClusterType)][0]), static_cast<float>(Lighting::aLightClusterDimensions[static_cast<size_t>(Lighting::LightClusterType)][0]), static_cast<float>(Lighting::aLightClusterDimensions[static_cast<size_t>(Lighting::LightClusterType)][1])) / (m_Model.GetBoundingBox().GetMax() - m_Model.GetBoundingBox().GetMin());
+        psConstants.Scale[0] = scale.GetX();
+        psConstants.Scale[1] = scale.GetY();
+        psConstants.Scale[2] = scale.GetZ();
+        Vector3 bias = -scale * m_Model.GetBoundingBox().GetMin();
+        psConstants.Bias[0] = bias.GetX();
+        psConstants.Bias[1] = bias.GetY();
+        psConstants.Bias[2] = bias.GetZ();
+    }
         break;
     case eLightType::COUNT:
         // intentional fallthrough
@@ -1309,7 +1329,8 @@ void Sponza::RenderScene(
             Lighting::FillLightGrid(gfxContext, camera);
             break;
         case eLightType::CLUSTERED:
-            Lighting::FillLightCluster(gfxContext, camera);
+            Lighting::FillLightCluster(gfxContext, camera, m_Model.GetBoundingBox());
+            //Lighting::FillLightClusterCpu(gfxContext, camera, m_Model.GetBoundingBox());
             break;
         case eLightType::COUNT:
             // intentional fallthrough
@@ -1404,7 +1425,8 @@ void Sponza::RenderScene(
                         gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
                         gfxContext.SetRenderTargets(rtvs.size(), rtvs.data(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
                         gfxContext.SetViewportAndScissor(viewport, scissor);
-                        RenderObjects(gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kOpaque);
+                        RenderObjects(gfxContext, camera, camera.GetPosition(), Sponza::kOpaque);
+                        //RenderObjects(gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kOpaque);
 
                         for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
                         {
@@ -1432,7 +1454,8 @@ void Sponza::RenderScene(
                 switch (m_CurrentRenderType)
                 {
                 case eRenderType::FORWARD:
-                    RenderObjects(gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kOpaque);
+                    RenderObjects(gfxContext, camera, camera.GetPosition(), Sponza::kOpaque);
+                    //RenderObjects(gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kOpaque);
                     break;
                 case eRenderType::DEFERRED:
                     gfxContext.SetPipelineState(m_aGBufferPSOs[static_cast<size_t>(m_CurrentLightType)][static_cast<size_t>(m_CurrentGBufferType)]);

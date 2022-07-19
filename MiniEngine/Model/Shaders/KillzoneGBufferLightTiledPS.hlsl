@@ -18,6 +18,7 @@ cbuffer StartVertex : register(b1)
     uint materialIdx;
     float4x4 ModelToProjection;
     float4x4 InvViewProj;
+    float4x4 InvProj;
     float4x4 modelToShadow;
     float3 ViewerPos;
 //    float NearZ;
@@ -55,7 +56,7 @@ struct VSOutput
 float3 main(VSOutput vsOutput) : SV_Target
 {
     float3 color = 0.0;
-	
+    
 	uint2 pixelPos = uint2(vsOutput.projPos.xy);
 	
     float depth = texDepth[pixelPos];
@@ -97,6 +98,8 @@ float3 main(VSOutput vsOutput) : SV_Target
     clipSpacePosition.y *= -1.0f;
     float4 worldPos = mul(InvViewProj, clipSpacePosition);
     worldPos /= worldPos.w;
+    float4 viewPos = mul(InvProj, clipSpacePosition);
+    viewPos /= viewPos.w;
     
     //if (dot(normal, normalize(ViewerPos - worldPos.xyz)) < 0.0)
     //{
@@ -134,53 +137,7 @@ float3 main(VSOutput vsOutput) : SV_Target
 		viewDir,
 		worldPos.xyz
 		);
+    
+    //return viewPos.z;
     return color;
-    uint2 tilePos = GetTilePos(pixelPos, InvTileDim.xy);
-    uint tileIndex = GetTileIndex(tilePos, TileCount.x);
-    uint tileOffset = GetTileOffset(tileIndex);
-    uint lightBitMaskGroups[4] = { 0, 0, 0, 0 };
-    
-    uint tileLightCount = lightGrid.Load(tileOffset + 0);
-    uint tileLightCountSphere = (tileLightCount >> 0) & 0xff;
-    uint tileLightCountCone = (tileLightCount >> 8) & 0xff;
-    uint tileLightCountConeShadowed = (tileLightCount >> 16) & 0xff;
-
-    uint tileLightLoadOffset = tileOffset + 4;
-    
-#undef POINT_LIGHT_ARGS
-#define POINT_LIGHT_ARGS \
-    diffuseAlbedo, \
-    specularAlbedo, \
-    specularMask, \
-    gloss, \
-    normal, \
-    viewDir, \
-    worldPos.xyz, \
-    lightData.pos, \
-    lightData.radiusSq, \
-    lightData.color
-#undef CONE_LIGHT_ARGS
-#define CONE_LIGHT_ARGS \
-    POINT_LIGHT_ARGS, \
-    lightData.coneDir, \
-    lightData.coneAngles
-#undef SHADOWED_LIGHT_ARGS
-#define SHADOWED_LIGHT_ARGS \
-    CONE_LIGHT_ARGS, \
-    lightData.shadowTextureMatrix, \
-    lightIndex
-    
-    // sphere
-    uint n;
-    float3 colorSum = 0;
-    for (n = 0; n < tileLightCountSphere; n++, tileLightLoadOffset += 4)
-    {
-        uint lightIndex = lightGrid.Load(tileLightLoadOffset);
-        LightData lightData = lightBuffer[lightIndex];
-        
-        colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
-    }
-    return colorSum;
-	
-    return float3(1.0f, 0.0f, 0.0f);
 }

@@ -19,6 +19,7 @@
 #include "Camera.h"
 #include "BufferManager.h"
 #include "TemporalEffects.h"
+#include "Model.h"
 
 #include "CompiledShaders/FillLightGridCS_8.h"
 #include "CompiledShaders/FillLightGridCS_16.h"
@@ -168,7 +169,8 @@ void Lighting::InitializeResources( void )
     m_LightGrid.Create(L"m_LightGrid", lightGridSizeBytes, 1);
 
     uint32_t lightClusterCells = Math::DivideByMultiple(3840, kMinLightGridDim) * Math::DivideByMultiple(2160, kMinLightGridDim) * 32;
-    uint32_t lightClusterSizeBytes = lightClusterCells * (4 + MaxLights * 4);
+    //uint32_t lightClusterSizeBytes = lightClusterCells * (4 + MaxLights * 4);
+    uint32_t lightClusterSizeBytes = lightClusterCells * sizeof(uint32_t);
     m_LightCluster.Create(L"m_LightCluster", lightClusterSizeBytes, 1);
 
     uint32_t lightGridBitMaskSizeBytes = lightGridCells * 4 * 4;
@@ -429,7 +431,7 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
     Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
 
-void Lighting::FillLightCluster(GraphicsContext& gfxContext, const Math::Camera& camera)
+void Lighting::FillLightCluster(GraphicsContext& gfxContext, const Math::Camera& camera, const Math::AxisAlignedBox& boundingBox)
 {
     ScopedTimer _prof(L"FillLightCluster", gfxContext);
 
@@ -513,4 +515,115 @@ void Lighting::FillLightCluster(GraphicsContext& gfxContext, const Math::Camera&
     Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     Context.TransitionResource(m_LightCluster, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     Context.TransitionResource(m_LightClusterBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+}
+
+void Lighting::FillLightClusterCpu(GraphicsContext& gfxContext, const Math::Camera& camera, const Math::AxisAlignedBox& boundingBox)
+{
+    ScopedTimer _prof(L"FillLightClusterCpu", gfxContext);
+
+    ComputeContext& Context = gfxContext.GetComputeContext();
+
+    uint32_t* pLights = nullptr;
+    pLights = static_cast<uint32_t*>(malloc(
+            aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1] * 
+            aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * 
+            aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * 
+            sizeof(uint32_t)
+    ));
+    memset(
+        pLights,
+        0,
+        aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1] *
+        aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] *
+        aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] *
+        sizeof(uint32_t)
+    );
+
+    Vector3 scale = Vector3(
+        static_cast<float>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]), 
+        static_cast<float>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]), 
+        static_cast<float>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1])
+    ) / ((boundingBox.GetMax() + 1.0f) - boundingBox.GetMin());
+    //Vector3 scale = Vector3(static_cast<float>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]), static_cast<float>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]), static_cast<float>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1]));
+    Vector3 invScale = 1.0f / scale;
+
+    for (uint32_t i = 0; i < MaxLights; ++i)
+    {
+        const LightData& lightData = m_LightData[i];
+
+        const Vector3 position = Vector3(lightData.pos[0], lightData.pos[1], lightData.pos[2]) - boundingBox.GetMin();
+        //const Vector3 position = Vector3(lightData.pos[0], lightData.pos[1], lightData.pos[2]);
+        const Vector3 minPosition = (position - sqrtf(lightData.radiusSq)) * scale;
+        const Vector3 maxPosition = (position + sqrtf(lightData.radiusSq)) * scale;
+
+        // Cluster for the center of the light
+        int32_t px = static_cast<int32_t>(floorf(position.GetX() * scale.GetX()));
+        int32_t py = static_cast<int32_t>(floorf(position.GetY() * scale.GetY()));
+        int32_t pz = static_cast<int32_t>(floorf(position.GetZ() * scale.GetZ()));
+
+        // Cluster bounds for the light
+        int32_t x0 = std::max(static_cast<int32_t>(floorf(minPosition.GetX())), 0);
+        int32_t x1 = std::min(static_cast<int32_t>(floorf(maxPosition.GetX())), static_cast<int32_t>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]));
+        int32_t y0 = std::max(static_cast<int32_t>(floorf(minPosition.GetY())), 0);
+        int32_t y1 = std::min(static_cast<int32_t>(floorf(maxPosition.GetY())), static_cast<int32_t>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]));
+        int32_t z0 = std::max(static_cast<int32_t>(floorf(minPosition.GetZ())), 0);
+        int32_t z1 = std::min(static_cast<int32_t>(floorf(maxPosition.GetZ())), static_cast<int32_t>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1]));
+
+        uint32_t mask = (1 << i);
+        //WCHAR szDebugMsg[128];
+        //swprintf_s(szDebugMsg, L"x0, x1: %d, %d / y0, y1: %d, %d / z0, z1: %d, %d\n", x0, x1, y0, y1, z0, z1);
+        //OutputDebugString(szDebugMsg);
+        // Do AABB<->Sphere tests to figure out which clusters are actually intersected by the light
+        for (int32_t z = z0; z < z1; ++z)
+        {
+            float dz = (pz == z) ? 0.0f : boundingBox.GetMin().GetZ() + static_cast<float>(pz < z ? z : z + 1) * invScale.GetZ() - lightData.pos[2];
+            //float dz = (pz == z) ? 0.0f : static_cast<float>(pz < z ? z : z + 1) * invScale.GetZ() - lightData.pos[2];
+            dz *= dz;
+
+            for (int32_t y = y0; y < y1; ++y)
+            {
+                float dy = (py == y) ? 0.0f : boundingBox.GetMin().GetY() + static_cast<float>(py < y ? y : y + 1) * invScale.GetY() - lightData.pos[1];
+                //float dy = (py == y) ? 0.0f : static_cast<float>(py < y ? y : y + 1) * invScale.GetY() - lightData.pos[1];
+                dy *= dy;
+                dy += dz;
+
+                for (int32_t x = x0; x < x1; ++x)
+                {
+                    float dx = (px == x) ? 0.0f : boundingBox.GetMin().GetX() + static_cast<float>(px < x ? x : x + 1) * invScale.GetX() - lightData.pos[0];
+                    //float dx = (px == x) ? 0.0f : static_cast<float>(px < x ? x : x + 1) * invScale.GetX() - lightData.pos[0];
+                    dx *= dx;
+                    dx += dy;
+                    
+                    if (dx < lightData.radiusSq)
+                    {
+                        pLights[z * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] + y * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] + x] |= mask;
+                        //swprintf_s(
+                        //    szDebugMsg,
+                        //    L"%u/%u\t(%d, %d, %d)\t0x%08x\n",
+                        //    z * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] +
+                        //    y * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] +
+                        //    x,
+                        //    aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1],
+                        //    x,
+                        //    y,
+                        //    z,
+                        //    pLights[z * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] + y * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] + x]
+                        //    );
+                        //OutputDebugString(szDebugMsg);
+                    }
+                }
+            }
+        }
+    }
+
+    CommandContext::InitializeBuffer(
+        m_LightCluster, 
+        pLights, 
+        aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * 
+        aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * 
+        aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1] * 
+        sizeof(uint32_t)
+    );
+
+    free(pLights);
 }

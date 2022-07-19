@@ -34,6 +34,10 @@ uint2 GetTilePos(float2 pos, float2 invTileDim)
 {
     return pos * invTileDim;
 }
+uint3 GetClusterPos(float3 worldPos, float3 scale, float3 bias)
+{
+    return uint3(worldPos * scale + bias);
+}
 uint3 GetClusterPos(float3 pos, float3 invTileDim)
 {
     return uint3(pos.xy * invTileDim.xy, pos.z / invTileDim.z);

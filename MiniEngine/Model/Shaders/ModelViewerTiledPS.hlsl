@@ -25,7 +25,7 @@ Texture2D<float> texShadow : register(t13);
 struct VSOutput
 {
     sample float4 position : SV_Position;
-    //sample float3 viewPos : ViewPos;
+    sample float3 viewPos : ViewPos;
     sample float3 worldPos : WorldPos;
     sample float2 uv : TexCoord0;
     sample float3 viewDir : TexCoord1;
@@ -45,6 +45,8 @@ struct MRT
 MRT main(VSOutput vsOutput)
 {
     MRT mrt;
+    
+    //mrt.Color = ((normalize(vsOutput.viewPos) + 1) * 0.5f).z;
 	
     uint2 pixelPos = uint2(vsOutput.position.xy);
 	
@@ -115,6 +117,8 @@ MRT main(VSOutput vsOutput)
     
     
     mrt.Color = colorSum;
+    
+    //mrt.Color = vsOutput.viewPos.z;
     
     return mrt;
 }

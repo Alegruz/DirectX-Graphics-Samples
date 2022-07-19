@@ -25,8 +25,8 @@ cbuffer StartVertex : register(b1)
 {
     uint materialIdx;
     float4x4 ModelToProjection;
+    float4x4 InvViewProj;
     float4x4 InvProj;
-    float4x4 InvView;
     float4x4 modelToShadow;
     float3 ViewerPos;
 };

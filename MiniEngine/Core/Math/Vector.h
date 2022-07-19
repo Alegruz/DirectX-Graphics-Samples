@@ -23,6 +23,8 @@ namespace Math
     // The actual value of the fourth component is undefined for performance reasons.
     class Vector3
     {
+        friend INLINE Vector3 operator+(const Vector3& v, const Scalar& f) noexcept { return Vector3(v.GetX() + f, v.GetY() + f, v.GetZ() + f); }
+        friend INLINE Vector3 operator-(const Vector3& v, const Scalar& f) noexcept { return Vector3(v.GetX() - f, v.GetY() - f, v.GetZ() - f); }
     public:
 
         INLINE Vector3() {}

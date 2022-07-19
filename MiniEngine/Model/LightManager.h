@@ -22,11 +22,13 @@ class ColorBuffer;
 class ShadowBuffer;
 class GraphicsContext;
 class IntVar;
+
 namespace Math
 {
     class Vector3;
     class Matrix4;
     class Camera;
+    class AxisAlignedBox;
 }
 
 namespace Lighting
@@ -66,7 +68,8 @@ namespace Lighting
     void InitializeResources(void);
     void CreateRandomLights(const Math::Vector3 minBound, const Math::Vector3 maxBound);
     void FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera);
-    void FillLightCluster(GraphicsContext& gfxContext, const Math::Camera& camera);
+    void FillLightCluster(GraphicsContext& gfxContext, const Math::Camera& camera, const Math::AxisAlignedBox& boundingBox);
+    void FillLightClusterCpu(GraphicsContext& gfxContext, const Math::Camera& camera, const Math::AxisAlignedBox& boundingBox);
     void Shutdown(void);
     void UpdateLights(float deltaTime);
 }

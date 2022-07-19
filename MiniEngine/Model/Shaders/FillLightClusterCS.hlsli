@@ -104,6 +104,9 @@ void main(
     float tileMinDepth = (rcp(asfloat(maxDepthUInt)) - 1.0) * RcpZMagic;
     float tileMaxDepth = (rcp(asfloat(minDepthUInt)) - 1.0) * RcpZMagic;
     
+    tileMinDepth = 2.0f * atan(999.0f * tileMinDepth) / PI;
+    tileMaxDepth = 2.0f * atan(999.0f * tileMaxDepth) / PI;
+    
     clusterMinDepth = min(clusterMinDepth, tileMaxDepth);
     clusterMaxDepth = min(clusterMaxDepth, tileMinDepth);
     
