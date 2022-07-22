@@ -40,6 +40,11 @@
 #include "CompiledShaders/KillzoneLightGridCS_24.h"
 #include "CompiledShaders/KillzoneLightGridCS_32.h"
 
+#include "CompiledShaders/KillzoneLightCullingGridCS_8.h"
+#include "CompiledShaders/KillzoneLightCullingGridCS_16.h"
+#include "CompiledShaders/KillzoneLightCullingGridCS_24.h"
+#include "CompiledShaders/KillzoneLightCullingGridCS_32.h"
+
 #include "CompiledShaders/KillzoneIntelLightGridCS_8.h"
 #include "CompiledShaders/KillzoneIntelLightGridCS_16.h"
 #include "CompiledShaders/KillzoneIntelLightGridCS_24.h"
@@ -105,6 +110,11 @@ namespace Lighting
     ComputePSO m_KillzoneLightGridCS_16(L"Killzone Light Grid 16 CS");
     ComputePSO m_KillzoneLightGridCS_24(L"Killzone Light Grid 24 CS");
     ComputePSO m_KillzoneLightGridCS_32(L"Killzone Light Grid 32 CS");
+
+    ComputePSO m_KillzoneLightCullingGridCS_8(L"Killzone Light 2.5 Culling Grid 8 CS");
+    ComputePSO m_KillzoneLightCullingGridCS_16(L"Killzone Light 2.5 Culling Grid 16 CS");
+    ComputePSO m_KillzoneLightCullingGridCS_24(L"Killzone Light 2.5 Culling Grid 24 CS");
+    ComputePSO m_KillzoneLightCullingGridCS_32(L"Killzone Light 2.5 Culling Grid 32 CS");
 
     ComputePSO m_KillzoneIntelLightGridCS_8(L"Killzone Intel Light Grid 8 CS");
     ComputePSO m_KillzoneIntelLightGridCS_16(L"Killzone Intel Light Grid 16 CS");
@@ -234,6 +244,24 @@ void Lighting::InitializeResources( void )
         m_KillzoneIntelLightGridCS_32.SetRootSignature(m_KillzoneLightRootSig);
         m_KillzoneIntelLightGridCS_32.SetComputeShader(g_pKillzoneIntelLightGridCS_32, sizeof(g_pKillzoneIntelLightGridCS_32));
         m_KillzoneIntelLightGridCS_32.Finalize();
+    }
+
+    {
+        m_KillzoneLightCullingGridCS_8.SetRootSignature(m_KillzoneLightRootSig);
+        m_KillzoneLightCullingGridCS_8.SetComputeShader(g_pKillzoneLightCullingGridCS_8, sizeof(g_pKillzoneLightCullingGridCS_8));
+        m_KillzoneLightCullingGridCS_8.Finalize();
+
+        m_KillzoneLightCullingGridCS_16.SetRootSignature(m_KillzoneLightRootSig);
+        m_KillzoneLightCullingGridCS_16.SetComputeShader(g_pKillzoneLightCullingGridCS_16, sizeof(g_pKillzoneLightCullingGridCS_16));
+        m_KillzoneLightCullingGridCS_16.Finalize();
+
+        m_KillzoneLightCullingGridCS_24.SetRootSignature(m_KillzoneLightRootSig);
+        m_KillzoneLightCullingGridCS_24.SetComputeShader(g_pKillzoneLightCullingGridCS_24, sizeof(g_pKillzoneLightCullingGridCS_24));
+        m_KillzoneLightCullingGridCS_24.Finalize();
+
+        m_KillzoneLightCullingGridCS_32.SetRootSignature(m_KillzoneLightRootSig);
+        m_KillzoneLightCullingGridCS_32.SetComputeShader(g_pKillzoneLightCullingGridCS_32, sizeof(g_pKillzoneLightCullingGridCS_32));
+        m_KillzoneLightCullingGridCS_32.Finalize();
     }
 #endif
 
@@ -523,6 +551,105 @@ void Lighting::KillzoneDiceLightGrid(GraphicsContext& gfxContext, const Camera& 
     case 16: Context.SetPipelineState(m_KillzoneLightGridCS_16); break;
     case 24: Context.SetPipelineState(m_KillzoneLightGridCS_24); break;
     case 32: Context.SetPipelineState(m_KillzoneLightGridCS_32); break;
+    default: ASSERT(false); break;
+    }
+
+    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
+
+    //g_aSceneGBuffers[static_cast<size_t>(eGBufferType::COUNT)]
+    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+    {
+        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+    }
+    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+    //Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+    //Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
+    //gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, s_KillzoneTextureHeap.GetHeapPointer());
+    //Context.SetDescriptorTable(1, resourcesHandle);
+    //for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+    //{
+    //    Context.SetDynamicDescriptor(1, i, g_aSceneGBuffers[i].GetSRV());
+    //}
+    Context.SetDynamicDescriptor(1, 8, LinearDepth.GetSRV());
+    Context.SetDynamicDescriptor(1, 4, m_LightBuffer.GetSRV());
+    Context.SetDynamicDescriptor(1, 5, m_LightShadowArray.GetSRV());
+    Context.SetDescriptorTable(2, gBufferHandle);
+    //Context.SetDynamicDescriptor(1, static_cast<size_t>(eGBufferType::COUNT) + 2, m_LightShadowArray.GetSRV());
+    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
+    Context.SetDynamicDescriptor(3, 0, g_SceneColorBuffer.GetUAV());
+
+    // todo: assumes 1920x1080 resolution
+    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
+    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
+
+    float FarClipDist = camera.GetFarClip();
+    float NearClipDist = camera.GetNearClip();
+    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
+
+    struct CSConstants
+    {
+        uint32_t ViewportWidth, ViewportHeight;
+        float InvTileDim;
+        float RcpZMagic;
+        uint32_t TileCount;
+        Matrix4 ViewProjMatrix;
+        Matrix4 InvViewProj;
+        //Matrix4 InvProj;
+        Vector3 ViewerPos;
+    } csConstants;
+    // todo: assumes 1920x1080 resolution
+    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
+    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
+    csConstants.InvTileDim = 1.0f / LightGridDim;
+    csConstants.RcpZMagic = RcpZMagic;
+    csConstants.TileCount = tileCountX;
+    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
+    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
+    csConstants.InvViewProj = Matrix4(
+        Vector4(invViewProj.r[0]),
+        Vector4(invViewProj.r[1]),
+        Vector4(invViewProj.r[2]),
+        Vector4(invViewProj.r[3])
+    );
+    csConstants.ViewerPos = camera.GetPosition();
+    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
+
+    Context.Dispatch(tileCountX, tileCountY, 1);
+
+    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+    {
+        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    }
+    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    //Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    //Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+#else
+    UNREFERENCED_PARAMETER(gfxContext);
+    UNREFERENCED_PARAMETER(camera);
+#endif
+}
+
+void Lighting::KillzoneDiceLightCullingGrid(GraphicsContext& gfxContext, const Camera& camera, const DescriptorHandle& gBufferHandle)
+{
+#if KILLZONE_GBUFFER
+    ScopedTimer _prof(L"KillzoneDiceLightCullingGrid", gfxContext);
+
+    ComputeContext& Context = gfxContext.GetComputeContext();
+
+    Context.SetRootSignature(m_KillzoneLightRootSig);
+
+    switch ((int)LightGridDim)
+    {
+    case  8: Context.SetPipelineState(m_KillzoneLightCullingGridCS_8); break;
+    case 16: Context.SetPipelineState(m_KillzoneLightCullingGridCS_16); break;
+    case 24: Context.SetPipelineState(m_KillzoneLightCullingGridCS_24); break;
+    case 32: Context.SetPipelineState(m_KillzoneLightCullingGridCS_32); break;
     default: ASSERT(false); break;
     }
 

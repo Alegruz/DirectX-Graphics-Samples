@@ -47,6 +47,7 @@ enum class eLightType : UINT8
 {
     TILED,
     TILED_DICE,
+    TILED_DICE_2_5,
     TILED_INTEL,
     CLUSTERED,
     COUNT,

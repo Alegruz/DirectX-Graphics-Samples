@@ -340,6 +340,10 @@
     <FxCompile Include="Shaders\KillzoneIntelLightGridCS_8.hlsl">
       <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
     </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridCS_16.hlsl" />
+    <FxCompile Include="Shaders\KillzoneLightCullingGridCS_24.hlsl" />
+    <FxCompile Include="Shaders\KillzoneLightCullingGridCS_32.hlsl" />
+    <FxCompile Include="Shaders\KillzoneLightCullingGridCS_8.hlsl" />
     <FxCompile Include="Shaders\KillzoneLightGridCS_16.hlsl">
       <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
     </FxCompile>

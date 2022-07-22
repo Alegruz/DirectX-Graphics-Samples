@@ -352,5 +352,17 @@
     <FxCompile Include="Shaders\KillzoneIntelLightGridCS_32.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridCS_32.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridCS_8.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridCS_16.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridCS_24.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

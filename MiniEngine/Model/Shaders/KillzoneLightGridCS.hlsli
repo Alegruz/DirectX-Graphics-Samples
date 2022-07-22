@@ -46,6 +46,11 @@ RWTexture2D<float4> gOutputTexture : register(u0);
 
 SamplerComparisonState gShadowSampler : register(s0);
 
+#if LIGHT_CULLING_2_5
+// Harada, T., “A 2.5D culling for Forward+,” in SIGGRAPH Asia 2012 Technical Briefs, ACM, pp. 18:1–18:4, Dec. 2012
+groupshared uint gSharedDepthMask;
+#endif
+
 groupshared uint gSharedMinDepthUInt;
 groupshared uint gSharedMaxDepthUInt;
 
@@ -252,6 +257,9 @@ void main(
         //tileLightBitMask = 0;
         gSharedMinDepthUInt = 0xffffffff;
         gSharedMaxDepthUInt = 0;
+#if LIGHT_CULLING_2_5
+        gSharedDepthMask = 0;
+#endif
     }
     GroupMemoryBarrierWithGroupSync();
 
@@ -299,6 +307,13 @@ void main(
         frustumPlanes[n] *= rsqrt(dot(frustumPlanes[n].xyz, frustumPlanes[n].xyz));
     }
     
+#if LIGHT_CULLING_2_5
+    const float depthRangeRecip = 32.f * invTileDepthRange;
+    const uint depthMaskCellIndex = max(0, min(32, floor(depth - tileMinDepth) * depthRangeRecip));
+    InterlockedOr(gSharedDepthMask, 1 << depthMaskCellIndex);   // depthMaskT ← atomOr(1 << getCellIndex(z))
+    GroupMemoryBarrierWithGroupSync();
+#endif
+    
     uint threadCount = WORK_GROUP_SIZE_X * WORK_GROUP_SIZE_Y;
     uint passCount = (MAX_LIGHTS + threadCount - 1) / threadCount;
     
@@ -325,24 +340,44 @@ void main(
         if (!overlapping)
             continue;
         
-        uint offset = 0;
+#if LIGHT_CULLING_2_5
+        // depthMaskL ← Compute mask using light extent
+        uint localDepthMask = 0;
+        const float fLightMin = (lightWorldPos.z - lightCullRadius) * ViewProjMatrix._33 + ViewProjMatrix._43;
+        const float fLightMax = (lightWorldPos.z + lightCullRadius) * ViewProjMatrix._33 + ViewProjMatrix._43;
+        const uint lightMaskCellIndexStart = max(0, min(32, floor((fLightMin - tileMinDepth) * depthRangeRecip)));
+        const uint lightMaskCellIndexEnd = max(0, min(32, floor((fLightMax - tileMinDepth) * depthRangeRecip)));
         
-        switch (lightData.type)
+        uint c = 0;
+        for (c = lightMaskCellIndexStart; c <= lightMaskCellIndexEnd; ++c)
         {
-            case 0: // sphere
-                InterlockedAdd(gSharedVisibleLightCountSphere, 1, offset);
-                gSharedVisibleLightIndicesSphere[offset] = lightIndex;
-                break;
+            localDepthMask |= 1 << c;
+        }
+        
+        if (gSharedDepthMask & localDepthMask)  // overlapping ← depthMaskT ∧ depthMaskL
+        {
+#endif
+            uint offset = 0;
+        
+            switch (lightData.type)
+            {
+                case 0: // sphere
+                    InterlockedAdd(gSharedVisibleLightCountSphere, 1, offset);
+                    gSharedVisibleLightIndicesSphere[offset] = lightIndex;
+                    break;
 
-            case 1: // cone
-                InterlockedAdd(gSharedVisibleLightCountCone, 1, offset);
-                gSharedVisibleLightIndicesCone[offset] = lightIndex;
-                break;
+                case 1: // cone
+                    InterlockedAdd(gSharedVisibleLightCountCone, 1, offset);
+                    gSharedVisibleLightIndicesCone[offset] = lightIndex;
+                    break;
 
-            case 2: // cone w/ shadow map
-                InterlockedAdd(gSharedVisibleLightCountConeShadowed, 1, offset);
-                gSharedVisibleLightIndicesConeShadowed[offset] = lightIndex;
-                break;
+                case 2: // cone w/ shadow map
+                    InterlockedAdd(gSharedVisibleLightCountConeShadowed, 1, offset);
+                    gSharedVisibleLightIndicesConeShadowed[offset] = lightIndex;
+                    break;
+#if LIGHT_CULLING_2_5
+            }
+#endif
         }
     }
     GroupMemoryBarrierWithGroupSync();
