@@ -116,6 +116,12 @@
     <None Include="Shaders\LightingClustered.hlsli">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\KillzoneLightGridCS.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\KillzoneIntelLightGridCS.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\DefaultVS.hlsl">
@@ -320,6 +326,30 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\KillzoneGBufferSunOcclusionClusteredPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridCS_8.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridCS_16.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridCS_24.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridCS_32.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridCS_8.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridCS_16.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridCS_24.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridCS_32.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

@@ -35,18 +35,18 @@ Texture2D<float> depthTex : register(t1);
 RWByteAddressBuffer lightCluster : register(u0);
 RWByteAddressBuffer lightClusterBitMask : register(u1);
 
-groupshared uint minDepthUInt;
-groupshared uint maxDepthUInt;
+groupshared uint gSharedMinDepthUInt;
+groupshared uint gSharedMaxDepthUInt;
 
-groupshared uint clusterLightCountSphere;
-groupshared uint clusterLightCountCone;
-groupshared uint clusterLightCountConeShadowed;
+groupshared uint gClusterLightCountSphere;
+groupshared uint gClusterLightCountCone;
+groupshared uint gClusterLightCountConeShadowed;
 
-groupshared uint clusterLightIndicesSphere[MAX_LIGHTS];
-groupshared uint clusterLightIndicesCone[MAX_LIGHTS];
-groupshared uint clusterLightIndicesConeShadowed[MAX_LIGHTS];
+groupshared uint gClusterLightIndicesSphere[MAX_LIGHTS];
+groupshared uint gClusterLightIndicesCone[MAX_LIGHTS];
+groupshared uint gClusterLightIndicesConeShadowed[MAX_LIGHTS];
 
-groupshared uint4 clusterLightBitMask;
+groupshared uint4 gClusterLightBitMask;
 
 #define _RootSig \
     "RootFlags(0), " \
@@ -64,12 +64,17 @@ void main(
     // initialize shared data
     if (GI == 0)
     {
-        clusterLightCountSphere = 0;
-        clusterLightCountCone = 0;
-        clusterLightCountConeShadowed = 0;
-        clusterLightBitMask = 0;
-        minDepthUInt = 0xffffffff;
-        maxDepthUInt = 0;
+        gClusterLightCountSphere = 0;
+        gClusterLightCountCone = 0;
+        gClusterLightCountConeShadowed = 0;
+        gClusterLightBitMask = 0;
+        
+        //gSharedMinDepthUInt = 0xffffffff;
+        //gSharedMaxDepthUInt = 0;
+        gSharedMinDepthUInt = asuint((1.0f / (float) WORK_GROUP_SIZE_Z) * (Gid.z + 1)) + FLT_MIN;
+        gSharedMaxDepthUInt = asuint((1.0f / (float) WORK_GROUP_SIZE_Z) * (Gid.z)) - FLT_MIN;
+        //gClusterMinDepth = ((FarPlane - NearPlane) / WORK_GROUP_SIZE_Z) * (Gid.z + 1);
+        //gClusterMaxDepth = ((FarPlane - NearPlane) / WORK_GROUP_SIZE_Z) * (Gid.z);
     }
     GroupMemoryBarrierWithGroupSync();
 
@@ -88,38 +93,21 @@ void main(
                 // Load and compare depth
                 uint depthUInt = asuint(depthTex[DTid.xy]);
                 
-                InterlockedMin(minDepthUInt, depthUInt);
-                InterlockedMax(maxDepthUInt, depthUInt);
+                InterlockedMin(gSharedMinDepthUInt, depthUInt);
+                InterlockedMax(gSharedMaxDepthUInt, depthUInt);
             }
         }
     }
     
-    float clusterMinDepth = (1.0f / WORK_GROUP_SIZE_Z) * (Gid.z);
-    float clusterMaxDepth = (1.0f / WORK_GROUP_SIZE_Z) * (Gid.z + 1);
-    
     GroupMemoryBarrierWithGroupSync();
     
-    //float tileMinDepth = asfloat(minDepthUInt);
-    //float tileMaxDepth = asfloat(maxDepthUInt);
-    float tileMinDepth = (rcp(asfloat(maxDepthUInt)) - 1.0) * RcpZMagic;
-    float tileMaxDepth = (rcp(asfloat(minDepthUInt)) - 1.0) * RcpZMagic;
+    float clusterMinDepth = (rcp(asfloat(gSharedMaxDepthUInt)) - 1.0) * RcpZMagic;
+    float clusterMaxDepth = (rcp(asfloat(gSharedMinDepthUInt)) - 1.0) * RcpZMagic;
     
-    tileMinDepth = 2.0f * atan(999.0f * tileMinDepth) / PI;
-    tileMaxDepth = 2.0f * atan(999.0f * tileMaxDepth) / PI;
-    
-    clusterMinDepth = min(clusterMinDepth, tileMaxDepth);
-    clusterMaxDepth = min(clusterMaxDepth, tileMinDepth);
-    
-    GroupMemoryBarrierWithGroupSync();
-    
-    //float tileDepthRange = tileMaxDepth - tileMinDepth;
+
     float clusterDepthRange = clusterMaxDepth - clusterMinDepth;
-    if (clusterDepthRange < 0.0)
-    {
-        return;
-    }
-    clusterDepthRange = max(clusterDepthRange, FLT_MIN);
-    //tileDepthRange = max(tileDepthRange, FLT_MIN); // don't allow a depth range of 0
+
+    clusterDepthRange = max(clusterDepthRange, FLT_MIN); // don't allow a depth range of 0
     //float invTileDepthRange = rcp(tileDepthRange);
     float invClusterDepthRange = rcp(clusterDepthRange);
     // TODO: near/far clipping planes seem to be falling apart at or near the max depth with infinite projections
@@ -128,41 +116,17 @@ void main(
     float2 invTileSize2X = float2(ViewportWidth, ViewportHeight) * InvTileDim;
     // D3D-specific [0, 1] depth range ortho projection
     // (but without negation of Z, since we already have that from the projection matrix)
-    //float3 tileBias = float3(
-    //    -2.0 * float(Gid.x) + invTileSize2X.x - 1.0,
-    //    -2.0 * float(Gid.y) + invTileSize2X.y - 1.0,
-    //    -tileMinDepth * invTileDepthRange);
     float3 clusterBias = float3(
         -2.0 * float(Gid.x) + invTileSize2X.x - 1.0,
         -2.0 * float(Gid.y) + invTileSize2X.y - 1.0,
         -clusterMinDepth * invClusterDepthRange);
-    //float4x4 projToTile = float4x4(
-    //    invTileSize2X.x, 0, 0, tileBias.x,
-    //    0, -invTileSize2X.y, 0, tileBias.y,
-    //    0, 0, invTileDepthRange, tileBias.z,
-    //    0, 0, 0, 1
-    //    );
     float4x4 projToCluster = float4x4(
         invTileSize2X.x, 0, 0, clusterBias.x,
         0, -invTileSize2X.y, 0, clusterBias.y,
         0, 0, invClusterDepthRange, clusterBias.z,
         0, 0, 0, 1
         );
-    //float4x4 tileMVP = mul(projToTile, ViewProjMatrix);
     float4x4 clusterMVP = mul(projToCluster, ViewProjMatrix);
-    
-    // extract frustum planes (these will be in world space)
-    //float4 frustumPlanes[6];
-    //frustumPlanes[0] = tileMVP[3] + tileMVP[0];
-    //frustumPlanes[1] = tileMVP[3] - tileMVP[0];
-    //frustumPlanes[2] = tileMVP[3] + tileMVP[1];
-    //frustumPlanes[3] = tileMVP[3] - tileMVP[1];
-    //frustumPlanes[4] = tileMVP[3] + tileMVP[2];
-    //frustumPlanes[5] = tileMVP[3] - tileMVP[2];
-    //for (int n = 0; n < 6; n++)
-    //{
-    //    frustumPlanes[n] *= rsqrt(dot(frustumPlanes[n].xyz, frustumPlanes[n].xyz));
-    //}
     
     float4 clusterPlanes[6];
     clusterPlanes[0] = clusterMVP[3] + clusterMVP[0];
@@ -209,23 +173,23 @@ void main(
         switch (lightData.type)
         {
         case 0: // sphere
-            InterlockedAdd(clusterLightCountSphere, 1, slot);
-            clusterLightIndicesSphere[slot] = lightIndex;
+            InterlockedAdd(gClusterLightCountSphere, 1, slot);
+            gClusterLightIndicesSphere[slot] = lightIndex;
             break;
 
         case 1: // cone
-            InterlockedAdd(clusterLightCountCone, 1, slot);
-            clusterLightIndicesCone[slot] = lightIndex;
+            InterlockedAdd(gClusterLightCountCone, 1, slot);
+            gClusterLightIndicesCone[slot] = lightIndex;
             break;
 
         case 2: // cone w/ shadow map
-            InterlockedAdd(clusterLightCountConeShadowed, 1, slot);
-            clusterLightIndicesConeShadowed[slot] = lightIndex;
+            InterlockedAdd(gClusterLightCountConeShadowed, 1, slot);
+            gClusterLightIndicesConeShadowed[slot] = lightIndex;
             break;
         }
 
         // update bitmask
-        InterlockedOr(clusterLightBitMask[lightIndex / 32], 1 << (lightIndex % 32));
+        InterlockedOr(gClusterLightBitMask[lightIndex / 32], 1 << (lightIndex % 32));
     }
 
     GroupMemoryBarrierWithGroupSync();
@@ -233,32 +197,32 @@ void main(
     if (GI == 0)
     {
         uint lightCount = 
-            ((clusterLightCountSphere & 0xff) << 0) |
-            ((clusterLightCountCone & 0xff) << 8) |
-            ((clusterLightCountConeShadowed & 0xff) << 16);
+            ((gClusterLightCountSphere & 0xff) << 0) |
+            ((gClusterLightCountCone & 0xff) << 8) |
+            ((gClusterLightCountConeShadowed & 0xff) << 16);
         //lightGrid.Store(tileOffset + 0, lightCount);
         lightCluster.Store(clusterOffset + 0, lightCount);
 
         //uint storeOffset = tileOffset + 4;
         uint storeOffset = clusterOffset + 4;
         uint n;
-        for (n = 0; n < clusterLightCountSphere; n++)
+        for (n = 0; n < gClusterLightCountSphere; n++)
         {
-            lightCluster.Store(storeOffset, clusterLightIndicesSphere[n]);
+            lightCluster.Store(storeOffset, gClusterLightIndicesSphere[n]);
             storeOffset += 4;
         }
-        for (n = 0; n < clusterLightCountCone; n++)
+        for (n = 0; n < gClusterLightCountCone; n++)
         {
-            lightCluster.Store(storeOffset, clusterLightIndicesCone[n]);
+            lightCluster.Store(storeOffset, gClusterLightIndicesCone[n]);
             storeOffset += 4;
         }
-        for (n = 0; n < clusterLightCountConeShadowed; n++)
+        for (n = 0; n < gClusterLightCountConeShadowed; n++)
         {
-            lightCluster.Store(storeOffset, clusterLightIndicesConeShadowed[n]);
+            lightCluster.Store(storeOffset, gClusterLightIndicesConeShadowed[n]);
             storeOffset += 4;
         }
 
-        //lightGridBitMask.Store4(tileIndex * 16, clusterLightBitMask);
-        lightClusterBitMask.Store4(clusterIndex * 16, clusterLightBitMask);
+        //lightGridBitMask.Store4(tileIndex * 16, gClusterLightBitMask);
+        lightClusterBitMask.Store4(clusterIndex * 16, gClusterLightBitMask);
     }
 }

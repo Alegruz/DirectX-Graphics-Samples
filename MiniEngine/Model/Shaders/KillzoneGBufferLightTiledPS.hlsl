@@ -20,10 +20,10 @@ cbuffer StartVertex : register(b1)
     float4x4 InvViewProj;
     float4x4 InvProj;
     float4x4 modelToShadow;
-    float3 ViewerPos;
+    float4 ViewerPos;
 //    float NearZ;
 //    float FarZ;
-//    float2 ViewportSize;
+    uint2 ViewportSize;
 //    float CameraForward;
 };
 
@@ -38,7 +38,8 @@ cbuffer StartVertex : register(b1)
 Texture2D<float> texDepth : register(t18);
 
 // GBuffers
-Texture2D<float4> texRt0	: register(t21);
+Texture2D<float3> texRt0	: register(t21);
+//Texture2D<float4> texRt0 : register(t21);
 //Texture2D<float2> texRt1	: register(t22);
 //Texture2D<float3> texRt1    : register(t22);
 Texture2D<float4> texRt1	: register(t22);
@@ -68,15 +69,16 @@ float3 main(VSOutput vsOutput) : SV_Target
 #if DEPTH
     return sqrt(depth);
 #endif
-    float4 rt0Data = texRt0[pixelPos];
-    color = rt0Data.rgb;
-    float gloss = rt0Data.a * 256.0;
+    //float4 rt0Data = texRt0[pixelPos];
+    //color = rt0Data.rgb;
+    color = texRt0[pixelPos];
+    //float gloss = rt0Data.a * 256.0;
 #if LIGHT_ACCUMULATION
     return color;
 #endif
-#if GLOSS
-    return gloss / 256.0;
-#endif
+//#if GLOSS
+//    return gloss / 256.0;
+//#endif
 
     //float2 rt1Data = texRt1[pixelPos];
     float4 rt1Data = texRt1[pixelPos];
@@ -94,7 +96,10 @@ float3 main(VSOutput vsOutput) : SV_Target
     //float3 worldPos = rt2Data.xyz;
     float specularMask = rt2Data.a;
     
-    float4 clipSpacePosition = float4((vsOutput.projPos.x / 1920) * 2.0f - 1.0f, (vsOutput.projPos.y / 1080) * 2.0f - 1.0f, depth, 1.0f);
+    // Deferred Shading, Shawn Hargreaves, GDC 2004.
+    // Deferred Shading, Shawn Hargreaves. Mark Harris, NDC 2004.
+    // Reconstruct position from depth
+    float4 clipSpacePosition = float4((vsOutput.projPos.x / ViewportSize.x) * 2.0f - 1.0f, (vsOutput.projPos.y / ViewportSize.y) * 2.0f - 1.0f, depth, 1.0f);
     clipSpacePosition.y *= -1.0f;
     float4 worldPos = mul(InvViewProj, clipSpacePosition);
     worldPos /= worldPos.w;
@@ -114,6 +119,10 @@ float3 main(VSOutput vsOutput) : SV_Target
 #endif
     float4 rt3Data = texRt3[pixelPos];
     float3 diffuseAlbedo = rt3Data.rgb;
+    float gloss = rt3Data.a * 256.0;
+#if GLOSS
+    return gloss / 256.0;
+#endif
 #if DIFFUSE_ALBEDO
     return diffuseAlbedo;
 #endif
@@ -138,6 +147,10 @@ float3 main(VSOutput vsOutput) : SV_Target
 		worldPos.xyz
 		);
     
-    //return viewPos.z;
+    if (dot(color, 1.0f) == 0)
+    {
+        discard;
+    }
+    
     return color;
 }

@@ -95,7 +95,9 @@
     <None Include="Shaders\Common.hlsli" />
     <None Include="Shaders\FillLightClusterCS.hlsli" />
     <None Include="Shaders\FillLightGridCS.hlsli" />
+    <None Include="Shaders\KillzoneIntelLightGridCS.hlsli" />
     <None Include="Shaders\LightGrid.hlsli" />
+    <None Include="Shaders\KillzoneLightGridCS.hlsli" />
     <None Include="Shaders\Lighting.hlsli" />
     <None Include="Shaders\LightingClustered.hlsli" />
   </ItemGroup>
@@ -325,6 +327,30 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridCS_16.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridCS_24.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridCS_32.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridCS_8.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridCS_16.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridCS_24.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridCS_32.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridCS_8.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
     </FxCompile>
     <FxCompile Include="Shaders\ModelViewerClusteredPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

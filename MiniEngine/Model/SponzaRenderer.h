@@ -46,6 +46,8 @@ enum class eForwardType : UINT8
 enum class eLightType : UINT8
 {
     TILED,
+    TILED_DICE,
+    TILED_INTEL,
     CLUSTERED,
     COUNT,
 };

@@ -37,7 +37,8 @@ struct VSOutput
 
 struct MRT
 {
-	float4 RT0 : SV_Target0;
+    float3 RT0 : SV_Target0;
+	//float4 RT0 : SV_Target0;
     //float2 RT1 : SV_Target1;
     //float3 RT1 : SV_Target1;
     float4 RT1 : SV_Target1;
@@ -55,11 +56,10 @@ MRT main(VSOutput vsOutput)
 #define SAMPLE_TEX(texName) texName.Sample(defaultSampler, vsOutput.uv)
 	
     float3 diffuseAlbedo = SAMPLE_TEX(texDiffuse);
-    mrt.RT3 = float4(diffuseAlbedo, 1);
 
     float3 colorSum = 0;
+    float ao = texSSAO[pixelPos];
 	{
-        float ao = texSSAO[pixelPos];
         colorSum += ApplyAmbientLight(diffuseAlbedo, ao, AmbientColor);
     }
     
@@ -101,10 +101,20 @@ MRT main(VSOutput vsOutput)
 
     float3 viewDir = normalize(vsOutput.viewDir);
 	
-    colorSum += ApplyDirectionalLight(diffuseAlbedo, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection, SunColor, vsOutput.shadowCoord, texShadow);
+    // Deferred Shading in S.T.A.L.K.E.R., Oleksandr Shyshkovtsov, GPU Gems 2
+    float nDotL = saturate(dot(normal, SunDirection));
+    // Pixels facing away from the sun don't need to have complex shading applied
+    // Pixels with AO term of zero can be excluded
+    if (nDotL * ao > 0.0)
+    {
+        colorSum += ApplyDirectionalLight(diffuseAlbedo, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection, SunColor, vsOutput.shadowCoord, texShadow);
+    }
     
-    mrt.RT0 = float4(colorSum, gloss / 256.0);
+    //mrt.RT0 = float4(colorSum, gloss / 256.0);
+    mrt.RT0 = float3(colorSum);
     mrt.RT2 = float4(vsOutput.worldPos, specularMask);
+    //mrt.RT3 = float4(diffuseAlbedo, 1);
+    mrt.RT3 = float4(diffuseAlbedo, gloss / 256.0);
     
 	return mrt;
 }

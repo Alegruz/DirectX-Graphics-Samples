@@ -111,7 +111,10 @@ MRT main(VSOutput vsOutput)
 		);
     
     //colorSum += lights;
-    
+    if (dot(colorSum, 1.0f) == 0)
+    {
+        discard;
+    }
     
     mrt.Color = colorSum;
     return mrt;

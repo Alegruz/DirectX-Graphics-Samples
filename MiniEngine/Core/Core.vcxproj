@@ -426,8 +426,12 @@
     <None Include="Shaders\PostEffectsRS.hlsli" />
     <None Include="Shaders\PresentRS.hlsli" />
     <None Include="Shaders\ShaderUtility.hlsli" />
-    <FxCompile Include="Shaders\ToneMap2CS.hlsl" />
-    <FxCompile Include="Shaders\ToneMapCS.hlsl" />
+    <FxCompile Include="Shaders\ToneMap2CS.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
+    </FxCompile>
+    <FxCompile Include="Shaders\ToneMapCS.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
+    </FxCompile>
     <FxCompile Include="Shaders\UpsampleAndBlurCS.hlsl" />
     <None Include="Shaders\PixelPacking.hlsli" />
     <None Include="Shaders\SSAORS.hlsli" />

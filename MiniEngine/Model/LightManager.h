@@ -22,6 +22,7 @@ class ColorBuffer;
 class ShadowBuffer;
 class GraphicsContext;
 class IntVar;
+class DescriptorHandle;
 
 namespace Math
 {
@@ -68,6 +69,8 @@ namespace Lighting
     void InitializeResources(void);
     void CreateRandomLights(const Math::Vector3 minBound, const Math::Vector3 maxBound);
     void FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera);
+    void KillzoneDiceLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
+    void KillzoneIntelLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
     void FillLightCluster(GraphicsContext& gfxContext, const Math::Camera& camera, const Math::AxisAlignedBox& boundingBox);
     void FillLightClusterCpu(GraphicsContext& gfxContext, const Math::Camera& camera, const Math::AxisAlignedBox& boundingBox);
     void Shutdown(void);
