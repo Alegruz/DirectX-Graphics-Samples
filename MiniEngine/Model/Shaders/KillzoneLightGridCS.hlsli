@@ -249,7 +249,7 @@ void main(
     uint3 DTid : SV_DispatchThreadID)
 {
     // initialize shared data
-    //if (GI == 0)
+    if (GI == 0)
     {
         gSharedVisibleLightCountSphere = 0;
         gSharedVisibleLightCountCone = 0;
@@ -263,12 +263,14 @@ void main(
     }
     GroupMemoryBarrierWithGroupSync();
 
+    // Find the max / min depth value of the tile
     uint depthUInt = asuint(gDepthTex[DTid.xy]);
     InterlockedMin(gSharedMinDepthUInt, depthUInt);
     InterlockedMax(gSharedMaxDepthUInt, depthUInt);
 
     GroupMemoryBarrierWithGroupSync();
     
+    // Construct the tile frustum in world space
     float tileMinDepth = (rcp(asfloat(gSharedMaxDepthUInt)) - 1.0) * RcpZMagic;
     float tileMaxDepth = (rcp(asfloat(gSharedMinDepthUInt)) - 1.0) * RcpZMagic;
     float depth = (rcp(asfloat(depthUInt)) - 1.0) * RcpZMagic;
@@ -277,35 +279,20 @@ void main(
     tileDepthRange = max(tileDepthRange, FLT_MIN); // don't allow a depth range of 0
     float invTileDepthRange = rcp(tileDepthRange);
     // TODO: near/far clipping planes seem to be falling apart at or near the max depth with infinite projections
-
-    // construct transform from world space to tile space (projection space constrained to tile area)
-    float2 invTileSize2X = float2(ViewportWidth, ViewportHeight) * InvTileDim;
-    // D3D-specific [0, 1] depth range ortho projection
-    // (but without negation of Z, since we already have that from the projection matrix)
-    float3 tileBias = float3(
-        -2.0 * float(Gid.x) + invTileSize2X.x - 1.0,
-        -2.0 * float(Gid.y) + invTileSize2X.y - 1.0,
-        -tileMinDepth * invTileDepthRange);
-    float4x4 projToTile = float4x4(
-        invTileSize2X.x, 0, 0, tileBias.x,
-        0, -invTileSize2X.y, 0, tileBias.y,
-        0, 0, invTileDepthRange, tileBias.z,
-        0, 0, 0, 1
-        );
-    float4x4 tileMVP = mul(projToTile, ViewProjMatrix);
     
-    // extract frustum planes (these will be in world space)
-    float4 frustumPlanes[6];
-    frustumPlanes[0] = tileMVP[3] + tileMVP[0];
-    frustumPlanes[1] = tileMVP[3] - tileMVP[0];
-    frustumPlanes[2] = tileMVP[3] + tileMVP[1];
-    frustumPlanes[3] = tileMVP[3] - tileMVP[1];
-    frustumPlanes[4] = tileMVP[3] + tileMVP[2];
-    frustumPlanes[5] = tileMVP[3] - tileMVP[2];
-    for (int n = 0; n < 6; n++)
-    {
-        frustumPlanes[n] *= rsqrt(dot(frustumPlanes[n].xyz, frustumPlanes[n].xyz));
-    }
+    // https://wickedengine.net/2018/01/10/optimizing-tile-based-light-culling/
+    // AABB based culling
+    float4 minAABB = float4(((float) Gid.x * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f, ((float) Gid.y * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f, tileMinDepth, 1.0f);
+    minAABB.y *= -1.0f;
+    minAABB = mul(InvViewProj, minAABB);
+    minAABB /= minAABB.w;
+    float4 maxAABB = float4(((float) (Gid.x + 1) * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f, ((float) (Gid.y + 1) * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f, tileMaxDepth, 1.0f);
+    maxAABB.y *= -1.0f;
+    maxAABB = mul(InvViewProj, maxAABB);
+    maxAABB /= maxAABB.w;
+    
+    float4 centerAABB = (minAABB + maxAABB) / 2.0f;
+    float4 extentAABB = abs(maxAABB - centerAABB);
     
 #if LIGHT_CULLING_2_5
     const float depthRangeRecip = 32.f * invTileDepthRange;
@@ -314,6 +301,7 @@ void main(
     GroupMemoryBarrierWithGroupSync();
 #endif
     
+    // Cull lights
     uint threadCount = WORK_GROUP_SIZE_X * WORK_GROUP_SIZE_Y;
     uint passCount = (MAX_LIGHTS + threadCount - 1) / threadCount;
     
@@ -327,17 +315,10 @@ void main(
         float3 lightWorldPos = lightData.pos;
         float lightCullRadius = sqrt(lightData.radiusSq);
         
-        bool overlapping = true;
-        for (int p = 0; p < 6; p++)
-        {
-            float d = dot(lightWorldPos, frustumPlanes[p].xyz) + frustumPlanes[p].w;
-            if (d < -lightCullRadius)
-            {
-                overlapping = false;
-            }
-        }
+        float3 vDelta = max(0, abs(centerAABB.xyz - lightWorldPos) - extentAABB.xyz);
+        float fDistSq = dot(vDelta, vDelta);
         
-        if (!overlapping)
+        if (fDistSq > lightData.radiusSq)
             continue;
         
 #if LIGHT_CULLING_2_5
@@ -357,6 +338,7 @@ void main(
         if (gSharedDepthMask & localDepthMask)  // overlapping ← depthMaskT ∧ depthMaskL
         {
 #endif
+            // Fill in the light indices to the local shared indices array
             uint offset = 0;
         
             switch (lightData.type)
@@ -396,6 +378,10 @@ void main(
     //float gloss = rt0Data.a * 256.0;
     float4 rt1Data = gRt1[DTid.xy];
     float3 normal = rt1Data.xyz;
+    if (normal.x == 0 && normal.y == 0 && normal.z == 0)
+    {
+        return;
+    }
     float4 rt2Data = gRt2[DTid.xy];
     float specularMask = rt2Data.a;
     float4 rt3Data = gRt3[DTid.xy];

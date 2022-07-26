@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) Microsoft. All rights reserved.
 // This code is licensed under the MIT License (MIT).
 // THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
@@ -88,6 +88,10 @@ float3 main(VSOutput vsOutput) : SV_Target
     //float3 normal = 2.0f * rt1Data - 1.0f;
     //float3 normal = 2.0f * rt1Data.xyz - 1.0f;
     float3 normal = rt1Data.xyz;
+    if (normal.x == 0 && normal.y == 0 && normal.z == 0)
+    {
+        discard;
+    }
 #if NORMAL
     return normal;
 #endif
@@ -132,7 +136,7 @@ float3 main(VSOutput vsOutput) : SV_Target
   
     float3 specularAlbedo = float3( 0.56, 0.56, 0.56 );
     //float3 viewDir = normalize(float3(vsOutput.projPos.xy, depth) - ViewerPos);
-    float3 viewDir = normalize(worldPos.xyz - ViewerPos);
+    float3 viewDir = normalize(worldPos.xyz - ViewerPos.xyz);
     float3 shadowCoord = mul(modelToShadow, float4(worldPos.xyz, 1.0)).xyz;
     
 	ShadeLights(
@@ -147,6 +151,7 @@ float3 main(VSOutput vsOutput) : SV_Target
 		worldPos.xyz
 		);
     
+    // Thibieroz, Nicolas, “Deferred Shading with Multisampling Anti-Aliasing in DirectX 10,” in Wolfgang Engel, ed., ShaderX7, Charles River Media, pp. 225–242, 2009.
     if (dot(color, 1.0f) == 0)
     {
         discard;

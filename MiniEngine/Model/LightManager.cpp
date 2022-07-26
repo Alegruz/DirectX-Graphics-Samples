@@ -272,7 +272,7 @@ void Lighting::InitializeResources( void )
 
     uint32_t lightClusterCells = Math::DivideByMultiple(3840, kMinLightGridDim) * Math::DivideByMultiple(2160, kMinLightGridDim) * 32;
     //uint32_t lightClusterSizeBytes = lightClusterCells * (4 + MaxLights * 4);
-    uint32_t lightClusterSizeBytes = lightClusterCells * sizeof(uint32_t);
+    uint32_t lightClusterSizeBytes = lightClusterCells * (4 + MaxLights * 4);
     m_LightCluster.Create(L"m_LightCluster", lightClusterSizeBytes, 1);
 
     uint32_t lightGridBitMaskSizeBytes = lightGridCells * 4 * 4;

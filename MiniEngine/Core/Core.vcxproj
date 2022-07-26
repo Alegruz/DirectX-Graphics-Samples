@@ -388,7 +388,9 @@
       <ShaderType>Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="Shaders\SharpenTAACS.hlsl" />
-    <FxCompile Include="Shaders\TemporalBlendCS.hlsl" />
+    <FxCompile Include="Shaders\TemporalBlendCS.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
+    </FxCompile>
     <FxCompile Include="Shaders\TextAntialiasPS.hlsl">
       <ShaderType>Pixel</ShaderType>
     </FxCompile>
