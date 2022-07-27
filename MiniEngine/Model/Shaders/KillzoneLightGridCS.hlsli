@@ -280,6 +280,7 @@ void main(
     float invTileDepthRange = rcp(tileDepthRange);
     // TODO: near/far clipping planes seem to be falling apart at or near the max depth with infinite projections
     
+#if AABB_BASED_CULLING
     // https://wickedengine.net/2018/01/10/optimizing-tile-based-light-culling/
     // AABB based culling
     float4 minAABB = float4(((float) Gid.x * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f, ((float) Gid.y * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f, tileMinDepth, 1.0f);
@@ -293,6 +294,36 @@ void main(
     
     float4 centerAABB = (minAABB + maxAABB) / 2.0f;
     float4 extentAABB = abs(maxAABB - centerAABB);
+#else
+    // construct transform from world space to tile space (projection space constrained to tile area)
+    float2 invTileSize2X = float2(ViewportWidth, ViewportHeight) * InvTileDim;
+    // D3D-specific [0, 1] depth range ortho projection
+    // (but without negation of Z, since we already have that from the projection matrix)
+    float3 tileBias = float3(
+        -2.0 * float(Gid.x) + invTileSize2X.x - 1.0,
+        -2.0 * float(Gid.y) + invTileSize2X.y - 1.0,
+        -tileMinDepth * invTileDepthRange);
+    float4x4 projToTile = float4x4(
+        invTileSize2X.x, 0, 0, tileBias.x,
+        0, -invTileSize2X.y, 0, tileBias.y,
+        0, 0, invTileDepthRange, tileBias.z,
+        0, 0, 0, 1
+        );
+    float4x4 tileMVP = mul(projToTile, ViewProjMatrix);
+    
+    // extract frustum planes (these will be in world space)
+    float4 frustumPlanes[6];
+    frustumPlanes[0] = tileMVP[3] + tileMVP[0];
+    frustumPlanes[1] = tileMVP[3] - tileMVP[0];
+    frustumPlanes[2] = tileMVP[3] + tileMVP[1];
+    frustumPlanes[3] = tileMVP[3] - tileMVP[1];
+    frustumPlanes[4] = tileMVP[3] + tileMVP[2];
+    frustumPlanes[5] = tileMVP[3] - tileMVP[2];
+    for (int n = 0; n < 6; n++)
+    {
+        frustumPlanes[n] *= rsqrt(dot(frustumPlanes[n].xyz, frustumPlanes[n].xyz));
+    }
+#endif
     
 #if LIGHT_CULLING_2_5
     const float depthRangeRecip = 32.f * invTileDepthRange;
@@ -315,11 +346,26 @@ void main(
         float3 lightWorldPos = lightData.pos;
         float lightCullRadius = sqrt(lightData.radiusSq);
         
+#if AABB_BASED_CULLING
         float3 vDelta = max(0, abs(centerAABB.xyz - lightWorldPos) - extentAABB.xyz);
         float fDistSq = dot(vDelta, vDelta);
         
         if (fDistSq > lightData.radiusSq)
             continue;
+#else
+        bool overlapping = true;
+        for (int p = 0; p < 6; p++)
+        {
+            float d = dot(lightWorldPos, frustumPlanes[p].xyz) + frustumPlanes[p].w;
+            if (d < -lightCullRadius)
+            {
+                overlapping = false;
+            }
+        }
+        
+        if (!overlapping)
+            continue;
+#endif
         
 #if LIGHT_CULLING_2_5
         // depthMaskL ← Compute mask using light extent

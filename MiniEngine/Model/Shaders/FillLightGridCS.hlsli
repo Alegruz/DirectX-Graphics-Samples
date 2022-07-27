@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) Microsoft. All rights reserved.
 // This code is licensed under the MIT License (MIT).
 // THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
@@ -28,12 +28,18 @@ cbuffer CSConstants : register(b0)
     float RcpZMagic;
     uint TileCountX;
     float4x4 ViewProjMatrix;
+    float4x4 InvViewProj;
 };
 
 StructuredBuffer<LightData> lightBuffer : register(t0);
 Texture2D<float> depthTex : register(t1);
 RWByteAddressBuffer lightGrid : register(u0);
 RWByteAddressBuffer lightGridBitMask : register(u1);
+
+#if LIGHT_CULLING_2_5
+// Harada, T., “A 2.5D culling for Forward+,” in SIGGRAPH Asia 2012 Technical Briefs, ACM, pp. 18:1–18:4, Dec. 2012
+groupshared uint gSharedDepthMask;
+#endif
 
 groupshared uint minDepthUInt;
 groupshared uint maxDepthUInt;
@@ -70,6 +76,9 @@ void main(
         tileLightBitMask = 0;
         minDepthUInt = 0xffffffff;
         maxDepthUInt = 0;
+#if LIGHT_CULLING_2_5
+        gSharedDepthMask = 0;
+#endif
     }
     GroupMemoryBarrierWithGroupSync();
 
@@ -100,7 +109,22 @@ void main(
     tileDepthRange = max(tileDepthRange, FLT_MIN); // don't allow a depth range of 0
     float invTileDepthRange = rcp(tileDepthRange);
     // TODO: near/far clipping planes seem to be falling apart at or near the max depth with infinite projections
-
+    
+#if AABB_BASED_CULLING
+    // https://wickedengine.net/2018/01/10/optimizing-tile-based-light-culling/
+    // AABB based culling
+    float4 minAABB = float4(((float) Gid.x * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f, ((float) Gid.y * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f, tileMinDepth, 1.0f);
+    minAABB.y *= -1.0f;
+    minAABB = mul(InvViewProj, minAABB);
+    minAABB /= minAABB.w;
+    float4 maxAABB = float4(((float) (Gid.x + 1) * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f, ((float) (Gid.y + 1) * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f, tileMaxDepth, 1.0f);
+    maxAABB.y *= -1.0f;
+    maxAABB = mul(InvViewProj, maxAABB);
+    maxAABB /= maxAABB.w;
+    
+    float4 centerAABB = (minAABB + maxAABB) / 2.0f;
+    float4 extentAABB = abs(maxAABB - centerAABB);
+#else
     // construct transform from world space to tile space (projection space constrained to tile area)
     float2 invTileSize2X = float2(ViewportWidth, ViewportHeight) * InvTileDim;
     // D3D-specific [0, 1] depth range ortho projection
@@ -129,7 +153,31 @@ void main(
     {
         frustumPlanes[n] *= rsqrt(dot(frustumPlanes[n].xyz, frustumPlanes[n].xyz));
     }
+#endif
 
+#if LIGHT_CULLING_2_5
+    const float depthRangeRecip = 32.f * invTileDepthRange;
+    // Read all depth values for this tile and compute the tile min and max values
+    for (uint dx = GTid.x; dx < WORK_GROUP_SIZE_X; dx += 8)
+    {
+        for (uint dy = GTid.y; dy < WORK_GROUP_SIZE_Y; dy += 8)
+        {
+            uint2 DTid = Gid * uint2(WORK_GROUP_SIZE_X, WORK_GROUP_SIZE_Y) + uint2(dx, dy);
+
+            // If pixel coordinates are in bounds...
+            if (DTid.x < ViewportWidth && DTid.y < ViewportHeight)
+            {
+                // Load and compare depth
+                uint depthUInt = asuint(depthTex[DTid.xy]);
+                float depth = (rcp(asfloat(depthUInt)) - 1.0) * RcpZMagic;
+                const uint depthMaskCellIndex = max(0, min(32, floor(depth - tileMinDepth) * depthRangeRecip));
+                InterlockedOr(gSharedDepthMask, 1 << depthMaskCellIndex); // depthMaskT ← atomOr(1 << getCellIndex(z))
+            }
+        }
+    }
+    GroupMemoryBarrierWithGroupSync();
+#endif
+    
     uint tileIndex = GetTileIndex(Gid.xy, TileCountX);
     uint tileOffset = GetTileOffset(tileIndex);
 
@@ -142,6 +190,13 @@ void main(
         float3 lightWorldPos = lightData.pos;
         float lightCullRadius = sqrt(lightData.radiusSq);
 
+#if AABB_BASED_CULLING
+        float3 vDelta = max(0, abs(centerAABB.xyz - lightWorldPos) - extentAABB.xyz);
+        float fDistSq = dot(vDelta, vDelta);
+        
+        if (fDistSq > lightData.radiusSq)
+            continue;
+#else
         bool overlapping = true;
         for (int p = 0; p < 6; p++)
         {
@@ -154,29 +209,48 @@ void main(
         
         if (!overlapping)
             continue;
+#endif
 
-        uint slot;
-
-        switch (lightData.type)
+#if LIGHT_CULLING_2_5
+        // depthMaskL ← Compute mask using light extent
+        uint localDepthMask = 0;
+        const float fLightMin = (lightWorldPos.z - lightCullRadius) * ViewProjMatrix._33 + ViewProjMatrix._43;
+        const float fLightMax = (lightWorldPos.z + lightCullRadius) * ViewProjMatrix._33 + ViewProjMatrix._43;
+        const uint lightMaskCellIndexStart = max(0, min(32, floor((fLightMin - tileMinDepth) * depthRangeRecip)));
+        const uint lightMaskCellIndexEnd = max(0, min(32, floor((fLightMax - tileMinDepth) * depthRangeRecip)));
+        
+        uint c = 0;
+        for (c = lightMaskCellIndexStart; c <= lightMaskCellIndexEnd; ++c)
         {
-        case 0: // sphere
-            InterlockedAdd(tileLightCountSphere, 1, slot);
-            tileLightIndicesSphere[slot] = lightIndex;
-            break;
-
-        case 1: // cone
-            InterlockedAdd(tileLightCountCone, 1, slot);
-            tileLightIndicesCone[slot] = lightIndex;
-            break;
-
-        case 2: // cone w/ shadow map
-            InterlockedAdd(tileLightCountConeShadowed, 1, slot);
-            tileLightIndicesConeShadowed[slot] = lightIndex;
-            break;
+            localDepthMask |= 1 << c;
         }
+        
+        if (gSharedDepthMask & localDepthMask)  // overlapping ← depthMaskT ∧ depthMaskL
+#endif
+        {
+            uint slot;
 
-        // update bitmask
-        InterlockedOr(tileLightBitMask[lightIndex / 32], 1 << (lightIndex % 32));
+            switch (lightData.type)
+            {
+                case 0: // sphere
+                    InterlockedAdd(tileLightCountSphere, 1, slot);
+                    tileLightIndicesSphere[slot] = lightIndex;
+                    break;
+
+                case 1: // cone
+                    InterlockedAdd(tileLightCountCone, 1, slot);
+                    tileLightIndicesCone[slot] = lightIndex;
+                    break;
+
+                case 2: // cone w/ shadow map
+                    InterlockedAdd(tileLightCountConeShadowed, 1, slot);
+                    tileLightIndicesConeShadowed[slot] = lightIndex;
+                    break;
+            }
+
+            // update bitmask
+            InterlockedOr(tileLightBitMask[lightIndex / 32], 1 << (lightIndex % 32));
+        }
     }
 
     GroupMemoryBarrierWithGroupSync();

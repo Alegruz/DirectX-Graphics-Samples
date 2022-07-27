@@ -69,8 +69,11 @@ namespace Lighting
     void InitializeResources(void);
     void CreateRandomLights(const Math::Vector3 minBound, const Math::Vector3 maxBound);
     void FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera);
+    void FillLight2_5DGrid(GraphicsContext& gfxContext, const Math::Camera& camera);
+    void FillLight2_5DAABBGrid(GraphicsContext& gfxContext, const Math::Camera& camera);
     void KillzoneDiceLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
     void KillzoneDiceLightCullingGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
+    void KillzoneDiceLightAABBCullingGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
     void KillzoneIntelLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
     void FillLightCluster(GraphicsContext& gfxContext, const Math::Camera& camera, const Math::AxisAlignedBox& boundingBox);
     void FillLightClusterCpu(GraphicsContext& gfxContext, const Math::Camera& camera, const Math::AxisAlignedBox& boundingBox);

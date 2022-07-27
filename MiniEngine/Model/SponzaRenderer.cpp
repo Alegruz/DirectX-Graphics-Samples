@@ -107,6 +107,7 @@ namespace Sponza
 
     GraphicsPSO m_aForwardPSOs[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eForwardType::COUNT) + 1] =
     {
+        // Forward+
         {
             { (L"Sponza: Tiled World Position PSO") },
             { (L"Sponza: Tiled Diffuse Albedo PSO") },
@@ -115,6 +116,7 @@ namespace Sponza
             { (L"Sponza: Tiled Specular Intensity PSO") },
             { (L"Sponza: Tiled Color PSO") },
         },
+        // Forward+ 2.5D Culling
         {
             { (L"Sponza: Tiled World Position PSO") },
             { (L"Sponza: Tiled Diffuse Albedo PSO") },
@@ -123,6 +125,7 @@ namespace Sponza
             { (L"Sponza: Tiled Specular Intensity PSO") },
             { (L"Sponza: Tiled Color PSO") },
         },
+        // Forward+ 2.5D AABB Culling
         {
             { (L"Sponza: Tiled World Position PSO") },
             { (L"Sponza: Tiled Diffuse Albedo PSO") },
@@ -131,6 +134,43 @@ namespace Sponza
             { (L"Sponza: Tiled Specular Intensity PSO") },
             { (L"Sponza: Tiled Color PSO") },
         },
+        // Forward+ (DICE)
+        {
+            { (L"Sponza: Tiled World Position PSO") },
+            { (L"Sponza: Tiled Diffuse Albedo PSO") },
+            { (L"Sponza: Tiled Glossiness PSO") },
+            { (L"Sponza: Tiled Normal PSO") },
+            { (L"Sponza: Tiled Specular Intensity PSO") },
+            { (L"Sponza: Tiled Color PSO") },
+        },
+        // Forward+ (DICE 2.5)
+        {
+            { (L"Sponza: Tiled World Position PSO") },
+            { (L"Sponza: Tiled Diffuse Albedo PSO") },
+            { (L"Sponza: Tiled Glossiness PSO") },
+            { (L"Sponza: Tiled Normal PSO") },
+            { (L"Sponza: Tiled Specular Intensity PSO") },
+            { (L"Sponza: Tiled Color PSO") },
+        },
+        // Forward+ (DICE 2.5 AABB)
+        {
+            { (L"Sponza: Tiled World Position PSO") },
+            { (L"Sponza: Tiled Diffuse Albedo PSO") },
+            { (L"Sponza: Tiled Glossiness PSO") },
+            { (L"Sponza: Tiled Normal PSO") },
+            { (L"Sponza: Tiled Specular Intensity PSO") },
+            { (L"Sponza: Tiled Color PSO") },
+        },
+        // Forward+ (INTEL)
+        {
+            { (L"Sponza: Tiled World Position PSO") },
+            { (L"Sponza: Tiled Diffuse Albedo PSO") },
+            { (L"Sponza: Tiled Glossiness PSO") },
+            { (L"Sponza: Tiled Normal PSO") },
+            { (L"Sponza: Tiled Specular Intensity PSO") },
+            { (L"Sponza: Tiled Color PSO") },
+        },
+        // Clustered?
         {
             { (L"Sponza: Tiled World Position PSO") },
             { (L"Sponza: Tiled Diffuse Albedo PSO") },
@@ -143,6 +183,7 @@ namespace Sponza
 
     GraphicsPSO m_aGBufferPSOs[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eGBufferDataType::COUNT) + 1] =
     {
+        // TILED
         {
 #if SIMPLE_GBUFFER
             { (L"Sponza: Tiled GBuffer RT0 World Position PSO") },
@@ -164,6 +205,51 @@ namespace Sponza
             { (L"Sponza: Tiled GBuffer Light PSO") },
 #endif
         },
+        // TILED 2.5D Culling
+        {
+#if SIMPLE_GBUFFER
+            { (L"Sponza: Tiled GBuffer RT0 World Position PSO") },
+            { (L"Sponza: Tiled GBuffer RT1 Normal PSO") },
+            { (L"Sponza: Tiled GBuffer RT1 Depth PSO") },
+            { (L"Sponza: Tiled GBuffer RT2 Albedo PSO") },
+            { (L"Sponza: Tiled GBuffer RT3 Specular PSO") },
+            { (L"Sponza: Tiled GBuffer RT3 Gloss PSO") },
+            { (L"Sponza: Tiled GBuffer Light PSO") },
+#elif KILLZONE_GBUFFER
+            { (L"Sponza: Tiled 2.5D GBuffer Depth PSO") },
+            { (L"Sponza: Tiled 2.5D GBuffer RT0 Lighting Accumulation PSO") },
+            { (L"Sponza: Tiled 2.5D GBuffer RT0 Intensity PSO") },
+            { (L"Sponza: Tiled 2.5D GBuffer RT1 Normal PSO") },
+            { (L"Sponza: Tiled 2.5D GBuffer RT2 Motion Vector PSO") },
+            { (L"Sponza: Tiled 2.5D GBuffer RT2 Specular Intensity PSO") },
+            { (L"Sponza: Tiled 2.5D GBuffer RT3 Diffuse Albedo PSO") },
+            { (L"Sponza: Tiled 2.5D GBuffer RT3 Sun-Occlusion PSO") },
+            { (L"Sponza: Tiled 2.5D GBuffer Light PSO") },
+#endif
+        },
+        // TILED 2.5D AABB Culling
+        {
+#if SIMPLE_GBUFFER
+            { (L"Sponza: Tiled GBuffer RT0 World Position PSO") },
+            { (L"Sponza: Tiled GBuffer RT1 Normal PSO") },
+            { (L"Sponza: Tiled GBuffer RT1 Depth PSO") },
+            { (L"Sponza: Tiled GBuffer RT2 Albedo PSO") },
+            { (L"Sponza: Tiled GBuffer RT3 Specular PSO") },
+            { (L"Sponza: Tiled GBuffer RT3 Gloss PSO") },
+            { (L"Sponza: Tiled GBuffer Light PSO") },
+#elif KILLZONE_GBUFFER
+            { (L"Sponza: Tiled 2.5D AABB GBuffer Depth PSO") },
+            { (L"Sponza: Tiled 2.5D AABB GBuffer RT0 Lighting Accumulation PSO") },
+            { (L"Sponza: Tiled 2.5D AABB GBuffer RT0 Intensity PSO") },
+            { (L"Sponza: Tiled 2.5D AABB GBuffer RT1 Normal PSO") },
+            { (L"Sponza: Tiled 2.5D AABB GBuffer RT2 Motion Vector PSO") },
+            { (L"Sponza: Tiled 2.5D AABB GBuffer RT2 Specular Intensity PSO") },
+            { (L"Sponza: Tiled 2.5D AABB GBuffer RT3 Diffuse Albedo PSO") },
+            { (L"Sponza: Tiled 2.5D AABB GBuffer RT3 Sun-Occlusion PSO") },
+            { (L"Sponza: Tiled 2.5D AABB GBuffer Light PSO") },
+#endif
+        },
+        // TILED DICE
         {
 #if SIMPLE_GBUFFER
             { (L"Sponza: Tiled GBuffer RT0 World Position PSO") },
@@ -185,6 +271,7 @@ namespace Sponza
             { (L"Sponza: DICE Tiled GBuffer Light PSO") },
 #endif
         },
+        // TILED DICE 2.5
         {
 #if SIMPLE_GBUFFER
             { (L"Sponza: Tiled GBuffer RT0 World Position PSO") },
@@ -206,6 +293,29 @@ namespace Sponza
             { (L"Sponza: DICE Tiled 2.5 Culling GBuffer Light PSO") },
 #endif
         },
+        // TILED DICE 2.5 AABB
+        {
+#if SIMPLE_GBUFFER
+            { (L"Sponza: Tiled GBuffer RT0 World Position PSO") },
+            { (L"Sponza: Tiled GBuffer RT1 Normal PSO") },
+            { (L"Sponza: Tiled GBuffer RT1 Depth PSO") },
+            { (L"Sponza: Tiled GBuffer RT2 Albedo PSO") },
+            { (L"Sponza: Tiled GBuffer RT3 Specular PSO") },
+            { (L"Sponza: Tiled GBuffer RT3 Gloss PSO") },
+            { (L"Sponza: Tiled GBuffer Light PSO") },
+#elif KILLZONE_GBUFFER
+            { (L"Sponza: DICE Tiled 2.5 AABB Culling GBuffer Depth PSO") },
+            { (L"Sponza: DICE Tiled 2.5 AABB Culling GBuffer RT0 Lighting Accumulation PSO") },
+            { (L"Sponza: DICE Tiled 2.5 AABB Culling GBuffer RT0 Intensity PSO") },
+            { (L"Sponza: DICE Tiled 2.5 AABB Culling GBuffer RT1 Normal PSO") },
+            { (L"Sponza: DICE Tiled 2.5 AABB Culling GBuffer RT2 Motion Vector PSO") },
+            { (L"Sponza: DICE Tiled 2.5 AABB Culling GBuffer RT2 Specular Intensity PSO") },
+            { (L"Sponza: DICE Tiled 2.5 AABB Culling GBuffer RT3 Diffuse Albedo PSO") },
+            { (L"Sponza: DICE Tiled 2.5 AABB Culling GBuffer RT3 Sun-Occlusion PSO") },
+            { (L"Sponza: DICE Tiled 2.5 AABB Culling GBuffer Light PSO") },
+#endif
+        },
+        // TILED INTEL
         {
 #if SIMPLE_GBUFFER
             { (L"Sponza: Tiled GBuffer RT0 World Position PSO") },
@@ -227,6 +337,7 @@ namespace Sponza
             { (L"Sponza: INTEL Tiled GBuffer Light PSO") },
 #endif
         },
+        // CLUSTERED
         {
 #if SIMPLE_GBUFFER
             { (L"Sponza: Clustered GBuffer RT0 World Position PSO") },
@@ -252,6 +363,7 @@ namespace Sponza
 
     std::pair<const unsigned char* const, size_t> m_aForwardPixelShaders[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eForwardType::COUNT) + 1] =
     {
+        // Forward+
         {
             { g_pModelViewerWorldPosPS,            sizeof(g_pModelViewerWorldPosPS)            },
             { g_pModelViewerDiffuseAlbedoPS,       sizeof(g_pModelViewerDiffuseAlbedoPS)       },
@@ -260,6 +372,7 @@ namespace Sponza
             { g_pModelViewerSpecularIntensityPS,   sizeof(g_pModelViewerSpecularIntensityPS)   },
             { g_pModelViewerTiledPS,               sizeof(g_pModelViewerTiledPS)               },
         },
+        // Forward+ 2.5D Culling
         {
             { g_pModelViewerWorldPosPS,            sizeof(g_pModelViewerWorldPosPS)            },
             { g_pModelViewerDiffuseAlbedoPS,       sizeof(g_pModelViewerDiffuseAlbedoPS)       },
@@ -268,6 +381,7 @@ namespace Sponza
             { g_pModelViewerSpecularIntensityPS,   sizeof(g_pModelViewerSpecularIntensityPS)   },
             { g_pModelViewerTiledPS,               sizeof(g_pModelViewerTiledPS)               },
         },
+        // Forward+ 2.5D AABB Culling
         {
             { g_pModelViewerWorldPosPS,            sizeof(g_pModelViewerWorldPosPS)            },
             { g_pModelViewerDiffuseAlbedoPS,       sizeof(g_pModelViewerDiffuseAlbedoPS)       },
@@ -276,6 +390,7 @@ namespace Sponza
             { g_pModelViewerSpecularIntensityPS,   sizeof(g_pModelViewerSpecularIntensityPS)   },
             { g_pModelViewerTiledPS,               sizeof(g_pModelViewerTiledPS)               },
         },
+        // Tiled DICE
         {
             { g_pModelViewerWorldPosPS,            sizeof(g_pModelViewerWorldPosPS)            },
             { g_pModelViewerDiffuseAlbedoPS,       sizeof(g_pModelViewerDiffuseAlbedoPS)       },
@@ -284,6 +399,34 @@ namespace Sponza
             { g_pModelViewerSpecularIntensityPS,   sizeof(g_pModelViewerSpecularIntensityPS)   },
             { g_pModelViewerTiledPS,               sizeof(g_pModelViewerTiledPS)               },
         },
+        // Tiled DICE 2.5
+        {
+            { g_pModelViewerWorldPosPS,            sizeof(g_pModelViewerWorldPosPS)            },
+            { g_pModelViewerDiffuseAlbedoPS,       sizeof(g_pModelViewerDiffuseAlbedoPS)       },
+            { g_pModelViewerGlossPS,               sizeof(g_pModelViewerGlossPS)               },
+            { g_pModelViewerNormalPS,              sizeof(g_pModelViewerNormalPS)              },
+            { g_pModelViewerSpecularIntensityPS,   sizeof(g_pModelViewerSpecularIntensityPS)   },
+            { g_pModelViewerTiledPS,               sizeof(g_pModelViewerTiledPS)               },
+        },
+        // Tiled DICE 2.5 AABB
+        {
+            { g_pModelViewerWorldPosPS,            sizeof(g_pModelViewerWorldPosPS)            },
+            { g_pModelViewerDiffuseAlbedoPS,       sizeof(g_pModelViewerDiffuseAlbedoPS)       },
+            { g_pModelViewerGlossPS,               sizeof(g_pModelViewerGlossPS)               },
+            { g_pModelViewerNormalPS,              sizeof(g_pModelViewerNormalPS)              },
+            { g_pModelViewerSpecularIntensityPS,   sizeof(g_pModelViewerSpecularIntensityPS)   },
+            { g_pModelViewerTiledPS,               sizeof(g_pModelViewerTiledPS)               },
+        },
+        // Tiled INTEL
+        {
+            { g_pModelViewerWorldPosPS,            sizeof(g_pModelViewerWorldPosPS)            },
+            { g_pModelViewerDiffuseAlbedoPS,       sizeof(g_pModelViewerDiffuseAlbedoPS)       },
+            { g_pModelViewerGlossPS,               sizeof(g_pModelViewerGlossPS)               },
+            { g_pModelViewerNormalPS,              sizeof(g_pModelViewerNormalPS)              },
+            { g_pModelViewerSpecularIntensityPS,   sizeof(g_pModelViewerSpecularIntensityPS)   },
+            { g_pModelViewerTiledPS,               sizeof(g_pModelViewerTiledPS)               },
+        },
+        // Clustered
         {
             { g_pModelViewerWorldPosPS,             sizeof(g_pModelViewerWorldPosPS)            },
             { g_pModelViewerDiffuseAlbedoPS,        sizeof(g_pModelViewerDiffuseAlbedoPS)       },
@@ -296,6 +439,7 @@ namespace Sponza
 
     std::pair<const unsigned char* const, size_t> m_aGBufferPixelShaders[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eGBufferDataType::COUNT) + 1] =
     {
+        // Tiled
         {
  #if SIMPLE_GBUFFER
             { g_pGBufferWorldPosPS, sizeof(g_pGBufferWorldPosPS) },
@@ -317,6 +461,7 @@ namespace Sponza
             { g_pKillzoneGBufferLightTiledPS,          sizeof(g_pKillzoneGBufferLightTiledPS)         },
 #endif
         },
+        // Tiled 2.5D Culling
         {
  #if SIMPLE_GBUFFER
             { g_pGBufferWorldPosPS, sizeof(g_pGBufferWorldPosPS) },
@@ -338,6 +483,7 @@ namespace Sponza
             { g_pKillzoneGBufferLightTiledPS,          sizeof(g_pKillzoneGBufferLightTiledPS)         },
 #endif
         },
+        // Tiled 2.5D AABB Culling
         {
  #if SIMPLE_GBUFFER
             { g_pGBufferWorldPosPS, sizeof(g_pGBufferWorldPosPS) },
@@ -359,6 +505,7 @@ namespace Sponza
             { g_pKillzoneGBufferLightTiledPS,          sizeof(g_pKillzoneGBufferLightTiledPS)         },
 #endif
         },
+        // Tiled DICE
         {
  #if SIMPLE_GBUFFER
             { g_pGBufferWorldPosPS, sizeof(g_pGBufferWorldPosPS) },
@@ -380,6 +527,73 @@ namespace Sponza
             { g_pKillzoneGBufferLightTiledPS,          sizeof(g_pKillzoneGBufferLightTiledPS)         },
 #endif
         },
+        // Tiled DICE 2.5
+        {
+ #if SIMPLE_GBUFFER
+            { g_pGBufferWorldPosPS, sizeof(g_pGBufferWorldPosPS) },
+            { g_pGBufferNormalPS,   sizeof(g_pGBufferNormalPS)   },
+            { g_pGBufferDepthPS,    sizeof(g_pGBufferDepthPS)    },
+            { g_pGBufferAlbedoPS,   sizeof(g_pGBufferAlbedoPS)   },
+            { g_pGBufferSpecularPS, sizeof(g_pGBufferSpecularPS) },
+            { g_pGBufferGlossPS,    sizeof(g_pGBufferGlossPS)    },
+            { g_pGBufferLightPS,    sizeof(g_pGBufferLightPS)    },
+#elif KILLZONE_GBUFFER
+            { g_pKillzoneGBufferDepthPS,               sizeof(g_pKillzoneGBufferDepthPS)              },
+            { g_pKillzoneGBufferLightAccumulationPS,   sizeof(g_pKillzoneGBufferLightAccumulationPS)  },
+            { g_pKillzoneGBufferGlossPS,               sizeof(g_pKillzoneGBufferGlossPS)              },
+            { g_pKillzoneGBufferNormalPS,              sizeof(g_pKillzoneGBufferNormalPS)             },
+            { g_pKillzoneGBufferMotionVectorPS,        sizeof(g_pKillzoneGBufferMotionVectorPS)       },
+            { g_pKillzoneGBufferSpecularIntensityPS,   sizeof(g_pKillzoneGBufferSpecularIntensityPS)  },
+            { g_pKillzoneGBufferDiffuseAlbedoPS,       sizeof(g_pKillzoneGBufferDiffuseAlbedoPS)      },
+            { g_pKillzoneGBufferSunOcclusionPS,        sizeof(g_pKillzoneGBufferSunOcclusionPS)       },
+            { g_pKillzoneGBufferLightTiledPS,          sizeof(g_pKillzoneGBufferLightTiledPS)         },
+#endif
+        },
+        // Tiled DICE 2.5 AABB
+        {
+ #if SIMPLE_GBUFFER
+            { g_pGBufferWorldPosPS, sizeof(g_pGBufferWorldPosPS) },
+            { g_pGBufferNormalPS,   sizeof(g_pGBufferNormalPS)   },
+            { g_pGBufferDepthPS,    sizeof(g_pGBufferDepthPS)    },
+            { g_pGBufferAlbedoPS,   sizeof(g_pGBufferAlbedoPS)   },
+            { g_pGBufferSpecularPS, sizeof(g_pGBufferSpecularPS) },
+            { g_pGBufferGlossPS,    sizeof(g_pGBufferGlossPS)    },
+            { g_pGBufferLightPS,    sizeof(g_pGBufferLightPS)    },
+#elif KILLZONE_GBUFFER
+            { g_pKillzoneGBufferDepthPS,               sizeof(g_pKillzoneGBufferDepthPS)              },
+            { g_pKillzoneGBufferLightAccumulationPS,   sizeof(g_pKillzoneGBufferLightAccumulationPS)  },
+            { g_pKillzoneGBufferGlossPS,               sizeof(g_pKillzoneGBufferGlossPS)              },
+            { g_pKillzoneGBufferNormalPS,              sizeof(g_pKillzoneGBufferNormalPS)             },
+            { g_pKillzoneGBufferMotionVectorPS,        sizeof(g_pKillzoneGBufferMotionVectorPS)       },
+            { g_pKillzoneGBufferSpecularIntensityPS,   sizeof(g_pKillzoneGBufferSpecularIntensityPS)  },
+            { g_pKillzoneGBufferDiffuseAlbedoPS,       sizeof(g_pKillzoneGBufferDiffuseAlbedoPS)      },
+            { g_pKillzoneGBufferSunOcclusionPS,        sizeof(g_pKillzoneGBufferSunOcclusionPS)       },
+            { g_pKillzoneGBufferLightTiledPS,          sizeof(g_pKillzoneGBufferLightTiledPS)         },
+#endif
+        },
+        // Tiled INTEL
+        {
+ #if SIMPLE_GBUFFER
+            { g_pGBufferWorldPosPS, sizeof(g_pGBufferWorldPosPS) },
+            { g_pGBufferNormalPS,   sizeof(g_pGBufferNormalPS)   },
+            { g_pGBufferDepthPS,    sizeof(g_pGBufferDepthPS)    },
+            { g_pGBufferAlbedoPS,   sizeof(g_pGBufferAlbedoPS)   },
+            { g_pGBufferSpecularPS, sizeof(g_pGBufferSpecularPS) },
+            { g_pGBufferGlossPS,    sizeof(g_pGBufferGlossPS)    },
+            { g_pGBufferLightPS,    sizeof(g_pGBufferLightPS)    },
+#elif KILLZONE_GBUFFER
+            { g_pKillzoneGBufferDepthPS,               sizeof(g_pKillzoneGBufferDepthPS)              },
+            { g_pKillzoneGBufferLightAccumulationPS,   sizeof(g_pKillzoneGBufferLightAccumulationPS)  },
+            { g_pKillzoneGBufferGlossPS,               sizeof(g_pKillzoneGBufferGlossPS)              },
+            { g_pKillzoneGBufferNormalPS,              sizeof(g_pKillzoneGBufferNormalPS)             },
+            { g_pKillzoneGBufferMotionVectorPS,        sizeof(g_pKillzoneGBufferMotionVectorPS)       },
+            { g_pKillzoneGBufferSpecularIntensityPS,   sizeof(g_pKillzoneGBufferSpecularIntensityPS)  },
+            { g_pKillzoneGBufferDiffuseAlbedoPS,       sizeof(g_pKillzoneGBufferDiffuseAlbedoPS)      },
+            { g_pKillzoneGBufferSunOcclusionPS,        sizeof(g_pKillzoneGBufferSunOcclusionPS)       },
+            { g_pKillzoneGBufferLightTiledPS,          sizeof(g_pKillzoneGBufferLightTiledPS)         },
+#endif
+        },
+        // Clustered
         {
  #if SIMPLE_GBUFFER
             { g_pGBufferWorldPosPS, sizeof(g_pGBufferWorldPosPS) },
@@ -778,11 +992,20 @@ void Sponza::SetRenderType(eRenderType renderType) noexcept
     case eLightType::TILED:
         OutputDebugString(L"\tTILED LIGHTS PASS\n");
         break;
+    case eLightType::TILED_2_5:
+        OutputDebugString(L"\tTILED 2.5D CULLING LIGHTS PASS\n");
+        break;
+    case eLightType::TILED_2_5_AABB:
+        OutputDebugString(L"\tTILED 2.5D AABB CULLING LIGHTS PASS\n");
+        break;
     case eLightType::TILED_DICE:
         OutputDebugString(L"\tDICE TILED LIGHTS PASS\n");
         break;
     case eLightType::TILED_DICE_2_5:
         OutputDebugString(L"\tDICE 2.5 CULLING TILED LIGHTS PASS\n");
+        break;
+    case eLightType::TILED_DICE_2_5_AABB:
+        OutputDebugString(L"\tDICE 2.5 AABB CULLING TILED LIGHTS PASS\n");
         break;
     case eLightType::TILED_INTEL:
         OutputDebugString(L"\tINTEL TILED LIGHTS PASS\n");
@@ -1010,11 +1233,48 @@ void Sponza::SetNextLightType()
         OutputDebugString(L"\tTILED LIGHTS PASS\n");
     }
     break;
+    case eLightType::TILED_2_5:
+    {
+        uint32_t DestCount = 2;
+        uint32_t SourceCounts[] = { 1, 1 };
+
+        D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
+        {
+            Lighting::m_LightGrid.GetSRV(),         // 16
+            Lighting::m_LightGridBitMask.GetSRV(),  // 17
+            //g_aSceneGBuffers[0].GetSRV(),
+            //g_aSceneGBuffers[1].GetSRV(),
+        };
+
+        g_Device->CopyDescriptors(1, &(Renderer::m_CommonTextures + 6 * Renderer::s_TextureHeap.GetDescriptorSize()), &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        OutputDebugString(L"\tTILED 2.5D CULLING LIGHTS PASS\n");
+    }
+    break;
+    case eLightType::TILED_2_5_AABB:
+    {
+        uint32_t DestCount = 2;
+        uint32_t SourceCounts[] = { 1, 1 };
+
+        D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
+        {
+            Lighting::m_LightGrid.GetSRV(),         // 16
+            Lighting::m_LightGridBitMask.GetSRV(),  // 17
+            //g_aSceneGBuffers[0].GetSRV(),
+            //g_aSceneGBuffers[1].GetSRV(),
+        };
+
+        g_Device->CopyDescriptors(1, &(Renderer::m_CommonTextures + 6 * Renderer::s_TextureHeap.GetDescriptorSize()), &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        OutputDebugString(L"\tTILED 2.5D AABB CULLING LIGHTS PASS\n");
+    }
+    break;
     case eLightType::TILED_DICE:
         OutputDebugString(L"\tDICE TILED LIGHTS PASS\n");
         break;
     case eLightType::TILED_DICE_2_5:
         OutputDebugString(L"\tDICE 2.5 CULLING TILED LIGHTS PASS\n");
+        break;
+    case eLightType::TILED_DICE_2_5_AABB:
+        OutputDebugString(L"\tDICE 2.5 AABB CULLING TILED LIGHTS PASS\n");
         break;
     case eLightType::TILED_INTEL:
         OutputDebugString(L"\tINTEL TILED LIGHTS PASS\n");
@@ -1065,12 +1325,49 @@ void Sponza::SetPreviousLightType()
         g_Device->CopyDescriptors(1, &(Renderer::m_CommonTextures + 6 * Renderer::s_TextureHeap.GetDescriptorSize()), &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         OutputDebugString(L"\tTILED LIGHTS PASS\n");
     }
-        break;
+    break;
+    case eLightType::TILED_2_5:
+    {
+        uint32_t DestCount = 2;
+        uint32_t SourceCounts[] = { 1, 1 };
+
+        D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
+        {
+            Lighting::m_LightGrid.GetSRV(),         // 16
+            Lighting::m_LightGridBitMask.GetSRV(),  // 17
+            //g_aSceneGBuffers[0].GetSRV(),
+            //g_aSceneGBuffers[1].GetSRV(),
+        };
+
+        g_Device->CopyDescriptors(1, &(Renderer::m_CommonTextures + 6 * Renderer::s_TextureHeap.GetDescriptorSize()), &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        OutputDebugString(L"\tTILED 2.5D CULLING LIGHTS PASS\n");
+    }
+    break;
+    case eLightType::TILED_2_5_AABB:
+    {
+        uint32_t DestCount = 2;
+        uint32_t SourceCounts[] = { 1, 1 };
+
+        D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
+        {
+            Lighting::m_LightGrid.GetSRV(),         // 16
+            Lighting::m_LightGridBitMask.GetSRV(),  // 17
+            //g_aSceneGBuffers[0].GetSRV(),
+            //g_aSceneGBuffers[1].GetSRV(),
+        };
+
+        g_Device->CopyDescriptors(1, &(Renderer::m_CommonTextures + 6 * Renderer::s_TextureHeap.GetDescriptorSize()), &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        OutputDebugString(L"\tTILED 2.5D AABB CULLING LIGHTS PASS\n");
+    }
+    break;
     case eLightType::TILED_DICE:
         OutputDebugString(L"\tDICE TILED LIGHTS PASS\n");
         break;
     case eLightType::TILED_DICE_2_5:
         OutputDebugString(L"\tDICE 2.5 CULLING TILED LIGHTS PASS\n");
+        break;
+    case eLightType::TILED_DICE_2_5_AABB:
+        OutputDebugString(L"\tDICE 2.5 AABB CULLING TILED LIGHTS PASS\n");
         break;
     case eLightType::TILED_INTEL:
         OutputDebugString(L"\tINTEL TILED LIGHTS PASS\n");
@@ -1443,6 +1740,10 @@ void Sponza::RenderScene(
     switch (m_CurrentLightType)
     {
     case eLightType::TILED:
+        // intentional fallthrough
+    case eLightType::TILED_2_5:
+        // intentional fallthrough
+    case eLightType::TILED_2_5_AABB:
         psConstants.InvTileDim[0] = 1.0f / Lighting::LightGridDim;
         psConstants.InvTileDim[1] = 1.0f / Lighting::LightGridDim;
         psConstants.TileCount[0] = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), Lighting::LightGridDim);
@@ -1453,6 +1754,8 @@ void Sponza::RenderScene(
     case eLightType::TILED_DICE:
         // intentional fallthrough
     case eLightType::TILED_DICE_2_5:
+        // intentional fallthrough
+    case eLightType::TILED_DICE_2_5_AABB:
         psConstants.InvTileDim[0] = 1.0f / Lighting::LightGridDim;
         psConstants.InvTileDim[1] = 1.0f / Lighting::LightGridDim;
         psConstants.TileCount[0] = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), Lighting::LightGridDim);
@@ -1545,10 +1848,18 @@ void Sponza::RenderScene(
         case eLightType::TILED:
             Lighting::FillLightGrid(gfxContext, camera);
             break;
+        case eLightType::TILED_2_5:
+            Lighting::FillLightGrid(gfxContext, camera);
+            break;
+        case eLightType::TILED_2_5_AABB:
+            Lighting::FillLightGrid(gfxContext, camera);
+            break;
         case eLightType::TILED_DICE:
-            break;
+            // intentional fallthrough
         case eLightType::TILED_DICE_2_5:
-            break;
+            // intentional fallthrough
+        case eLightType::TILED_DICE_2_5_AABB:
+            // intentional fallthrough
         case eLightType::TILED_INTEL:
             break;
         case eLightType::CLUSTERED:
@@ -1651,7 +1962,7 @@ void Sponza::RenderScene(
                         RenderObjects(gfxContext, camera, camera.GetPosition(), Sponza::kOpaque);
                         //RenderObjects(gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kOpaque);
 
-                        if (m_CurrentLightType != eLightType::TILED_DICE && m_CurrentLightType != eLightType::TILED_DICE_2_5 && m_CurrentLightType != eLightType::TILED_INTEL)
+                        if (m_CurrentLightType != eLightType::TILED_DICE && m_CurrentLightType != eLightType::TILED_DICE_2_5 && m_CurrentLightType != eLightType::TILED_DICE_2_5_AABB && m_CurrentLightType != eLightType::TILED_INTEL)
                         {
                             for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
                             {
@@ -1687,6 +1998,10 @@ void Sponza::RenderScene(
                     switch (m_CurrentLightType)
                     {
                     case eLightType::TILED:
+                        // intentional fallthrough
+                    case eLightType::TILED_2_5:
+                        // intentional fallthrough
+                    case eLightType::TILED_2_5_AABB:
                         gfxContext.SetPipelineState(m_aGBufferPSOs[static_cast<size_t>(m_CurrentLightType)][static_cast<size_t>(m_CurrentGBufferType)]);
                         gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV());
                         RenderDeferredObjects(gfxContext, camera, camera.GetPosition(), Sponza::kOpaque);
@@ -1700,6 +2015,11 @@ void Sponza::RenderScene(
                         break;
                     case eLightType::TILED_DICE_2_5:
                         Lighting::KillzoneDiceLightCullingGrid(gfxContext, camera, m_GBufferSRVs);
+                        pfnSetupGraphicsState();
+                        //gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, Renderer::s_TextureHeap.GetHeapPointer());
+                        break;
+                    case eLightType::TILED_DICE_2_5_AABB:
+                        Lighting::KillzoneDiceLightAABBCullingGrid(gfxContext, camera, m_GBufferSRVs);
                         pfnSetupGraphicsState();
                         //gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, Renderer::s_TextureHeap.GetHeapPointer());
                         break;
