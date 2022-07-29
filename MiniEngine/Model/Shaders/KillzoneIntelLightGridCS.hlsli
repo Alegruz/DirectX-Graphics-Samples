@@ -11,6 +11,7 @@
 // Author(s):	Alex Nankervis
 //
 
+#include "Common.hlsli"
 #include "LightGrid.hlsli"
 
 // outdated warning about for-loop variable scope
@@ -340,11 +341,18 @@ void main(
     }
     GroupMemoryBarrierWithGroupSync();
     
+
     if (depth <= 0.0f)
     {
         //gOutputTexture[DTid.xy] += 0;
         return;
     }
+    
+#if LIGHT_DENSITY
+    float density = (float) (gSharedVisibleLightCountSphere + gSharedVisibleLightCountCone + gSharedVisibleLightCountConeShadowed) / (float) MAX_LIGHTS;
+    gOutputTexture[DTid.xy] += float4(ConvertToRadarColor(density), 1);
+    return;
+#else
     
     float3 color = 0;
     
@@ -358,6 +366,10 @@ void main(
     float specularMask = rt2Data.a;
     float4 rt3Data = gRt3[DTid.xy];
     float3 diffuseAlbedo = rt3Data.rgb;
+    if (dot(normal, 1.0) == 0.0 && dot(diffuseAlbedo, 1.0) == 0.0)
+    {
+        return;
+    }
     float gloss = rt3Data.a * 256.0;
     
     float4 clipSpacePosition = float4(((float) DTid.x / (float) ViewportWidth) * 2.0f - 1.0f, ((float) DTid.y / (float) ViewportHeight) * 2.0f - 1.0f, depth, 1.0f);
@@ -390,28 +402,106 @@ void main(
     lightData.shadowTextureMatrix, \
     lightIndex
     
+#if FALSE_POSITIVE_RATE
+    uint falsePositiveCount = 0;
+#endif
     uint lightIt = 0;
     for (; lightIt < gSharedVisibleLightCountSphere; ++lightIt)
     {
         uint lightIndex = gSharedVisibleLightIndicesSphere[lightIt];
         LightData lightData = gLightBuffer[lightIndex];
+#if FALSE_POSITIVE_RATE
+        float3 lightDir = lightData.pos - worldPos.xyz;
+        float lightDistSq = dot(lightDir, lightDir);
+        float invLightDist = rsqrt(lightDistSq);
+        lightDir *= invLightDist;
+
+        // modify 1/d^2 * R^2 to fall off at a fixed radius
+        // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
+        float distanceFalloff = lightData.radiusSq * (invLightDist * invLightDist);
+        distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
+        
+        falsePositiveCount += (distanceFalloff == 0.0);
+        
+        float3 pointLightColor = ApplyPointLight(POINT_LIGHT_ARGS);
+        //falsePositiveCount += (pointLightColor.r == 0 && pointLightColor.g == 0 && pointLightColor.b == 0);
+        color += pointLightColor;
+#else
         color += ApplyPointLight(POINT_LIGHT_ARGS);
+#endif
     }
 
     for (lightIt = 0; lightIt < gSharedVisibleLightCountCone; ++lightIt)
     {
         uint lightIndex = gSharedVisibleLightIndicesCone[lightIt];
         LightData lightData = gLightBuffer[lightIndex];
+#if FALSE_POSITIVE_RATE
+        float3 lightDir = lightData.pos - worldPos.xyz;
+        float lightDistSq = dot(lightDir, lightDir);
+        float invLightDist = rsqrt(lightDistSq);
+        lightDir *= invLightDist;
+
+        // modify 1/d^2 * R^2 to fall off at a fixed radius
+        // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
+        float distanceFalloff = lightData.radiusSq * (invLightDist * invLightDist);
+        distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
+
+        float coneFalloff = dot(-lightDir, lightData.coneDir);
+        coneFalloff = saturate((coneFalloff - lightData.coneAngles.y) * lightData.coneAngles.x);
+        
+        falsePositiveCount += (distanceFalloff * coneFalloff == 0.0);
+        
+        float3 coneLightColor = ApplyConeLight(CONE_LIGHT_ARGS);
+        //falsePositiveCount += (coneLightColor.r == 0 && coneLightColor.g == 0 && coneLightColor.b == 0);
+        color += coneLightColor;
+#else
         color += ApplyConeLight(CONE_LIGHT_ARGS);
+#endif
     }
     
     for (lightIt = 0; lightIt < gSharedVisibleLightCountConeShadowed; ++lightIt)
     {
         uint lightIndex = gSharedVisibleLightIndicesConeShadowed[lightIt];
         LightData lightData = gLightBuffer[lightIndex];
+#if FALSE_POSITIVE_RATE
+        float3 lightDir = lightData.pos - worldPos.xyz;
+        float lightDistSq = dot(lightDir, lightDir);
+        float invLightDist = rsqrt(lightDistSq);
+        lightDir *= invLightDist;
+
+        // modify 1/d^2 * R^2 to fall off at a fixed radius
+        // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
+        float distanceFalloff = lightData.radiusSq * (invLightDist * invLightDist);
+        distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
+
+        float coneFalloff = dot(-lightDir, lightData.coneDir);
+        coneFalloff = saturate((coneFalloff - lightData.coneAngles.y) * lightData.coneAngles.x);
+        
+        falsePositiveCount += (distanceFalloff * coneFalloff == 0.0);
+        
+        float3 coneShadowedLightColor = ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
+        //falsePositiveCount += (coneShadowedLightColor.r == 0 && coneShadowedLightColor.g == 0 && coneShadowedLightColor.b == 0);
+        color += coneShadowedLightColor;
+#else
         color += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
+#endif
     }
     
+#if FALSE_POSITIVE_RATE
+    uint totalLightsCount = gSharedVisibleLightCountSphere + gSharedVisibleLightCountCone + gSharedVisibleLightCountConeShadowed;
+    if (totalLightsCount)
+    {
+        float fpr = (float) falsePositiveCount / (float) totalLightsCount;
+        gOutputTexture[DTid.xy] = float4(ConvertToRadarColor(fpr), 1);
+    }
+    else
+    {
+        gOutputTexture[DTid.xy] = 0;
+    }
+    return;
+#else
     gOutputTexture[DTid.xy] += float4(color, 1);
     //gOutputTexture[DTid.xy] += float4(lightDensity, lightDensity, lightDensity, 1);
+#endif
+#endif
 }

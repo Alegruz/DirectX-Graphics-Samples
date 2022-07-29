@@ -26,6 +26,16 @@
 #include "CompiledShaders/FillLightGridCS_24.h"
 #include "CompiledShaders/FillLightGridCS_32.h"
 
+#include "CompiledShaders/FillLight2_5DGridCS_8.h"
+#include "CompiledShaders/FillLight2_5DGridCS_16.h"
+#include "CompiledShaders/FillLight2_5DGridCS_24.h"
+#include "CompiledShaders/FillLight2_5DGridCS_32.h"
+
+#include "CompiledShaders/FillLight2_5DAABBGridCS_8.h"
+#include "CompiledShaders/FillLight2_5DAABBGridCS_16.h"
+#include "CompiledShaders/FillLight2_5DAABBGridCS_24.h"
+#include "CompiledShaders/FillLight2_5DAABBGridCS_32.h"
+
 #include "CompiledShaders/FillLightClusterCS_8_8.h"
 #include "CompiledShaders/FillLightClusterCS_16_16.h"
 #include "CompiledShaders/FillLightClusterCS_24_16.h"
@@ -34,26 +44,74 @@
 #include "CompiledShaders/FillLightClusterCS_64_16.h"
 #include "CompiledShaders/FillLightClusterCS_64_32.h"
 
+#include "CompiledShaders/FillLightClusterAABBCS_8_8.h"
+#include "CompiledShaders/FillLightClusterAABBCS_16_16.h"
+#include "CompiledShaders/FillLightClusterAABBCS_24_16.h"
+#include "CompiledShaders/FillLightClusterAABBCS_32_16.h"
+#include "CompiledShaders/FillLightClusterAABBCS_32_32.h"
+#include "CompiledShaders/FillLightClusterAABBCS_64_16.h"
+#include "CompiledShaders/FillLightClusterAABBCS_64_32.h"
+
 #if KILLZONE_GBUFFER
 #include "CompiledShaders/KillzoneLightGridCS_8.h"
 #include "CompiledShaders/KillzoneLightGridCS_16.h"
 #include "CompiledShaders/KillzoneLightGridCS_24.h"
 #include "CompiledShaders/KillzoneLightGridCS_32.h"
 
+#include "CompiledShaders/KillzoneLightGridDensityCS_8.h"
+#include "CompiledShaders/KillzoneLightGridDensityCS_16.h"
+#include "CompiledShaders/KillzoneLightGridDensityCS_24.h"
+#include "CompiledShaders/KillzoneLightGridDensityCS_32.h"
+
+#include "CompiledShaders/KillzoneLightGridFPRCS_8.h"
+#include "CompiledShaders/KillzoneLightGridFPRCS_16.h"
+#include "CompiledShaders/KillzoneLightGridFPRCS_24.h"
+#include "CompiledShaders/KillzoneLightGridFPRCS_32.h"
+
 #include "CompiledShaders/KillzoneLightCullingGridCS_8.h"
 #include "CompiledShaders/KillzoneLightCullingGridCS_16.h"
 #include "CompiledShaders/KillzoneLightCullingGridCS_24.h"
 #include "CompiledShaders/KillzoneLightCullingGridCS_32.h"
+
+#include "CompiledShaders/KillzoneLightCullingGridDensityCS_8.h"
+#include "CompiledShaders/KillzoneLightCullingGridDensityCS_16.h"
+#include "CompiledShaders/KillzoneLightCullingGridDensityCS_24.h"
+#include "CompiledShaders/KillzoneLightCullingGridDensityCS_32.h"
+
+#include "CompiledShaders/KillzoneLightCullingGridFPRCS_8.h"
+#include "CompiledShaders/KillzoneLightCullingGridFPRCS_16.h"
+#include "CompiledShaders/KillzoneLightCullingGridFPRCS_24.h"
+#include "CompiledShaders/KillzoneLightCullingGridFPRCS_32.h"
 
 #include "CompiledShaders/KillzoneLightAABBCullingGridCS_8.h"
 #include "CompiledShaders/KillzoneLightAABBCullingGridCS_16.h"
 #include "CompiledShaders/KillzoneLightAABBCullingGridCS_24.h"
 #include "CompiledShaders/KillzoneLightAABBCullingGridCS_32.h"
 
+#include "CompiledShaders/KillzoneLightAABBCullingGridDensityCS_8.h"
+#include "CompiledShaders/KillzoneLightAABBCullingGridDensityCS_16.h"
+#include "CompiledShaders/KillzoneLightAABBCullingGridDensityCS_24.h"
+#include "CompiledShaders/KillzoneLightAABBCullingGridDensityCS_32.h"
+
+#include "CompiledShaders/KillzoneLightAABBCullingGridFPRCS_8.h"
+#include "CompiledShaders/KillzoneLightAABBCullingGridFPRCS_16.h"
+#include "CompiledShaders/KillzoneLightAABBCullingGridFPRCS_24.h"
+#include "CompiledShaders/KillzoneLightAABBCullingGridFPRCS_32.h"
+
 #include "CompiledShaders/KillzoneIntelLightGridCS_8.h"
 #include "CompiledShaders/KillzoneIntelLightGridCS_16.h"
 #include "CompiledShaders/KillzoneIntelLightGridCS_24.h"
 #include "CompiledShaders/KillzoneIntelLightGridCS_32.h"
+
+#include "CompiledShaders/KillzoneIntelLightGridDensityCS_8.h"
+#include "CompiledShaders/KillzoneIntelLightGridDensityCS_16.h"
+#include "CompiledShaders/KillzoneIntelLightGridDensityCS_24.h"
+#include "CompiledShaders/KillzoneIntelLightGridDensityCS_32.h"
+
+#include "CompiledShaders/KillzoneIntelLightGridFPRCS_8.h"
+#include "CompiledShaders/KillzoneIntelLightGridFPRCS_16.h"
+#include "CompiledShaders/KillzoneIntelLightGridFPRCS_24.h"
+#include "CompiledShaders/KillzoneIntelLightGridFPRCS_32.h"
 #endif
 
 using namespace Math;
@@ -73,6 +131,12 @@ struct LightData
     float shadowTextureMatrix[16];
 };
 
+struct VolumeTileAABB
+{
+    float minPoint[4];
+    float maxPoint[4];
+};
+
 enum { kMinLightGridDim = 8 };
 
 namespace Lighting
@@ -89,7 +153,7 @@ namespace Lighting
         {64, 16},
         {64, 32}
     };
-    eClusterType LightClusterType = eClusterType::_32x32x16;
+    eClusterType LightClusterType = eClusterType::_16x16x16;
 
     RootSignature m_FillLightRootSig;
     RootSignature m_FillLightClusterSig;
@@ -97,55 +161,1520 @@ namespace Lighting
     RootSignature m_KillzoneLightRootSig;
 #endif
 
-    ComputePSO m_FillLightGridCS_8(L"Fill Light Grid 8 CS");
-    ComputePSO m_FillLightGridCS_16(L"Fill Light Grid 16 CS");
-    ComputePSO m_FillLightGridCS_24(L"Fill Light Grid 24 CS");
-    ComputePSO m_FillLightGridCS_32(L"Fill Light Grid 32 CS");
+    ComputePSO m_aForwardPSOs[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eClusterType::COUNT)] =
+    {
+        // Forward+
+        {
+            { (L"Fill Light Grid 8 CS") }, 
+            { (L"Fill Light Grid 16 CS") }, 
+            { (L"Fill Light Grid 24 CS") }, 
+            { (L"Fill Light Grid 32 CS") },
+        },
+        // Forward+ 2.5D Culling
+        {
+            { (L"Fill Light 2.5D Culling Grid 8 CS") },
+            { (L"Fill Light 2.5D Culling Grid 16 CS") },
+            { (L"Fill Light 2.5D Culling Grid 24 CS") },
+            { (L"Fill Light 2.5D Culling Grid 32 CS") },
+        },
+        // Forward+ 2.5D AABB Culling
+        {
+            { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+            { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+            { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+            { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+        },
+        // Forward+ (DICE)
+        {
+            { (L"Fill Light Grid 8 CS") },
+            { (L"Fill Light Grid 16 CS") },
+            { (L"Fill Light Grid 24 CS") },
+            { (L"Fill Light Grid 32 CS") },
+        },
+        // Forward+ (DICE 2.5)
+        {
+            { (L"Fill Light 2.5D Culling Grid 8 CS") },
+            { (L"Fill Light 2.5D Culling Grid 16 CS") },
+            { (L"Fill Light 2.5D Culling Grid 24 CS") },
+            { (L"Fill Light 2.5D Culling Grid 32 CS") },
+        },
+        // Forward+ (DICE 2.5 AABB)
+        {
+            { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+            { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+            { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+            { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+        },
+        // Forward+ (INTEL)
+        {
+            { (L"Fill Light Grid 8 CS") },
+            { (L"Fill Light Grid 16 CS") },
+            { (L"Fill Light Grid 24 CS") },
+            { (L"Fill Light Grid 32 CS") },
+        },
+        // Clustered?
+        {
+            { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+            { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+            { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+            { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+            { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+            { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+            { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+        }
+    };
 
-    ComputePSO m_FillLight2_5DGridCS_8(L"Fill Light 2.5D Culling Grid 8 CS");
-    ComputePSO m_FillLight2_5DGridCS_16(L"Fill Light 2.5D Culling Grid 16 CS");
-    ComputePSO m_FillLight2_5DGridCS_24(L"Fill Light 2.5D Culling Grid 24 CS");
-    ComputePSO m_FillLight2_5DGridCS_32(L"Fill Light 2.5D Culling Grid 32 CS");
-
-    ComputePSO m_FillLight2_5DAABBGridCS_8(L"Fill Light 2.5D AABB Culling Grid 8 CS");
-    ComputePSO m_FillLight2_5DAABBGridCS_16(L"Fill Light 2.5D AABB Culling Grid 16 CS");
-    ComputePSO m_FillLight2_5DAABBGridCS_24(L"Fill Light 2.5D AABB Culling Grid 24 CS");
-    ComputePSO m_FillLight2_5DAABBGridCS_32(L"Fill Light 2.5D AABB Culling Grid 32 CS");
-
-    ComputePSO m_FillLightClusterCS_8_8(L"Fill Light Cluster 8 x 8 x 8 CS");
-    ComputePSO m_FillLightClusterCS_16_16(L"Fill Light Cluster 16 x 16 x 16 CS");
-    ComputePSO m_FillLightClusterCS_24_16(L"Fill Light Cluster 24 x 24 x 16 CS");
-    ComputePSO m_FillLightClusterCS_32_16(L"Fill Light Cluster 32 x 32 x 16 CS");
-    ComputePSO m_FillLightClusterCS_32_32(L"Fill Light Cluster 32 x 32 x 32 CS");
-    ComputePSO m_FillLightClusterCS_64_16(L"Fill Light Cluster 64 x 64 x 16 CS");
-    ComputePSO m_FillLightClusterCS_64_32(L"Fill Light Cluster 64 x 64 x 32 CS");
+    ComputePSO m_aClusterAABBPSOs[static_cast<size_t>(eClusterType::COUNT)] =
+    {
+        // Clustered
+        { (L"Fill Light Cluster AABB 8 x 8 x 8 CS") },
+        { (L"Fill Light Cluster AABB 16 x 16 x 16 CS") },
+        { (L"Fill Light Cluster AABB 24 x 24 x 16 CS") },
+        { (L"Fill Light Cluster AABB 32 x 32 x 16 CS") },
+        { (L"Fill Light Cluster AABB 32 x 32 x 32 CS") },
+        { (L"Fill Light Cluster AABB 64 x 64 x 16 CS") },
+        { (L"Fill Light Cluster AABB 64 x 64 x 32 CS") },
+    };
 
 #if KILLZONE_GBUFFER
-    ComputePSO m_KillzoneLightGridCS_8(L"Killzone Light Grid 8 CS");
-    ComputePSO m_KillzoneLightGridCS_16(L"Killzone Light Grid 16 CS");
-    ComputePSO m_KillzoneLightGridCS_24(L"Killzone Light Grid 24 CS");
-    ComputePSO m_KillzoneLightGridCS_32(L"Killzone Light Grid 32 CS");
-
-    ComputePSO m_KillzoneLightCullingGridCS_8(L"Killzone Light 2.5 Culling Grid 8 CS");
-    ComputePSO m_KillzoneLightCullingGridCS_16(L"Killzone Light 2.5 Culling Grid 16 CS");
-    ComputePSO m_KillzoneLightCullingGridCS_24(L"Killzone Light 2.5 Culling Grid 24 CS");
-    ComputePSO m_KillzoneLightCullingGridCS_32(L"Killzone Light 2.5 Culling Grid 32 CS");
-
-    ComputePSO m_KillzoneLightAABBCullingGridCS_8(L"Killzone Light 2.5 AABB Culling Grid 8 CS");
-    ComputePSO m_KillzoneLightAABBCullingGridCS_16(L"Killzone Light 2.5 AABB Culling Grid 16 CS");
-    ComputePSO m_KillzoneLightAABBCullingGridCS_24(L"Killzone Light 2.5 AABB Culling Grid 24 CS");
-    ComputePSO m_KillzoneLightAABBCullingGridCS_32(L"Killzone Light 2.5 AABB Culling Grid 32 CS");
-
-    ComputePSO m_KillzoneIntelLightGridCS_8(L"Killzone Intel Light Grid 8 CS");
-    ComputePSO m_KillzoneIntelLightGridCS_16(L"Killzone Intel Light Grid 16 CS");
-    ComputePSO m_KillzoneIntelLightGridCS_24(L"Killzone Intel Light Grid 24 CS");
-    ComputePSO m_KillzoneIntelLightGridCS_32(L"Killzone Intel Light Grid 32 CS");
+    ComputePSO m_aKillzonePSOs[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eGBufferDataType::COUNT) + 1][static_cast<size_t>(eClusterType::COUNT)] =
+    {
+        // Tiled
+        {
+            // Depth
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT0_INTENSITY
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+        },
+        // Tiled 2.5D Culling
+        {
+            // Depth
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // RT0_INTENSITY
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+        },
+        // Tiled 2.5D AABB Culling
+        {
+            // Depth
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // RT0_INTENSITY
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+        },
+        // DICE Tiled
+        {
+            // Depth
+            {
+                { (L"DICE Depth Light Grid 8 CS") },
+                { (L"DICE Depth Light Grid 16 CS") },
+                { (L"DICE Depth Light Grid 24 CS") },
+                { (L"DICE Depth Light Grid 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"DICE Light Accumulation Light Grid 8 CS") },
+                { (L"DICE Light Accumulation Light Grid 16 CS") },
+                { (L"DICE Light Accumulation Light Grid 24 CS") },
+                { (L"DICE Light Accumulation Light Grid 32 CS") },
+            },
+            // RT0_INTENSITY
+            {
+                { (L"DICE Intensity Light Grid 8 CS") },
+                { (L"DICE Intensity Light Grid 16 CS") },
+                { (L"DICE Intensity Light Grid 24 CS") },
+                { (L"DICE Intensity Light Grid 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"DICE Normal Light Grid 8 CS") },
+                { (L"DICE Normal Light Grid 16 CS") },
+                { (L"DICE Normal Light Grid 24 CS") },
+                { (L"DICE Normal Light Grid 32 CS") },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { (L"DICE Motion Vectors Light Grid 8 CS") },
+                { (L"DICE Motion Vectors Light Grid 16 CS") },
+                { (L"DICE Motion Vectors Light Grid 24 CS") },
+                { (L"DICE Motion Vectors Light Grid 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { (L"DICE Specular Intensity Light Grid 8 CS") },
+                { (L"DICE Specular Intensity Light Grid 16 CS") },
+                { (L"DICE Specular Intensity Light Grid 24 CS") },
+                { (L"DICE Specular Intensity Light Grid 32 CS") },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { (L"DICE Diffuse Albedo Light Grid 8 CS") },
+                { (L"DICE Diffuse Albedo Light Grid 16 CS") },
+                { (L"DICE Diffuse Albedo Light Grid 24 CS") },
+                { (L"DICE Diffuse Albedo Light Grid 32 CS") },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { (L"DICE Sun Occlusion Light Grid 8 CS") },
+                { (L"DICE Sun Occlusion Light Grid 16 CS") },
+                { (L"DICE Sun Occlusion Light Grid 24 CS") },
+                { (L"DICE Sun Occlusion Light Grid 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"DICE Light Density Light Grid 8 CS") },
+                { (L"DICE Light Density Light Grid 16 CS") },
+                { (L"DICE Light Density Light Grid 24 CS") },
+                { (L"DICE Light Density Light Grid 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"DICE False Positive Rate Light Grid 8 CS") },
+                { (L"DICE False Positive Rate Light Grid 16 CS") },
+                { (L"DICE False Positive Rate Light Grid 24 CS") },
+                { (L"DICE False Positive Rate Light Grid 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"DICE Light Grid 8 CS") },
+                { (L"DICE Light Grid 16 CS") },
+                { (L"DICE Light Grid 24 CS") },
+                { (L"DICE Light Grid 32 CS") },
+            },
+        },
+        // DICE Tiled 2.5D Culling
+        {
+            // Depth
+            {
+                { (L"DICE Depth 2.5D Culling Light Grid 8 CS") },
+                { (L"DICE Depth 2.5D Culling Light Grid 16 CS") },
+                { (L"DICE Depth 2.5D Culling Light Grid 24 CS") },
+                { (L"DICE Depth 2.5D Culling Light Grid 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"DICE Light 2.5D Culling Accumulation Light Grid 8 CS") },
+                { (L"DICE Light 2.5D Culling Accumulation Light Grid 16 CS") },
+                { (L"DICE Light 2.5D Culling Accumulation Light Grid 24 CS") },
+                { (L"DICE Light 2.5D Culling Accumulation Light Grid 32 CS") },
+            },
+            // RT0_INTENSITY
+            {
+                { (L"DICE Intensity 2.5D Culling Light Grid 8 CS") },
+                { (L"DICE Intensity 2.5D Culling Light Grid 16 CS") },
+                { (L"DICE Intensity 2.5D Culling Light Grid 24 CS") },
+                { (L"DICE Intensity 2.5D Culling Light Grid 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"DICE Normal 2.5D Culling Light Grid 8 CS") },
+                { (L"DICE Normal 2.5D Culling Light Grid 16 CS") },
+                { (L"DICE Normal 2.5D Culling Light Grid 24 CS") },
+                { (L"DICE Normal 2.5D Culling Light Grid 32 CS") },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { (L"DICE Motion Vectors 2.5D Culling Light Grid 8 CS") },
+                { (L"DICE Motion Vectors 2.5D Culling Light Grid 16 CS") },
+                { (L"DICE Motion Vectors 2.5D Culling Light Grid 24 CS") },
+                { (L"DICE Motion Vectors 2.5D Culling Light Grid 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { (L"DICE Specular Intensity 2.5D Culling Light Grid 8 CS") },
+                { (L"DICE Specular Intensity 2.5D Culling Light Grid 16 CS") },
+                { (L"DICE Specular Intensity 2.5D Culling Light Grid 24 CS") },
+                { (L"DICE Specular Intensity 2.5D Culling Light Grid 32 CS") },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { (L"DICE Diffuse Albedo 2.5D Culling Light Grid 8 CS") },
+                { (L"DICE Diffuse Albedo 2.5D Culling Light Grid 16 CS") },
+                { (L"DICE Diffuse Albedo 2.5D Culling Light Grid 24 CS") },
+                { (L"DICE Diffuse Albedo 2.5D Culling Light Grid 32 CS") },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { (L"DICE Sun Occlusion 2.5D Culling Light Grid 8 CS") },
+                { (L"DICE Sun Occlusion 2.5D Culling Light Grid 16 CS") },
+                { (L"DICE Sun Occlusion 2.5D Culling Light Grid 24 CS") },
+                { (L"DICE Sun Occlusion 2.5D Culling Light Grid 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"DICE Light Density 2.5D Culling Light Grid 8 CS") },
+                { (L"DICE Light Density 2.5D Culling Light Grid 16 CS") },
+                { (L"DICE Light Density 2.5D Culling Light Grid 24 CS") },
+                { (L"DICE Light Density 2.5D Culling Light Grid 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"DICE False Positive Rate 2.5D Culling Light Grid 8 CS") },
+                { (L"DICE False Positive Rate 2.5D Culling Light Grid 16 CS") },
+                { (L"DICE False Positive Rate 2.5D Culling Light Grid 24 CS") },
+                { (L"DICE False Positive Rate 2.5D Culling Light Grid 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"DICE 2.5D Culling Light Grid 8 CS") },
+                { (L"DICE 2.5D Culling Light Grid 16 CS") },
+                { (L"DICE 2.5D Culling Light Grid 24 CS") },
+                { (L"DICE 2.5D Culling Light Grid 32 CS") },
+            },
+        },
+        // DICE Tiled 2.5D AABB Culling
+        {
+            // Depth
+            {
+                { (L"DICE Depth 2.5D AABB Culling Light Grid 8 CS") },
+                { (L"DICE Depth 2.5D AABB Culling Light Grid 16 CS") },
+                { (L"DICE Depth 2.5D AABB Culling Light Grid 24 CS") },
+                { (L"DICE Depth 2.5D AABB Culling Light Grid 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"DICE Light 2.5D AABB Culling Accumulation Light Grid 8 CS") },
+                { (L"DICE Light 2.5D AABB Culling Accumulation Light Grid 16 CS") },
+                { (L"DICE Light 2.5D AABB Culling Accumulation Light Grid 24 CS") },
+                { (L"DICE Light 2.5D AABB Culling Accumulation Light Grid 32 CS") },
+            },
+            // RT0_INTENSITY
+            {
+                { (L"DICE Intensity 2.5D AABB Culling Light Grid 8 CS") },
+                { (L"DICE Intensity 2.5D AABB Culling Light Grid 16 CS") },
+                { (L"DICE Intensity 2.5D AABB Culling Light Grid 24 CS") },
+                { (L"DICE Intensity 2.5D AABB Culling Light Grid 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"DICE Normal 2.5D AABB Culling Light Grid 8 CS") },
+                { (L"DICE Normal 2.5D AABB Culling Light Grid 16 CS") },
+                { (L"DICE Normal 2.5D AABB Culling Light Grid 24 CS") },
+                { (L"DICE Normal 2.5D AABB Culling Light Grid 32 CS") },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { (L"DICE Motion Vectors 2.5D AABB Culling Light Grid 8 CS") },
+                { (L"DICE Motion Vectors 2.5D AABB Culling Light Grid 16 CS") },
+                { (L"DICE Motion Vectors 2.5D AABB Culling Light Grid 24 CS") },
+                { (L"DICE Motion Vectors 2.5D AABB Culling Light Grid 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { (L"DICE Specular Intensity 2.5D AABB Culling Light Grid 8 CS") },
+                { (L"DICE Specular Intensity 2.5D AABB Culling Light Grid 16 CS") },
+                { (L"DICE Specular Intensity 2.5D AABB Culling Light Grid 24 CS") },
+                { (L"DICE Specular Intensity 2.5D AABB Culling Light Grid 32 CS") },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { (L"DICE Diffuse Albedo 2.5D AABB Culling Light Grid 8 CS") },
+                { (L"DICE Diffuse Albedo 2.5D AABB Culling Light Grid 16 CS") },
+                { (L"DICE Diffuse Albedo 2.5D AABB Culling Light Grid 24 CS") },
+                { (L"DICE Diffuse Albedo 2.5D AABB Culling Light Grid 32 CS") },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { (L"DICE Sun Occlusion 2.5D AABB Culling Light Grid 8 CS") },
+                { (L"DICE Sun Occlusion 2.5D AABB Culling Light Grid 16 CS") },
+                { (L"DICE Sun Occlusion 2.5D AABB Culling Light Grid 24 CS") },
+                { (L"DICE Sun Occlusion 2.5D AABB Culling Light Grid 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"DICE Light Density 2.5D AABB Culling Light Grid 8 CS") },
+                { (L"DICE Light Density 2.5D AABB Culling Light Grid 16 CS") },
+                { (L"DICE Light Density 2.5D AABB Culling Light Grid 24 CS") },
+                { (L"DICE Light Density 2.5D AABB Culling Light Grid 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"DICE False Positive Rate 2.5D AABB Culling Light Grid 8 CS") },
+                { (L"DICE False Positive Rate 2.5D AABB Culling Light Grid 16 CS") },
+                { (L"DICE False Positive Rate 2.5D AABB Culling Light Grid 24 CS") },
+                { (L"DICE False Positive Rate 2.5D AABB Culling Light Grid 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"DICE 2.5D AABB Culling Light Grid 8 CS") },
+                { (L"DICE 2.5D AABB Culling Light Grid 16 CS") },
+                { (L"DICE 2.5D AABB Culling Light Grid 24 CS") },
+                { (L"DICE 2.5D AABB Culling Light Grid 32 CS") },
+            },
+        },
+        // INTEL Tiled
+        {
+            // Depth
+            {
+                { (L"Intel Depth Light Grid 8 CS") },
+                { (L"Intel Depth Light Grid 16 CS") },
+                { (L"Intel Depth Light Grid 24 CS") },
+                { (L"Intel Depth Light Grid 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"Intel Light Accumulation Light Grid 8 CS") },
+                { (L"Intel Light Accumulation Light Grid 16 CS") },
+                { (L"Intel Light Accumulation Light Grid 24 CS") },
+                { (L"Intel Light Accumulation Light Grid 32 CS") },
+            },
+            // RT0_INTENSITY
+            {
+                { (L"Intel Intensity Light Grid 8 CS") },
+                { (L"Intel Intensity Light Grid 16 CS") },
+                { (L"Intel Intensity Light Grid 24 CS") },
+                { (L"Intel Intensity Light Grid 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"Intel Normal Light Grid 8 CS") },
+                { (L"Intel Normal Light Grid 16 CS") },
+                { (L"Intel Normal Light Grid 24 CS") },
+                { (L"Intel Normal Light Grid 32 CS") },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { (L"Intel Motion Vectors Light Grid 8 CS") },
+                { (L"Intel Motion Vectors Light Grid 16 CS") },
+                { (L"Intel Motion Vectors Light Grid 24 CS") },
+                { (L"Intel Motion Vectors Light Grid 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { (L"Intel Specular Intensity Light Grid 8 CS") },
+                { (L"Intel Specular Intensity Light Grid 16 CS") },
+                { (L"Intel Specular Intensity Light Grid 24 CS") },
+                { (L"Intel Specular Intensity Light Grid 32 CS") },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { (L"Intel Diffuse Albedo Light Grid 8 CS") },
+                { (L"Intel Diffuse Albedo Light Grid 16 CS") },
+                { (L"Intel Diffuse Albedo Light Grid 24 CS") },
+                { (L"Intel Diffuse Albedo Light Grid 32 CS") },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { (L"Intel Sun Occlusion Light Grid 8 CS") },
+                { (L"Intel Sun Occlusion Light Grid 16 CS") },
+                { (L"Intel Sun Occlusion Light Grid 24 CS") },
+                { (L"Intel Sun Occlusion Light Grid 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"Intel Light Density Light Grid 8 CS") },
+                { (L"Intel Light Density Light Grid 16 CS") },
+                { (L"Intel Light Density Light Grid 24 CS") },
+                { (L"Intel Light Density Light Grid 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"Intel False Positive Rate Light Grid 8 CS") },
+                { (L"Intel False Positive Rate Light Grid 16 CS") },
+                { (L"Intel False Positive Rate Light Grid 24 CS") },
+                { (L"Intel False Positive Rate Light Grid 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"Intel Light Grid 8 CS") },
+                { (L"Intel Light Grid 16 CS") },
+                { (L"Intel Light Grid 24 CS") },
+                { (L"Intel Light Grid 32 CS") },
+            },
+        },
+        // Clustered?
+        {
+            // Depth
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // RT0_INTENSITY
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+        }
+    };
 #endif
 
+    std::pair<const unsigned char* const, size_t> m_aForwardComputeShaders[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eClusterType::COUNT)] =
+    {
+        // Forward+
+        {
+            { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+            { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+            { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+            { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+        },
+        // Forward+ 2.5D Culling
+        {
+            { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+            { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+            { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+            { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+        },
+        // Forward+ 2.5D AABB Culling
+        {
+            { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+            { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+            { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+            { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+        },
+        // Forward+ (DICE)
+        {
+            { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+            { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+            { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+            { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+        },
+        // Forward+ (DICE 2.5)
+        {
+            { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+            { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+            { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+            { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+        },
+        // Forward+ (DICE 2.5 AABB)
+        {
+            { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+            { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+            { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+            { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+        },
+        // Forward+ (INTEL)
+        {
+            { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+            { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+            { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+            { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+        },
+        // Clustered?
+        {
+            { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+            { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+            { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+            { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+            { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+            { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+            { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+        }
+    };
+
+    std::pair<const unsigned char* const, size_t> m_aClusterAABBComputeShaders[static_cast<size_t>(eClusterType::COUNT)] =
+    {
+        // Clustered?
+        { g_pFillLightClusterAABBCS_8_8, sizeof(g_pFillLightClusterAABBCS_8_8) },
+        { g_pFillLightClusterAABBCS_16_16, sizeof(g_pFillLightClusterAABBCS_16_16) },
+        { g_pFillLightClusterAABBCS_24_16, sizeof(g_pFillLightClusterAABBCS_24_16) },
+        { g_pFillLightClusterAABBCS_32_16, sizeof(g_pFillLightClusterAABBCS_32_16) },
+        { g_pFillLightClusterAABBCS_32_32, sizeof(g_pFillLightClusterAABBCS_32_32) },
+        { g_pFillLightClusterAABBCS_64_16, sizeof(g_pFillLightClusterAABBCS_64_16) },
+        { g_pFillLightClusterAABBCS_64_32, sizeof(g_pFillLightClusterAABBCS_64_32) },
+    };
+
+#if KILLZONE_GBUFFER
+    std::pair<const unsigned char* const, size_t> m_aKillzoneComputeShaders[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eGBufferDataType::COUNT) + 1][static_cast<size_t>(eClusterType::COUNT)] =
+    {
+        // Tiled
+        {
+            // Depth
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT0_INTENSITY
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // FINAL
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+        },
+        // Tiled 2.5D Culling
+        {
+            // Depth
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // RT0_INTENSITY
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // FINAL
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+        },
+        // Tiled 2.5D AABB Culling
+        {
+            // Depth
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // RT0_INTENSITY
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // FINAL
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+        },
+        // DICE Tiled
+        {
+            // Depth
+            {
+                { g_pKillzoneLightGridCS_8, sizeof(g_pKillzoneLightGridCS_8) },
+                { g_pKillzoneLightGridCS_16, sizeof(g_pKillzoneLightGridCS_16) },
+                { g_pKillzoneLightGridCS_24, sizeof(g_pKillzoneLightGridCS_24) },
+                { g_pKillzoneLightGridCS_32, sizeof(g_pKillzoneLightGridCS_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pKillzoneLightGridCS_8, sizeof(g_pKillzoneLightGridCS_8) },
+                { g_pKillzoneLightGridCS_16, sizeof(g_pKillzoneLightGridCS_16) },
+                { g_pKillzoneLightGridCS_24, sizeof(g_pKillzoneLightGridCS_24) },
+                { g_pKillzoneLightGridCS_32, sizeof(g_pKillzoneLightGridCS_32) },
+            },
+            // RT0_INTENSITY
+            {
+                { g_pKillzoneLightGridCS_8, sizeof(g_pKillzoneLightGridCS_8) },
+                { g_pKillzoneLightGridCS_16, sizeof(g_pKillzoneLightGridCS_16) },
+                { g_pKillzoneLightGridCS_24, sizeof(g_pKillzoneLightGridCS_24) },
+                { g_pKillzoneLightGridCS_32, sizeof(g_pKillzoneLightGridCS_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pKillzoneLightGridCS_8, sizeof(g_pKillzoneLightGridCS_8) },
+                { g_pKillzoneLightGridCS_16, sizeof(g_pKillzoneLightGridCS_16) },
+                { g_pKillzoneLightGridCS_24, sizeof(g_pKillzoneLightGridCS_24) },
+                { g_pKillzoneLightGridCS_32, sizeof(g_pKillzoneLightGridCS_32) },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { g_pKillzoneLightGridCS_8, sizeof(g_pKillzoneLightGridCS_8) },
+                { g_pKillzoneLightGridCS_16, sizeof(g_pKillzoneLightGridCS_16) },
+                { g_pKillzoneLightGridCS_24, sizeof(g_pKillzoneLightGridCS_24) },
+                { g_pKillzoneLightGridCS_32, sizeof(g_pKillzoneLightGridCS_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pKillzoneLightGridCS_8, sizeof(g_pKillzoneLightGridCS_8) },
+                { g_pKillzoneLightGridCS_16, sizeof(g_pKillzoneLightGridCS_16) },
+                { g_pKillzoneLightGridCS_24, sizeof(g_pKillzoneLightGridCS_24) },
+                { g_pKillzoneLightGridCS_32, sizeof(g_pKillzoneLightGridCS_32) },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { g_pKillzoneLightGridCS_8, sizeof(g_pKillzoneLightGridCS_8) },
+                { g_pKillzoneLightGridCS_16, sizeof(g_pKillzoneLightGridCS_16) },
+                { g_pKillzoneLightGridCS_24, sizeof(g_pKillzoneLightGridCS_24) },
+                { g_pKillzoneLightGridCS_32, sizeof(g_pKillzoneLightGridCS_32) },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { g_pKillzoneLightGridCS_8, sizeof(g_pKillzoneLightGridCS_8) },
+                { g_pKillzoneLightGridCS_16, sizeof(g_pKillzoneLightGridCS_16) },
+                { g_pKillzoneLightGridCS_24, sizeof(g_pKillzoneLightGridCS_24) },
+                { g_pKillzoneLightGridCS_32, sizeof(g_pKillzoneLightGridCS_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pKillzoneLightGridDensityCS_8, sizeof(g_pKillzoneLightGridDensityCS_8) },
+                { g_pKillzoneLightGridDensityCS_16, sizeof(g_pKillzoneLightGridDensityCS_16) },
+                { g_pKillzoneLightGridDensityCS_24, sizeof(g_pKillzoneLightGridDensityCS_24) },
+                { g_pKillzoneLightGridDensityCS_32, sizeof(g_pKillzoneLightGridDensityCS_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pKillzoneLightGridFPRCS_8, sizeof(g_pKillzoneLightGridFPRCS_8)},
+                { g_pKillzoneLightGridFPRCS_16, sizeof(g_pKillzoneLightGridFPRCS_16)},
+                { g_pKillzoneLightGridFPRCS_24, sizeof(g_pKillzoneLightGridFPRCS_24)},
+                { g_pKillzoneLightGridFPRCS_32, sizeof(g_pKillzoneLightGridFPRCS_32)},
+            },
+            // FINAL
+            {
+                { g_pKillzoneLightGridCS_8, sizeof(g_pKillzoneLightGridCS_8)},
+                { g_pKillzoneLightGridCS_16, sizeof(g_pKillzoneLightGridCS_16)},
+                { g_pKillzoneLightGridCS_24, sizeof(g_pKillzoneLightGridCS_24)},
+                { g_pKillzoneLightGridCS_32, sizeof(g_pKillzoneLightGridCS_32)},
+            },
+        },
+        // DICE Tiled 2.5D Culling
+        {
+            // Depth
+            {
+                { g_pKillzoneLightCullingGridCS_8, sizeof(g_pKillzoneLightCullingGridCS_8) },
+                { g_pKillzoneLightCullingGridCS_16, sizeof(g_pKillzoneLightCullingGridCS_16) },
+                { g_pKillzoneLightCullingGridCS_24, sizeof(g_pKillzoneLightCullingGridCS_24) },
+                { g_pKillzoneLightCullingGridCS_32, sizeof(g_pKillzoneLightCullingGridCS_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pKillzoneLightCullingGridCS_8, sizeof(g_pKillzoneLightCullingGridCS_8) },
+                { g_pKillzoneLightCullingGridCS_16, sizeof(g_pKillzoneLightCullingGridCS_16) },
+                { g_pKillzoneLightCullingGridCS_24, sizeof(g_pKillzoneLightCullingGridCS_24) },
+                { g_pKillzoneLightCullingGridCS_32, sizeof(g_pKillzoneLightCullingGridCS_32) },
+            },
+            // RT0_INTENSITY
+            {
+                { g_pKillzoneLightCullingGridCS_8, sizeof(g_pKillzoneLightCullingGridCS_8) },
+                { g_pKillzoneLightCullingGridCS_16, sizeof(g_pKillzoneLightCullingGridCS_16) },
+                { g_pKillzoneLightCullingGridCS_24, sizeof(g_pKillzoneLightCullingGridCS_24) },
+                { g_pKillzoneLightCullingGridCS_32, sizeof(g_pKillzoneLightCullingGridCS_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pKillzoneLightCullingGridCS_8, sizeof(g_pKillzoneLightCullingGridCS_8) },
+                { g_pKillzoneLightCullingGridCS_16, sizeof(g_pKillzoneLightCullingGridCS_16) },
+                { g_pKillzoneLightCullingGridCS_24, sizeof(g_pKillzoneLightCullingGridCS_24) },
+                { g_pKillzoneLightCullingGridCS_32, sizeof(g_pKillzoneLightCullingGridCS_32) },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { g_pKillzoneLightCullingGridCS_8, sizeof(g_pKillzoneLightCullingGridCS_8) },
+                { g_pKillzoneLightCullingGridCS_16, sizeof(g_pKillzoneLightCullingGridCS_16) },
+                { g_pKillzoneLightCullingGridCS_24, sizeof(g_pKillzoneLightCullingGridCS_24) },
+                { g_pKillzoneLightCullingGridCS_32, sizeof(g_pKillzoneLightCullingGridCS_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pKillzoneLightCullingGridCS_8, sizeof(g_pKillzoneLightCullingGridCS_8) },
+                { g_pKillzoneLightCullingGridCS_16, sizeof(g_pKillzoneLightCullingGridCS_16) },
+                { g_pKillzoneLightCullingGridCS_24, sizeof(g_pKillzoneLightCullingGridCS_24) },
+                { g_pKillzoneLightCullingGridCS_32, sizeof(g_pKillzoneLightCullingGridCS_32) },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { g_pKillzoneLightCullingGridCS_8, sizeof(g_pKillzoneLightCullingGridCS_8) },
+                { g_pKillzoneLightCullingGridCS_16, sizeof(g_pKillzoneLightCullingGridCS_16) },
+                { g_pKillzoneLightCullingGridCS_24, sizeof(g_pKillzoneLightCullingGridCS_24) },
+                { g_pKillzoneLightCullingGridCS_32, sizeof(g_pKillzoneLightCullingGridCS_32) },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { g_pKillzoneLightCullingGridCS_8, sizeof(g_pKillzoneLightCullingGridCS_8) },
+                { g_pKillzoneLightCullingGridCS_16, sizeof(g_pKillzoneLightCullingGridCS_16) },
+                { g_pKillzoneLightCullingGridCS_24, sizeof(g_pKillzoneLightCullingGridCS_24) },
+                { g_pKillzoneLightCullingGridCS_32, sizeof(g_pKillzoneLightCullingGridCS_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pKillzoneLightCullingGridDensityCS_8, sizeof(g_pKillzoneLightCullingGridDensityCS_8) },
+                { g_pKillzoneLightCullingGridDensityCS_16, sizeof(g_pKillzoneLightCullingGridDensityCS_16) },
+                { g_pKillzoneLightCullingGridDensityCS_24, sizeof(g_pKillzoneLightCullingGridDensityCS_24) },
+                { g_pKillzoneLightCullingGridDensityCS_32, sizeof(g_pKillzoneLightCullingGridDensityCS_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pKillzoneLightCullingGridFPRCS_8, sizeof(g_pKillzoneLightCullingGridFPRCS_8)},
+                { g_pKillzoneLightCullingGridFPRCS_16, sizeof(g_pKillzoneLightCullingGridFPRCS_16)},
+                { g_pKillzoneLightCullingGridFPRCS_24, sizeof(g_pKillzoneLightCullingGridFPRCS_24)},
+                { g_pKillzoneLightCullingGridFPRCS_32, sizeof(g_pKillzoneLightCullingGridFPRCS_32)},
+            },
+            // FINAL
+            {
+                { g_pKillzoneLightCullingGridCS_8, sizeof(g_pKillzoneLightCullingGridCS_8)},
+                { g_pKillzoneLightCullingGridCS_16, sizeof(g_pKillzoneLightCullingGridCS_16)},
+                { g_pKillzoneLightCullingGridCS_24, sizeof(g_pKillzoneLightCullingGridCS_24)},
+                { g_pKillzoneLightCullingGridCS_32, sizeof(g_pKillzoneLightCullingGridCS_32)},
+            },
+        },
+        // DICE Tiled 2.5D AABB Culling
+        {
+            // Depth
+            {
+                { g_pKillzoneLightAABBCullingGridCS_8, sizeof(g_pKillzoneLightAABBCullingGridCS_8) },
+                { g_pKillzoneLightAABBCullingGridCS_16, sizeof(g_pKillzoneLightAABBCullingGridCS_16) },
+                { g_pKillzoneLightAABBCullingGridCS_24, sizeof(g_pKillzoneLightAABBCullingGridCS_24) },
+                { g_pKillzoneLightAABBCullingGridCS_32, sizeof(g_pKillzoneLightAABBCullingGridCS_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pKillzoneLightAABBCullingGridCS_8, sizeof(g_pKillzoneLightAABBCullingGridCS_8) },
+                { g_pKillzoneLightAABBCullingGridCS_16, sizeof(g_pKillzoneLightAABBCullingGridCS_16) },
+                { g_pKillzoneLightAABBCullingGridCS_24, sizeof(g_pKillzoneLightAABBCullingGridCS_24) },
+                { g_pKillzoneLightAABBCullingGridCS_32, sizeof(g_pKillzoneLightAABBCullingGridCS_32) },
+            },
+            // RT0_INTENSITY
+            {
+                { g_pKillzoneLightAABBCullingGridCS_8, sizeof(g_pKillzoneLightAABBCullingGridCS_8) },
+                { g_pKillzoneLightAABBCullingGridCS_16, sizeof(g_pKillzoneLightAABBCullingGridCS_16) },
+                { g_pKillzoneLightAABBCullingGridCS_24, sizeof(g_pKillzoneLightAABBCullingGridCS_24) },
+                { g_pKillzoneLightAABBCullingGridCS_32, sizeof(g_pKillzoneLightAABBCullingGridCS_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pKillzoneLightAABBCullingGridCS_8, sizeof(g_pKillzoneLightAABBCullingGridCS_8) },
+                { g_pKillzoneLightAABBCullingGridCS_16, sizeof(g_pKillzoneLightAABBCullingGridCS_16) },
+                { g_pKillzoneLightAABBCullingGridCS_24, sizeof(g_pKillzoneLightAABBCullingGridCS_24) },
+                { g_pKillzoneLightAABBCullingGridCS_32, sizeof(g_pKillzoneLightAABBCullingGridCS_32) },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { g_pKillzoneLightAABBCullingGridCS_8, sizeof(g_pKillzoneLightAABBCullingGridCS_8) },
+                { g_pKillzoneLightAABBCullingGridCS_16, sizeof(g_pKillzoneLightAABBCullingGridCS_16) },
+                { g_pKillzoneLightAABBCullingGridCS_24, sizeof(g_pKillzoneLightAABBCullingGridCS_24) },
+                { g_pKillzoneLightAABBCullingGridCS_32, sizeof(g_pKillzoneLightAABBCullingGridCS_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pKillzoneLightAABBCullingGridCS_8, sizeof(g_pKillzoneLightAABBCullingGridCS_8) },
+                { g_pKillzoneLightAABBCullingGridCS_16, sizeof(g_pKillzoneLightAABBCullingGridCS_16) },
+                { g_pKillzoneLightAABBCullingGridCS_24, sizeof(g_pKillzoneLightAABBCullingGridCS_24) },
+                { g_pKillzoneLightAABBCullingGridCS_32, sizeof(g_pKillzoneLightAABBCullingGridCS_32) },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { g_pKillzoneLightAABBCullingGridCS_8, sizeof(g_pKillzoneLightAABBCullingGridCS_8) },
+                { g_pKillzoneLightAABBCullingGridCS_16, sizeof(g_pKillzoneLightAABBCullingGridCS_16) },
+                { g_pKillzoneLightAABBCullingGridCS_24, sizeof(g_pKillzoneLightAABBCullingGridCS_24) },
+                { g_pKillzoneLightAABBCullingGridCS_32, sizeof(g_pKillzoneLightAABBCullingGridCS_32) },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { g_pKillzoneLightAABBCullingGridCS_8, sizeof(g_pKillzoneLightAABBCullingGridCS_8) },
+                { g_pKillzoneLightAABBCullingGridCS_16, sizeof(g_pKillzoneLightAABBCullingGridCS_16) },
+                { g_pKillzoneLightAABBCullingGridCS_24, sizeof(g_pKillzoneLightAABBCullingGridCS_24) },
+                { g_pKillzoneLightAABBCullingGridCS_32, sizeof(g_pKillzoneLightAABBCullingGridCS_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pKillzoneLightAABBCullingGridDensityCS_8, sizeof(g_pKillzoneLightAABBCullingGridDensityCS_8) },
+                { g_pKillzoneLightAABBCullingGridDensityCS_16, sizeof(g_pKillzoneLightAABBCullingGridDensityCS_16) },
+                { g_pKillzoneLightAABBCullingGridDensityCS_24, sizeof(g_pKillzoneLightAABBCullingGridDensityCS_24) },
+                { g_pKillzoneLightAABBCullingGridDensityCS_32, sizeof(g_pKillzoneLightAABBCullingGridDensityCS_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pKillzoneLightAABBCullingGridFPRCS_8, sizeof(g_pKillzoneLightAABBCullingGridFPRCS_8)},
+                { g_pKillzoneLightAABBCullingGridFPRCS_16, sizeof(g_pKillzoneLightAABBCullingGridFPRCS_16)},
+                { g_pKillzoneLightAABBCullingGridFPRCS_24, sizeof(g_pKillzoneLightAABBCullingGridFPRCS_24)},
+                { g_pKillzoneLightAABBCullingGridFPRCS_32, sizeof(g_pKillzoneLightAABBCullingGridFPRCS_32)},
+            },
+            // FINAL
+            {
+                { g_pKillzoneLightAABBCullingGridCS_8, sizeof(g_pKillzoneLightAABBCullingGridCS_8)},
+                { g_pKillzoneLightAABBCullingGridCS_16, sizeof(g_pKillzoneLightAABBCullingGridCS_16)},
+                { g_pKillzoneLightAABBCullingGridCS_24, sizeof(g_pKillzoneLightAABBCullingGridCS_24)},
+                { g_pKillzoneLightAABBCullingGridCS_32, sizeof(g_pKillzoneLightAABBCullingGridCS_32)},
+            },
+        },
+        // INTEL Tiled
+        {
+            // Depth
+            {
+                { g_pKillzoneIntelLightGridCS_8, sizeof(g_pKillzoneIntelLightGridCS_8) },
+                { g_pKillzoneIntelLightGridCS_16, sizeof(g_pKillzoneIntelLightGridCS_16) },
+                { g_pKillzoneIntelLightGridCS_24, sizeof(g_pKillzoneIntelLightGridCS_24) },
+                { g_pKillzoneIntelLightGridCS_32, sizeof(g_pKillzoneIntelLightGridCS_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pKillzoneIntelLightGridCS_8, sizeof(g_pKillzoneIntelLightGridCS_8) },
+                { g_pKillzoneIntelLightGridCS_16, sizeof(g_pKillzoneIntelLightGridCS_16) },
+                { g_pKillzoneIntelLightGridCS_24, sizeof(g_pKillzoneIntelLightGridCS_24) },
+                { g_pKillzoneIntelLightGridCS_32, sizeof(g_pKillzoneIntelLightGridCS_32) },
+            },
+            // RT0_INTENSITY
+            {
+                { g_pKillzoneIntelLightGridCS_8, sizeof(g_pKillzoneIntelLightGridCS_8) },
+                { g_pKillzoneIntelLightGridCS_16, sizeof(g_pKillzoneIntelLightGridCS_16) },
+                { g_pKillzoneIntelLightGridCS_24, sizeof(g_pKillzoneIntelLightGridCS_24) },
+                { g_pKillzoneIntelLightGridCS_32, sizeof(g_pKillzoneIntelLightGridCS_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pKillzoneIntelLightGridCS_8, sizeof(g_pKillzoneIntelLightGridCS_8) },
+                { g_pKillzoneIntelLightGridCS_16, sizeof(g_pKillzoneIntelLightGridCS_16) },
+                { g_pKillzoneIntelLightGridCS_24, sizeof(g_pKillzoneIntelLightGridCS_24) },
+                { g_pKillzoneIntelLightGridCS_32, sizeof(g_pKillzoneIntelLightGridCS_32) },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { g_pKillzoneIntelLightGridCS_8, sizeof(g_pKillzoneIntelLightGridCS_8) },
+                { g_pKillzoneIntelLightGridCS_16, sizeof(g_pKillzoneIntelLightGridCS_16) },
+                { g_pKillzoneIntelLightGridCS_24, sizeof(g_pKillzoneIntelLightGridCS_24) },
+                { g_pKillzoneIntelLightGridCS_32, sizeof(g_pKillzoneIntelLightGridCS_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pKillzoneIntelLightGridCS_8, sizeof(g_pKillzoneIntelLightGridCS_8) },
+                { g_pKillzoneIntelLightGridCS_16, sizeof(g_pKillzoneIntelLightGridCS_16) },
+                { g_pKillzoneIntelLightGridCS_24, sizeof(g_pKillzoneIntelLightGridCS_24) },
+                { g_pKillzoneIntelLightGridCS_32, sizeof(g_pKillzoneIntelLightGridCS_32) },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { g_pKillzoneIntelLightGridCS_8, sizeof(g_pKillzoneIntelLightGridCS_8) },
+                { g_pKillzoneIntelLightGridCS_16, sizeof(g_pKillzoneIntelLightGridCS_16) },
+                { g_pKillzoneIntelLightGridCS_24, sizeof(g_pKillzoneIntelLightGridCS_24) },
+                { g_pKillzoneIntelLightGridCS_32, sizeof(g_pKillzoneIntelLightGridCS_32) },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { g_pKillzoneIntelLightGridCS_8, sizeof(g_pKillzoneIntelLightGridCS_8) },
+                { g_pKillzoneIntelLightGridCS_16, sizeof(g_pKillzoneIntelLightGridCS_16) },
+                { g_pKillzoneIntelLightGridCS_24, sizeof(g_pKillzoneIntelLightGridCS_24) },
+                { g_pKillzoneIntelLightGridCS_32, sizeof(g_pKillzoneIntelLightGridCS_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pKillzoneIntelLightGridDensityCS_8, sizeof(g_pKillzoneIntelLightGridDensityCS_8) },
+                { g_pKillzoneIntelLightGridDensityCS_16, sizeof(g_pKillzoneIntelLightGridDensityCS_16) },
+                { g_pKillzoneIntelLightGridDensityCS_24, sizeof(g_pKillzoneIntelLightGridDensityCS_24) },
+                { g_pKillzoneIntelLightGridDensityCS_32, sizeof(g_pKillzoneIntelLightGridDensityCS_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pKillzoneIntelLightGridFPRCS_8, sizeof(g_pKillzoneIntelLightGridFPRCS_8)},
+                { g_pKillzoneIntelLightGridFPRCS_16, sizeof(g_pKillzoneIntelLightGridFPRCS_16)},
+                { g_pKillzoneIntelLightGridFPRCS_24, sizeof(g_pKillzoneIntelLightGridFPRCS_24)},
+                { g_pKillzoneIntelLightGridFPRCS_32, sizeof(g_pKillzoneIntelLightGridFPRCS_32)},
+            },
+            // FINAL
+            {
+                { g_pKillzoneIntelLightGridCS_8, sizeof(g_pKillzoneIntelLightGridCS_8)},
+                { g_pKillzoneIntelLightGridCS_16, sizeof(g_pKillzoneIntelLightGridCS_16)},
+                { g_pKillzoneIntelLightGridCS_24, sizeof(g_pKillzoneIntelLightGridCS_24)},
+                { g_pKillzoneIntelLightGridCS_32, sizeof(g_pKillzoneIntelLightGridCS_32)},
+            },
+        },
+        // Clustered?
+        {
+            // Depth
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // RT0_INTENSITY
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // FINAL
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+        },
+    };
+#endif
+
+    LightData m_LightOriginalData[MaxLights];
     LightData m_LightData[MaxLights];
     StructuredBuffer m_LightBuffer;
     ByteAddressBuffer m_LightGrid;
     ByteAddressBuffer m_LightCluster;
+    StructuredBuffer m_LightClusterAABB;
 
     ByteAddressBuffer m_LightGridBitMask;
     ByteAddressBuffer m_LightClusterBitMask;
@@ -157,9 +1686,17 @@ namespace Lighting
     ShadowBuffer m_LightShadowTempBuffer;
     Matrix4 m_LightShadowMatrix[MaxLights];
 
+    //std::bitset<MaxLights> m_LightShadowParity;
+    uint32_t m_LightShadowParity[MaxLights / 32] =
+    {
+        0,
+    };
+
+    bool m_bUpdateLightsToggle = false;
+
     void InitializeResources(void);
     void CreateRandomLights(const Vector3 minBound, const Vector3 maxBound);
-    void FillLightGrid(GraphicsContext& gfxContext, const Camera& camera);
+    //void FillLightGrid(GraphicsContext& gfxContext, const Camera& camera);
     void Shutdown(void);
 }
 
@@ -173,7 +1710,7 @@ void Lighting::InitializeResources( void )
 
     m_FillLightClusterSig.Reset(3, 0);
     m_FillLightClusterSig[0].InitAsConstantBuffer(0);
-    m_FillLightClusterSig[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2);
+    m_FillLightClusterSig[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3);
     m_FillLightClusterSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 2);
     m_FillLightClusterSig.Finalize(L"FillLightClusterRS");
 
@@ -187,121 +1724,48 @@ void Lighting::InitializeResources( void )
     m_KillzoneLightRootSig.Finalize(L"KillzoneLightRS");
 #endif
 
-    m_FillLightGridCS_8.SetRootSignature(m_FillLightRootSig);
-    m_FillLightGridCS_8.SetComputeShader(g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8));
-    m_FillLightGridCS_8.Finalize();
-
-    m_FillLightGridCS_16.SetRootSignature(m_FillLightRootSig);
-    m_FillLightGridCS_16.SetComputeShader(g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16));
-    m_FillLightGridCS_16.Finalize();
-
-    m_FillLightGridCS_24.SetRootSignature(m_FillLightRootSig);
-    m_FillLightGridCS_24.SetComputeShader(g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24));
-    m_FillLightGridCS_24.Finalize();
-
-    m_FillLightGridCS_32.SetRootSignature(m_FillLightRootSig);
-    m_FillLightGridCS_32.SetComputeShader(g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32));
-    m_FillLightGridCS_32.Finalize();
-
-    m_FillLightClusterCS_8_8.SetRootSignature(m_FillLightClusterSig);
-    m_FillLightClusterCS_8_8.SetComputeShader(g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8));
-    m_FillLightClusterCS_8_8.Finalize();
-
-    m_FillLightClusterCS_16_16.SetRootSignature(m_FillLightClusterSig);
-    m_FillLightClusterCS_16_16.SetComputeShader(g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16));
-    m_FillLightClusterCS_16_16.Finalize();
-
-    m_FillLightClusterCS_24_16.SetRootSignature(m_FillLightClusterSig);
-    m_FillLightClusterCS_24_16.SetComputeShader(g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16));
-    m_FillLightClusterCS_24_16.Finalize();
-
-    m_FillLightClusterCS_32_16.SetRootSignature(m_FillLightClusterSig);
-    m_FillLightClusterCS_32_16.SetComputeShader(g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16));
-    m_FillLightClusterCS_32_16.Finalize();
-
-    m_FillLightClusterCS_32_32.SetRootSignature(m_FillLightClusterSig);
-    m_FillLightClusterCS_32_32.SetComputeShader(g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32));
-    m_FillLightClusterCS_32_32.Finalize();
-
-    m_FillLightClusterCS_64_16.SetRootSignature(m_FillLightClusterSig);
-    m_FillLightClusterCS_64_16.SetComputeShader(g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16));
-    m_FillLightClusterCS_64_16.Finalize();
-    
-    m_FillLightClusterCS_64_32.SetRootSignature(m_FillLightClusterSig);
-    m_FillLightClusterCS_64_32.SetComputeShader(g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32));
-    m_FillLightClusterCS_64_32.Finalize();
-
-#if KILLZONE_GBUFFER
+    for (size_t lightTypeIndex = 0; lightTypeIndex < static_cast<size_t>(eLightType::COUNT); ++lightTypeIndex)
     {
-        m_KillzoneLightGridCS_8.SetRootSignature(m_KillzoneLightRootSig);
-        m_KillzoneLightGridCS_8.SetComputeShader(g_pKillzoneLightGridCS_8, sizeof(g_pKillzoneLightGridCS_8));
-        m_KillzoneLightGridCS_8.Finalize();
+        bool bIsCluster = (static_cast<eLightType>(lightTypeIndex) == eLightType::CLUSTERED);
+        size_t gridCount = bIsCluster ? static_cast<size_t>(eClusterType::COUNT) : 4;
+        RootSignature& rootSignature = bIsCluster ? m_FillLightClusterSig : m_FillLightRootSig;
 
-        m_KillzoneLightGridCS_16.SetRootSignature(m_KillzoneLightRootSig);
-        m_KillzoneLightGridCS_16.SetComputeShader(g_pKillzoneLightGridCS_16, sizeof(g_pKillzoneLightGridCS_16));
-        m_KillzoneLightGridCS_16.Finalize();
+        for (size_t gridIndex = 0; gridIndex < gridCount; ++gridIndex)
+        {
+            m_aForwardPSOs[lightTypeIndex][gridIndex].SetRootSignature(rootSignature);
+            m_aForwardPSOs[lightTypeIndex][gridIndex].SetComputeShader(m_aForwardComputeShaders[lightTypeIndex][gridIndex].first, m_aForwardComputeShaders[lightTypeIndex][gridIndex].second);
+            m_aForwardPSOs[lightTypeIndex][gridIndex].Finalize();
+        }
 
-        m_KillzoneLightGridCS_24.SetRootSignature(m_KillzoneLightRootSig);
-        m_KillzoneLightGridCS_24.SetComputeShader(g_pKillzoneLightGridCS_24, sizeof(g_pKillzoneLightGridCS_24));
-        m_KillzoneLightGridCS_24.Finalize();
-
-        m_KillzoneLightGridCS_32.SetRootSignature(m_KillzoneLightRootSig);
-        m_KillzoneLightGridCS_32.SetComputeShader(g_pKillzoneLightGridCS_32, sizeof(g_pKillzoneLightGridCS_32));
-        m_KillzoneLightGridCS_32.Finalize();
-
-        m_KillzoneIntelLightGridCS_8.SetRootSignature(m_KillzoneLightRootSig);
-        m_KillzoneIntelLightGridCS_8.SetComputeShader(g_pKillzoneIntelLightGridCS_8, sizeof(g_pKillzoneIntelLightGridCS_8));
-        m_KillzoneIntelLightGridCS_8.Finalize();
-
-        m_KillzoneIntelLightGridCS_16.SetRootSignature(m_KillzoneLightRootSig);
-        m_KillzoneIntelLightGridCS_16.SetComputeShader(g_pKillzoneIntelLightGridCS_16, sizeof(g_pKillzoneIntelLightGridCS_16));
-        m_KillzoneIntelLightGridCS_16.Finalize();
-
-        m_KillzoneIntelLightGridCS_24.SetRootSignature(m_KillzoneLightRootSig);
-        m_KillzoneIntelLightGridCS_24.SetComputeShader(g_pKillzoneIntelLightGridCS_24, sizeof(g_pKillzoneIntelLightGridCS_24));
-        m_KillzoneIntelLightGridCS_24.Finalize();
-
-        m_KillzoneIntelLightGridCS_32.SetRootSignature(m_KillzoneLightRootSig);
-        m_KillzoneIntelLightGridCS_32.SetComputeShader(g_pKillzoneIntelLightGridCS_32, sizeof(g_pKillzoneIntelLightGridCS_32));
-        m_KillzoneIntelLightGridCS_32.Finalize();
+        if (bIsCluster)
+        {
+            for (size_t gridIndex = 0; gridIndex < gridCount; ++gridIndex)
+            {
+                m_aClusterAABBPSOs[gridIndex].SetRootSignature(rootSignature);
+                m_aClusterAABBPSOs[gridIndex].SetComputeShader(m_aClusterAABBComputeShaders[gridIndex].first, m_aClusterAABBComputeShaders[gridIndex].second);
+                m_aClusterAABBPSOs[gridIndex].Finalize();
+            }
+        }
     }
 
+    for (size_t lightTypeIndex = 0; lightTypeIndex < static_cast<size_t>(eLightType::COUNT); ++lightTypeIndex)
     {
-        m_KillzoneLightCullingGridCS_8.SetRootSignature(m_KillzoneLightRootSig);
-        m_KillzoneLightCullingGridCS_8.SetComputeShader(g_pKillzoneLightCullingGridCS_8, sizeof(g_pKillzoneLightCullingGridCS_8));
-        m_KillzoneLightCullingGridCS_8.Finalize();
-
-        m_KillzoneLightCullingGridCS_16.SetRootSignature(m_KillzoneLightRootSig);
-        m_KillzoneLightCullingGridCS_16.SetComputeShader(g_pKillzoneLightCullingGridCS_16, sizeof(g_pKillzoneLightCullingGridCS_16));
-        m_KillzoneLightCullingGridCS_16.Finalize();
-
-        m_KillzoneLightCullingGridCS_24.SetRootSignature(m_KillzoneLightRootSig);
-        m_KillzoneLightCullingGridCS_24.SetComputeShader(g_pKillzoneLightCullingGridCS_24, sizeof(g_pKillzoneLightCullingGridCS_24));
-        m_KillzoneLightCullingGridCS_24.Finalize();
-
-        m_KillzoneLightCullingGridCS_32.SetRootSignature(m_KillzoneLightRootSig);
-        m_KillzoneLightCullingGridCS_32.SetComputeShader(g_pKillzoneLightCullingGridCS_32, sizeof(g_pKillzoneLightCullingGridCS_32));
-        m_KillzoneLightCullingGridCS_32.Finalize();
+        for (size_t gbufferTypeIndex = 0; gbufferTypeIndex < static_cast<size_t>(eGBufferDataType::COUNT) + 1; ++gbufferTypeIndex)
+        {
+            bool bIsCluster = (static_cast<eLightType>(lightTypeIndex) == eLightType::CLUSTERED);
+            bool bIsComputeShaderShading = (static_cast<eLightType>(lightTypeIndex) == eLightType::TILED_DICE ||
+                static_cast<eLightType>(lightTypeIndex) == eLightType::TILED_DICE_2_5 ||
+                static_cast<eLightType>(lightTypeIndex) == eLightType::TILED_DICE_2_5_AABB ||
+                static_cast<eLightType>(lightTypeIndex) == eLightType::TILED_INTEL);
+            size_t gridCount = bIsCluster ? static_cast<size_t>(eClusterType::COUNT) : 4;
+            for (size_t gridIndex = 0; gridIndex < gridCount; ++gridIndex)
+            {
+                m_aKillzonePSOs[lightTypeIndex][gbufferTypeIndex][gridIndex].SetRootSignature(bIsComputeShaderShading ? m_KillzoneLightRootSig : (bIsCluster ? m_FillLightClusterSig : m_FillLightRootSig));
+                m_aKillzonePSOs[lightTypeIndex][gbufferTypeIndex][gridIndex].SetComputeShader(m_aKillzoneComputeShaders[lightTypeIndex][gbufferTypeIndex][gridIndex].first, m_aKillzoneComputeShaders[lightTypeIndex][gbufferTypeIndex][gridIndex].second);
+                m_aKillzonePSOs[lightTypeIndex][gbufferTypeIndex][gridIndex].Finalize();
+            }
+        }
     }
-
-    {
-        m_KillzoneLightAABBCullingGridCS_8.SetRootSignature(m_KillzoneLightRootSig);
-        m_KillzoneLightAABBCullingGridCS_8.SetComputeShader(g_pKillzoneLightAABBCullingGridCS_8, sizeof(g_pKillzoneLightAABBCullingGridCS_8));
-        m_KillzoneLightAABBCullingGridCS_8.Finalize();
-
-        m_KillzoneLightAABBCullingGridCS_16.SetRootSignature(m_KillzoneLightRootSig);
-        m_KillzoneLightAABBCullingGridCS_16.SetComputeShader(g_pKillzoneLightAABBCullingGridCS_16, sizeof(g_pKillzoneLightAABBCullingGridCS_16));
-        m_KillzoneLightAABBCullingGridCS_16.Finalize();
-
-        m_KillzoneLightAABBCullingGridCS_24.SetRootSignature(m_KillzoneLightRootSig);
-        m_KillzoneLightAABBCullingGridCS_24.SetComputeShader(g_pKillzoneLightAABBCullingGridCS_24, sizeof(g_pKillzoneLightAABBCullingGridCS_24));
-        m_KillzoneLightAABBCullingGridCS_24.Finalize();
-
-        m_KillzoneLightAABBCullingGridCS_32.SetRootSignature(m_KillzoneLightRootSig);
-        m_KillzoneLightAABBCullingGridCS_32.SetComputeShader(g_pKillzoneLightAABBCullingGridCS_32, sizeof(g_pKillzoneLightAABBCullingGridCS_32));
-        m_KillzoneLightAABBCullingGridCS_32.Finalize();
-    }
-#endif
 
     // Assumes max resolution of 3840x2160
     uint32_t lightGridCells = Math::DivideByMultiple(3840, kMinLightGridDim) * Math::DivideByMultiple(2160, kMinLightGridDim);
@@ -322,7 +1786,15 @@ void Lighting::InitializeResources( void )
     m_LightShadowArray.CreateArray(L"m_LightShadowArray", shadowDim, shadowDim, MaxLights, DXGI_FORMAT_R16_UNORM);
     m_LightShadowTempBuffer.Create(L"m_LightShadowTempBuffer", shadowDim, shadowDim);
 
+    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]);
+    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]);
+    uint32_t tileCountZ = aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1];
     m_LightBuffer.Create(L"m_LightBuffer", MaxLights, sizeof(LightData));
+    m_LightClusterAABB.Create(
+        L"m_LightClusterAABB",
+        tileCountX * tileCountY * tileCountZ,
+        sizeof(VolumeTileAABB)
+    );
 }
 
 void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBound )
@@ -389,9 +1861,9 @@ void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBoun
 
         uint32_t type;
         // force types to match 32-bit boundaries for the BIT_MASK_SORTED case
-        if (n < 32 * 1)
+        if (n < MaxPointLights)
             type = 0;
-        else if (n < 32 * 3)
+        else if (n < MaxPointLights + MaxConeLights)
             type = 1;
         else
             type = 2;
@@ -411,6 +1883,7 @@ void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBoun
         shadowCamera.SetPerspectiveMatrix(coneOuter * 2, 1.0f, lightRadius * .05f, lightRadius * 1.0f);
         shadowCamera.Update();
         m_LightShadowMatrix[n] = shadowCamera.GetViewProjMatrix();
+        m_LightShadowParity[n / 32] |= 1u << (n % 32);
         Matrix4 shadowTextureMatrix = Matrix4(AffineTransform(Matrix3::MakeScale( 0.5f, -0.5f, 1.0f ), Vector3(0.5f, 0.5f, 0.0f))) * m_LightShadowMatrix[n];
 
         m_LightData[n].pos[0] = pos.GetX();
@@ -469,6 +1942,7 @@ void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBoun
         }
     }
 
+    std::memcpy(m_LightOriginalData, m_LightData, MaxLights * sizeof(LightData));
     CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
 }
 
@@ -476,6 +1950,7 @@ void Lighting::Shutdown(void)
 {
     m_LightBuffer.Destroy();
     m_LightCluster.Destroy();
+    m_LightClusterAABB.Destroy();
     m_LightGrid.Destroy();
     m_LightClusterBitMask.Destroy();
     m_LightGridBitMask.Destroy();
@@ -483,831 +1958,740 @@ void Lighting::Shutdown(void)
     m_LightShadowTempBuffer.Destroy();
 }
 
+void Lighting::ResetLights(void)
+{
+    std::memcpy(m_LightData, m_LightOriginalData, MaxLights * sizeof(LightData));
+}
+
 void Lighting::UpdateLights(float deltaTime)
 {
-    /*
-    XMMATRIX rotationY = XMMatrixRotationY(deltaTime);
-    XMMATRIX rotationX = XMMatrixRotationX(deltaTime);
+    if (!m_bUpdateLightsToggle)
+    {
+        return;
+    }
 
-    size_t i = 0;
-    for (; i < MaxLights / 3; ++i)
+    XMMATRIX rotationY = XMMatrixRotationY(deltaTime * 0.1f);
+    XMMATRIX rotationX = XMMatrixRotationX(deltaTime * 0.1f);
+
+    for (size_t i = MaxPointLights + MaxConeLights; i < MaxLights; i += 2)
     {
         XMVECTOR position = XMVector4Transform(XMVectorSet(m_LightData[i].pos[0], m_LightData[i].pos[1], m_LightData[i].pos[2], 1.0f), rotationY);
         m_LightData[i].pos[0] = XMVectorGetX(position);
         m_LightData[i].pos[1] = XMVectorGetY(position);
         m_LightData[i].pos[2] = XMVectorGetZ(position);
+        Vector3 pos(position);
+        Vector3 coneDir(m_LightData[i].coneDir[0], m_LightData[i].coneDir[1], m_LightData[i].coneDir[2]);
+        float lightRadius = sqrtf(m_LightData[i].radiusSq);
+        Math::Camera shadowCamera;
+        shadowCamera.SetEyeAtUp(pos, pos + coneDir, Vector3(0, 1, 0));
+        shadowCamera.SetPerspectiveMatrix(acosf(m_LightData[i].coneAngles[1]) * 2, 1.0f, lightRadius * .05f, lightRadius * 1.0f);
+        shadowCamera.Update();
+        m_LightShadowMatrix[i] = shadowCamera.GetViewProjMatrix();
+        //m_LightShadowParity.reset(i);
+        m_LightShadowParity[i / 32] |= (1u << (i % 32));
+        Matrix4 shadowTextureMatrix = Matrix4(AffineTransform(Matrix3::MakeScale(0.5f, -0.5f, 1.0f), Vector3(0.5f, 0.5f, 0.0f))) * m_LightShadowMatrix[i];
+        std::memcpy(m_LightData[i].shadowTextureMatrix, &shadowTextureMatrix, sizeof(shadowTextureMatrix));
     }
 
-    for (; i < (MaxLights / 3) * 2; ++i)
+    for (size_t i = MaxPointLights + MaxConeLights + 1; i < MaxLights; i += 2)
     {
         XMVECTOR position = XMVector4Transform(XMVectorSet(m_LightData[i].pos[0], m_LightData[i].pos[1], m_LightData[i].pos[2], 1.0f), rotationX);
         m_LightData[i].pos[0] = XMVectorGetX(position);
         m_LightData[i].pos[1] = XMVectorGetY(position);
         m_LightData[i].pos[2] = XMVectorGetZ(position);
+        Vector3 pos(position);
+        Vector3 coneDir(m_LightData[i].coneDir[0], m_LightData[i].coneDir[1], m_LightData[i].coneDir[2]);
+        float lightRadius = sqrtf(m_LightData[i].radiusSq);
+        Math::Camera shadowCamera;
+        shadowCamera.SetEyeAtUp(pos, pos + coneDir, Vector3(0, 1, 0));
+        shadowCamera.SetPerspectiveMatrix(acosf(m_LightData[i].coneAngles[1]) * 2, 1.0f, lightRadius * .05f, lightRadius * 1.0f);
+        shadowCamera.Update();
+        m_LightShadowMatrix[i] = shadowCamera.GetViewProjMatrix();
+        //m_LightShadowParity.reset(i);
+        m_LightShadowParity[i / 32] |= (1u << (i % 32));
+        Matrix4 shadowTextureMatrix = Matrix4(AffineTransform(Matrix3::MakeScale(0.5f, -0.5f, 1.0f), Vector3(0.5f, 0.5f, 0.0f))) * m_LightShadowMatrix[i];
+        std::memcpy(m_LightData[i].shadowTextureMatrix, &shadowTextureMatrix, sizeof(shadowTextureMatrix));
     }
 
-    CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, 2 * (MaxLights / 3) * sizeof(LightData));
-    */
+    CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
+    
     UNREFERENCED_PARAMETER(deltaTime);
 }
 
-void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
+void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, Graphics::eLightType lightType)
 {
     ScopedTimer _prof(L"FillLightGrid", gfxContext);
 
     ComputeContext& Context = gfxContext.GetComputeContext();
 
-    Context.SetRootSignature(m_FillLightRootSig);
-
-    switch ((int)LightGridDim)
-    {
-    case  8: Context.SetPipelineState(m_FillLightGridCS_8 ); break;
-    case 16: Context.SetPipelineState(m_FillLightGridCS_16); break;
-    case 24: Context.SetPipelineState(m_FillLightGridCS_24); break;
-    case 32: Context.SetPipelineState(m_FillLightGridCS_32); break;
-    default: ASSERT(false); break;
-    }
-
-    ColorBuffer& LinearDepth = g_LinearDepth[ TemporalEffects::GetFrameIndexMod2() ];
-
-    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-    Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
-    Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
-    Context.SetDynamicDescriptor(1, 1, LinearDepth.GetSRV());
-    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
-    Context.SetDynamicDescriptor(2, 0, m_LightGrid.GetUAV());
-    Context.SetDynamicDescriptor(2, 1, m_LightGridBitMask.GetUAV());
-
-    // todo: assumes 1920x1080 resolution
-    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
-    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
+    bool bIsCluster = lightType == eLightType::CLUSTERED;
 
     float FarClipDist = camera.GetFarClip();
     float NearClipDist = camera.GetNearClip();
     const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
 
-    struct CSConstants
-    {
-        uint32_t ViewportWidth, ViewportHeight;
-        float InvTileDim;
-        float RcpZMagic;
-        uint32_t TileCount;
-        Matrix4 ViewProjMatrix;
-    } csConstants;
-    // todo: assumes 1920x1080 resolution
-    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
-    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
-    csConstants.InvTileDim = 1.0f / LightGridDim;
-    csConstants.RcpZMagic = RcpZMagic;
-    csConstants.TileCount = tileCountX;
-    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
-    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
-
-    Context.Dispatch(tileCountX, tileCountY, 1);
-
-    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-}
-
-void Lighting::FillLight2_5DGrid(GraphicsContext& gfxContext, const Camera& camera)
-{
-    ScopedTimer _prof(L"FillLight2_5DGrid", gfxContext);
-
-    ComputeContext& Context = gfxContext.GetComputeContext();
-
-    Context.SetRootSignature(m_FillLightRootSig);
-
-    switch ((int)LightGridDim)
-    {
-    case  8: Context.SetPipelineState(m_FillLight2_5DGridCS_8); break;
-    case 16: Context.SetPipelineState(m_FillLight2_5DGridCS_16); break;
-    case 24: Context.SetPipelineState(m_FillLight2_5DGridCS_24); break;
-    case 32: Context.SetPipelineState(m_FillLight2_5DGridCS_32); break;
-    default: ASSERT(false); break;
-    }
+    uint32_t tileCountX = 0;
+    uint32_t tileCountY = 0;
+    uint32_t tileCountZ = 1;
 
     ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
 
-    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-    Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
-    Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
-    Context.SetDynamicDescriptor(1, 1, LinearDepth.GetSRV());
-    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
-    Context.SetDynamicDescriptor(2, 0, m_LightGrid.GetUAV());
-    Context.SetDynamicDescriptor(2, 1, m_LightGridBitMask.GetUAV());
-
-    // todo: assumes 1920x1080 resolution
-    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
-    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
-
-    float FarClipDist = camera.GetFarClip();
-    float NearClipDist = camera.GetNearClip();
-    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
-
-    struct CSConstants
+    if (bIsCluster)
     {
-        uint32_t ViewportWidth, ViewportHeight;
-        float InvTileDim;
-        float RcpZMagic;
-        uint32_t TileCount;
-        Matrix4 ViewProjMatrix;
-        Matrix4 InvViewProj;
-    } csConstants;
-    // todo: assumes 1920x1080 resolution
-    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
-    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
-    csConstants.InvTileDim = 1.0f / LightGridDim;
-    csConstants.RcpZMagic = RcpZMagic;
-    csConstants.TileCount = tileCountX;
-    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
-    Matrix4 InvViewProj;
-    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
-    csConstants.InvViewProj = Matrix4(
-        Vector4(invViewProj.r[0]),
-        Vector4(invViewProj.r[1]),
-        Vector4(invViewProj.r[2]),
-        Vector4(invViewProj.r[3])
-    );
-    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
-
-    Context.Dispatch(tileCountX, tileCountY, 1);
-
-    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-}
-
-void Lighting::FillLight2_5DAABBGrid(GraphicsContext& gfxContext, const Camera& camera)
-{
-    ScopedTimer _prof(L"FillLight2_5DAABBGrid", gfxContext);
-
-    ComputeContext& Context = gfxContext.GetComputeContext();
-
-    Context.SetRootSignature(m_FillLightRootSig);
-
-    switch ((int)LightGridDim)
-    {
-    case  8: Context.SetPipelineState(m_FillLight2_5DAABBGridCS_8); break;
-    case 16: Context.SetPipelineState(m_FillLight2_5DAABBGridCS_16); break;
-    case 24: Context.SetPipelineState(m_FillLight2_5DAABBGridCS_24); break;
-    case 32: Context.SetPipelineState(m_FillLight2_5DAABBGridCS_32); break;
-    default: ASSERT(false); break;
-    }
-
-    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
-
-    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-    Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
-    Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
-    Context.SetDynamicDescriptor(1, 1, LinearDepth.GetSRV());
-    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
-    Context.SetDynamicDescriptor(2, 0, m_LightGrid.GetUAV());
-    Context.SetDynamicDescriptor(2, 1, m_LightGridBitMask.GetUAV());
-
-    // todo: assumes 1920x1080 resolution
-    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
-    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
-
-    float FarClipDist = camera.GetFarClip();
-    float NearClipDist = camera.GetNearClip();
-    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
-
-    struct CSConstants
-    {
-        uint32_t ViewportWidth, ViewportHeight;
-        float InvTileDim;
-        float RcpZMagic;
-        uint32_t TileCount;
-        Matrix4 ViewProjMatrix;
-        Matrix4 InvViewProj;
-    } csConstants;
-    // todo: assumes 1920x1080 resolution
-    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
-    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
-    csConstants.InvTileDim = 1.0f / LightGridDim;
-    csConstants.RcpZMagic = RcpZMagic;
-    csConstants.TileCount = tileCountX;
-    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
-    Matrix4 InvViewProj;
-    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
-    csConstants.InvViewProj = Matrix4(
-        Vector4(invViewProj.r[0]),
-        Vector4(invViewProj.r[1]),
-        Vector4(invViewProj.r[2]),
-        Vector4(invViewProj.r[3])
-    );
-    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
-
-    Context.Dispatch(tileCountX, tileCountY, 1);
-
-    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-}
-
-void Lighting::KillzoneDiceLightGrid(GraphicsContext& gfxContext, const Camera& camera, const DescriptorHandle& gBufferHandle)
-{
-#if KILLZONE_GBUFFER
-    ScopedTimer _prof(L"KillzoneDiceLightGrid", gfxContext);
-
-    ComputeContext& Context = gfxContext.GetComputeContext();
-
-    Context.SetRootSignature(m_KillzoneLightRootSig);
-
-    switch ((int)LightGridDim)
-    {
-    case  8: Context.SetPipelineState(m_KillzoneLightGridCS_8); break;
-    case 16: Context.SetPipelineState(m_KillzoneLightGridCS_16); break;
-    case 24: Context.SetPipelineState(m_KillzoneLightGridCS_24); break;
-    case 32: Context.SetPipelineState(m_KillzoneLightGridCS_32); break;
-    default: ASSERT(false); break;
-    }
-
-    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
-
-    //g_aSceneGBuffers[static_cast<size_t>(eGBufferType::COUNT)]
-    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-    {
-        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    }
-    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    //Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
-    //Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
-    //gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, s_KillzoneTextureHeap.GetHeapPointer());
-    //Context.SetDescriptorTable(1, resourcesHandle);
-    //for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-    //{
-    //    Context.SetDynamicDescriptor(1, i, g_aSceneGBuffers[i].GetSRV());
-    //}
-    Context.SetDynamicDescriptor(1, 8, LinearDepth.GetSRV());
-    Context.SetDynamicDescriptor(1, 4, m_LightBuffer.GetSRV());
-    Context.SetDynamicDescriptor(1, 5, m_LightShadowArray.GetSRV());
-    Context.SetDescriptorTable(2, gBufferHandle);
-    //Context.SetDynamicDescriptor(1, static_cast<size_t>(eGBufferType::COUNT) + 2, m_LightShadowArray.GetSRV());
-    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
-    Context.SetDynamicDescriptor(3, 0, g_SceneColorBuffer.GetUAV());
-
-    // todo: assumes 1920x1080 resolution
-    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
-    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
-
-    float FarClipDist = camera.GetFarClip();
-    float NearClipDist = camera.GetNearClip();
-    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
-
-    struct CSConstants
-    {
-        uint32_t ViewportWidth, ViewportHeight;
-        float InvTileDim;
-        float RcpZMagic;
-        uint32_t TileCount;
-        Matrix4 ViewProjMatrix;
-        Matrix4 InvViewProj;
-        //Matrix4 InvProj;
-        Vector3 ViewerPos;
-    } csConstants;
-    // todo: assumes 1920x1080 resolution
-    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
-    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
-    csConstants.InvTileDim = 1.0f / LightGridDim;
-    csConstants.RcpZMagic = RcpZMagic;
-    csConstants.TileCount = tileCountX;
-    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
-    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
-    csConstants.InvViewProj = Matrix4(
-        Vector4(invViewProj.r[0]),
-        Vector4(invViewProj.r[1]),
-        Vector4(invViewProj.r[2]),
-        Vector4(invViewProj.r[3])
-    );
-    csConstants.ViewerPos = camera.GetPosition();
-    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
-
-    Context.Dispatch(tileCountX, tileCountY, 1);
-
-    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-    {
-        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    }
-    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
-    //Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    //Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-#else
-    UNREFERENCED_PARAMETER(gfxContext);
-    UNREFERENCED_PARAMETER(camera);
-#endif
-}
-
-void Lighting::KillzoneDiceLightCullingGrid(GraphicsContext& gfxContext, const Camera& camera, const DescriptorHandle& gBufferHandle)
-{
-#if KILLZONE_GBUFFER
-    ScopedTimer _prof(L"KillzoneDiceLightCullingGrid", gfxContext);
-
-    ComputeContext& Context = gfxContext.GetComputeContext();
-
-    Context.SetRootSignature(m_KillzoneLightRootSig);
-
-    switch ((int)LightGridDim)
-    {
-    case  8: Context.SetPipelineState(m_KillzoneLightCullingGridCS_8); break;
-    case 16: Context.SetPipelineState(m_KillzoneLightCullingGridCS_16); break;
-    case 24: Context.SetPipelineState(m_KillzoneLightCullingGridCS_24); break;
-    case 32: Context.SetPipelineState(m_KillzoneLightCullingGridCS_32); break;
-    default: ASSERT(false); break;
-    }
-
-    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
-
-    //g_aSceneGBuffers[static_cast<size_t>(eGBufferType::COUNT)]
-    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-    {
-        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    }
-    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    //Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
-    //Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
-    //gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, s_KillzoneTextureHeap.GetHeapPointer());
-    //Context.SetDescriptorTable(1, resourcesHandle);
-    //for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-    //{
-    //    Context.SetDynamicDescriptor(1, i, g_aSceneGBuffers[i].GetSRV());
-    //}
-    Context.SetDynamicDescriptor(1, 8, LinearDepth.GetSRV());
-    Context.SetDynamicDescriptor(1, 4, m_LightBuffer.GetSRV());
-    Context.SetDynamicDescriptor(1, 5, m_LightShadowArray.GetSRV());
-    Context.SetDescriptorTable(2, gBufferHandle);
-    //Context.SetDynamicDescriptor(1, static_cast<size_t>(eGBufferType::COUNT) + 2, m_LightShadowArray.GetSRV());
-    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
-    Context.SetDynamicDescriptor(3, 0, g_SceneColorBuffer.GetUAV());
-
-    // todo: assumes 1920x1080 resolution
-    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
-    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
-
-    float FarClipDist = camera.GetFarClip();
-    float NearClipDist = camera.GetNearClip();
-    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
-
-    struct CSConstants
-    {
-        uint32_t ViewportWidth, ViewportHeight;
-        float InvTileDim;
-        float RcpZMagic;
-        uint32_t TileCount;
-        Matrix4 ViewProjMatrix;
-        Matrix4 InvViewProj;
-        //Matrix4 InvProj;
-        Vector3 ViewerPos;
-    } csConstants;
-    // todo: assumes 1920x1080 resolution
-    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
-    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
-    csConstants.InvTileDim = 1.0f / LightGridDim;
-    csConstants.RcpZMagic = RcpZMagic;
-    csConstants.TileCount = tileCountX;
-    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
-    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
-    csConstants.InvViewProj = Matrix4(
-        Vector4(invViewProj.r[0]),
-        Vector4(invViewProj.r[1]),
-        Vector4(invViewProj.r[2]),
-        Vector4(invViewProj.r[3])
-    );
-    csConstants.ViewerPos = camera.GetPosition();
-    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
-
-    Context.Dispatch(tileCountX, tileCountY, 1);
-
-    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-    {
-        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    }
-    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
-    //Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    //Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-#else
-    UNREFERENCED_PARAMETER(gfxContext);
-    UNREFERENCED_PARAMETER(camera);
-#endif
-}
-
-void Lighting::KillzoneDiceLightAABBCullingGrid(GraphicsContext& gfxContext, const Camera& camera, const DescriptorHandle& gBufferHandle)
-{
-#if KILLZONE_GBUFFER
-    ScopedTimer _prof(L"KillzoneDiceLightAABBCullingGrid", gfxContext);
-
-    ComputeContext& Context = gfxContext.GetComputeContext();
-
-    Context.SetRootSignature(m_KillzoneLightRootSig);
-
-    switch ((int)LightGridDim)
-    {
-    case  8: Context.SetPipelineState(m_KillzoneLightAABBCullingGridCS_8); break;
-    case 16: Context.SetPipelineState(m_KillzoneLightAABBCullingGridCS_16); break;
-    case 24: Context.SetPipelineState(m_KillzoneLightAABBCullingGridCS_24); break;
-    case 32: Context.SetPipelineState(m_KillzoneLightAABBCullingGridCS_32); break;
-    default: ASSERT(false); break;
-    }
-
-    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
-
-    //g_aSceneGBuffers[static_cast<size_t>(eGBufferType::COUNT)]
-    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-    {
-        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    }
-    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    //Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
-    //Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
-    //gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, s_KillzoneTextureHeap.GetHeapPointer());
-    //Context.SetDescriptorTable(1, resourcesHandle);
-    //for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-    //{
-    //    Context.SetDynamicDescriptor(1, i, g_aSceneGBuffers[i].GetSRV());
-    //}
-    Context.SetDynamicDescriptor(1, 8, LinearDepth.GetSRV());
-    Context.SetDynamicDescriptor(1, 4, m_LightBuffer.GetSRV());
-    Context.SetDynamicDescriptor(1, 5, m_LightShadowArray.GetSRV());
-    Context.SetDescriptorTable(2, gBufferHandle);
-    //Context.SetDynamicDescriptor(1, static_cast<size_t>(eGBufferType::COUNT) + 2, m_LightShadowArray.GetSRV());
-    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
-    Context.SetDynamicDescriptor(3, 0, g_SceneColorBuffer.GetUAV());
-
-    // todo: assumes 1920x1080 resolution
-    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
-    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
-
-    float FarClipDist = camera.GetFarClip();
-    float NearClipDist = camera.GetNearClip();
-    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
-
-    struct CSConstants
-    {
-        uint32_t ViewportWidth, ViewportHeight;
-        float InvTileDim;
-        float RcpZMagic;
-        uint32_t TileCount;
-        Matrix4 ViewProjMatrix;
-        Matrix4 InvViewProj;
-        //Matrix4 InvProj;
-        Vector3 ViewerPos;
-    } csConstants;
-    // todo: assumes 1920x1080 resolution
-    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
-    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
-    csConstants.InvTileDim = 1.0f / LightGridDim;
-    csConstants.RcpZMagic = RcpZMagic;
-    csConstants.TileCount = tileCountX;
-    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
-    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
-    csConstants.InvViewProj = Matrix4(
-        Vector4(invViewProj.r[0]),
-        Vector4(invViewProj.r[1]),
-        Vector4(invViewProj.r[2]),
-        Vector4(invViewProj.r[3])
-    );
-    csConstants.ViewerPos = camera.GetPosition();
-    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
-
-    Context.Dispatch(tileCountX, tileCountY, 1);
-
-    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-    {
-        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    }
-    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
-    //Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    //Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-#else
-    UNREFERENCED_PARAMETER(gfxContext);
-    UNREFERENCED_PARAMETER(camera);
-#endif
-}
-
-
-void Lighting::KillzoneIntelLightGrid(GraphicsContext& gfxContext, const Camera& camera, const DescriptorHandle& gBufferHandle)
-{
-#if KILLZONE_GBUFFER
-    ScopedTimer _prof(L"KillzoneIntelLightGrid", gfxContext);
-
-    ComputeContext& Context = gfxContext.GetComputeContext();
-
-    Context.SetRootSignature(m_KillzoneLightRootSig);
-
-    switch ((int)LightGridDim)
-    {
-    case  8: Context.SetPipelineState(m_KillzoneIntelLightGridCS_8); break;
-    case 16: Context.SetPipelineState(m_KillzoneIntelLightGridCS_16); break;
-    case 24: Context.SetPipelineState(m_KillzoneIntelLightGridCS_24); break;
-    case 32: Context.SetPipelineState(m_KillzoneIntelLightGridCS_32); break;
-    default: ASSERT(false); break;
-    }
-
-    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
-
-    //g_aSceneGBuffers[static_cast<size_t>(eGBufferType::COUNT)]
-    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-    {
-        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    }
-    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    //Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
-    //Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
-    //gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, s_KillzoneTextureHeap.GetHeapPointer());
-    //Context.SetDescriptorTable(1, resourcesHandle);
-    //for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-    //{
-    //    Context.SetDynamicDescriptor(1, i, g_aSceneGBuffers[i].GetSRV());
-    //}
-    Context.SetDynamicDescriptor(1, 8, LinearDepth.GetSRV());
-    Context.SetDynamicDescriptor(1, 4, m_LightBuffer.GetSRV());
-    Context.SetDynamicDescriptor(1, 5, m_LightShadowArray.GetSRV());
-    Context.SetDescriptorTable(2, gBufferHandle);
-    //Context.SetDynamicDescriptor(1, static_cast<size_t>(eGBufferType::COUNT) + 2, m_LightShadowArray.GetSRV());
-    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
-    Context.SetDynamicDescriptor(3, 0, g_SceneColorBuffer.GetUAV());
-
-    // todo: assumes 1920x1080 resolution
-    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
-    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
-
-    float FarClipDist = camera.GetFarClip();
-    float NearClipDist = camera.GetNearClip();
-    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
-
-    struct CSConstants
-    {
-        uint32_t ViewportWidth, ViewportHeight;
-        float InvTileDim;
-        float RcpZMagic;
-        uint32_t TileCount;
-        Matrix4 ViewProjMatrix;
-        Matrix4 InvViewProj;
-        //Matrix4 InvProj;
-        Vector3 ViewerPos;
-    } csConstants;
-    // todo: assumes 1920x1080 resolution
-    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
-    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
-    csConstants.InvTileDim = 1.0f / LightGridDim;
-    csConstants.RcpZMagic = RcpZMagic;
-    csConstants.TileCount = tileCountX;
-    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
-    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
-    csConstants.InvViewProj = Matrix4(
-        Vector4(invViewProj.r[0]),
-        Vector4(invViewProj.r[1]),
-        Vector4(invViewProj.r[2]),
-        Vector4(invViewProj.r[3])
-    );
-    csConstants.ViewerPos = camera.GetPosition();
-    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
-
-    Context.Dispatch(tileCountX, tileCountY, 1);
-
-    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-    {
-        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    }
-    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
-    //Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    //Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-#else
-    UNREFERENCED_PARAMETER(gfxContext);
-    UNREFERENCED_PARAMETER(camera);
-#endif
-}
-
-void Lighting::FillLightCluster(GraphicsContext& gfxContext, const Math::Camera& camera, const Math::AxisAlignedBox& boundingBox)
-{
-    ScopedTimer _prof(L"FillLightCluster", gfxContext);
-
-    ComputeContext& Context = gfxContext.GetComputeContext();
-
-    Context.SetRootSignature(m_FillLightClusterSig);
-
-    switch (LightClusterType)
-    {
-    case eClusterType::_8x8x8:
-        Context.SetPipelineState(m_FillLightClusterCS_8_8);
-        break;
-    case eClusterType::_16x16x16:
-        Context.SetPipelineState(m_FillLightClusterCS_16_16);
-        break;
-    case eClusterType::_24x24x16:
-        Context.SetPipelineState(m_FillLightClusterCS_24_16);
-        break;
-    case eClusterType::_32x32x16:
-        Context.SetPipelineState(m_FillLightClusterCS_32_16);
-        break;
-    case eClusterType::_32x32x32:
-        Context.SetPipelineState(m_FillLightClusterCS_32_32);
-        break;
-    case eClusterType::_64x64x16:
-        Context.SetPipelineState(m_FillLightClusterCS_64_16);
-        break;
-    case eClusterType::_64x64x32:
-        Context.SetPipelineState(m_FillLightClusterCS_64_32);
-        break;
-    case eClusterType::COUNT:
-        // intentional fallthrough
-    default:
-        ASSERT(false);
-        break;
-    }
-
-    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
-
-    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightCluster, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-    Context.TransitionResource(m_LightClusterBitMask, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
-    Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
-    Context.SetDynamicDescriptor(1, 1, LinearDepth.GetSRV());
-    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
-    Context.SetDynamicDescriptor(2, 0, m_LightCluster.GetUAV());
-    Context.SetDynamicDescriptor(2, 1, m_LightClusterBitMask.GetUAV());
-
-    // todo: assumes 1920x1080 resolution
-    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]);
-    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]);
-    uint32_t tileCountZ = aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1];
-
-    float FarClipDist = camera.GetFarClip();
-    float NearClipDist = camera.GetNearClip();
-    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
-
-    struct CSConstants
-    {
-        uint32_t ViewportWidth, ViewportHeight;
-        float InvTileDim;
-        float RcpZMagic;
-        uint32_t TileCount[2];
-        Matrix4 ViewProjMatrix;
-    } csConstants;
-    // todo: assumes 1920x1080 resolution
-    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
-    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
-    csConstants.InvTileDim = 1.0f / aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0];
-    csConstants.RcpZMagic = RcpZMagic;
-    csConstants.TileCount[0] = tileCountX;
-    csConstants.TileCount[1] = tileCountY;
-    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
-    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
-
-    Context.Dispatch(tileCountX, tileCountY, tileCountZ);
-
-    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightCluster, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    Context.TransitionResource(m_LightClusterBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-}
-
-void Lighting::FillLightClusterCpu(GraphicsContext& gfxContext, const Math::Camera& camera, const Math::AxisAlignedBox& boundingBox)
-{
-    ScopedTimer _prof(L"FillLightClusterCpu", gfxContext);
-
-    ComputeContext& Context = gfxContext.GetComputeContext();
-
-    uint32_t* pLights = nullptr;
-    pLights = static_cast<uint32_t*>(malloc(
-            aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1] * 
-            aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * 
-            aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * 
-            sizeof(uint32_t)
-    ));
-    memset(
-        pLights,
-        0,
-        aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1] *
-        aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] *
-        aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] *
-        sizeof(uint32_t)
-    );
-
-    Vector3 scale = Vector3(
-        static_cast<float>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]), 
-        static_cast<float>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]), 
-        static_cast<float>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1])
-    ) / ((boundingBox.GetMax() + 1.0f) - boundingBox.GetMin());
-    //Vector3 scale = Vector3(static_cast<float>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]), static_cast<float>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]), static_cast<float>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1]));
-    Vector3 invScale = 1.0f / scale;
-
-    for (uint32_t i = 0; i < MaxLights; ++i)
-    {
-        const LightData& lightData = m_LightData[i];
-
-        const Vector3 position = Vector3(lightData.pos[0], lightData.pos[1], lightData.pos[2]) - boundingBox.GetMin();
-        //const Vector3 position = Vector3(lightData.pos[0], lightData.pos[1], lightData.pos[2]);
-        const Vector3 minPosition = (position - sqrtf(lightData.radiusSq)) * scale;
-        const Vector3 maxPosition = (position + sqrtf(lightData.radiusSq)) * scale;
-
-        // Cluster for the center of the light
-        int32_t px = static_cast<int32_t>(floorf(position.GetX() * scale.GetX()));
-        int32_t py = static_cast<int32_t>(floorf(position.GetY() * scale.GetY()));
-        int32_t pz = static_cast<int32_t>(floorf(position.GetZ() * scale.GetZ()));
-
-        // Cluster bounds for the light
-        int32_t x0 = std::max(static_cast<int32_t>(floorf(minPosition.GetX())), 0);
-        int32_t x1 = std::min(static_cast<int32_t>(floorf(maxPosition.GetX())), static_cast<int32_t>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]));
-        int32_t y0 = std::max(static_cast<int32_t>(floorf(minPosition.GetY())), 0);
-        int32_t y1 = std::min(static_cast<int32_t>(floorf(maxPosition.GetY())), static_cast<int32_t>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]));
-        int32_t z0 = std::max(static_cast<int32_t>(floorf(minPosition.GetZ())), 0);
-        int32_t z1 = std::min(static_cast<int32_t>(floorf(maxPosition.GetZ())), static_cast<int32_t>(aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1]));
-
-        uint32_t mask = (1 << i);
-        //WCHAR szDebugMsg[128];
-        //swprintf_s(szDebugMsg, L"x0, x1: %d, %d / y0, y1: %d, %d / z0, z1: %d, %d\n", x0, x1, y0, y1, z0, z1);
-        //OutputDebugString(szDebugMsg);
-        // Do AABB<->Sphere tests to figure out which clusters are actually intersected by the light
-        for (int32_t z = z0; z < z1; ++z)
+        Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+        Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+        Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+        tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]);
+        tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]);
+        tileCountZ = aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1];
+
+        // Cluster AABB
         {
-            float dz = (pz == z) ? 0.0f : boundingBox.GetMin().GetZ() + static_cast<float>(pz < z ? z : z + 1) * invScale.GetZ() - lightData.pos[2];
-            //float dz = (pz == z) ? 0.0f : static_cast<float>(pz < z ? z : z + 1) * invScale.GetZ() - lightData.pos[2];
-            dz *= dz;
+            Context.SetRootSignature(m_FillLightClusterSig);
+            Context.SetPipelineState(Lighting::m_aClusterAABBPSOs[static_cast<size_t>(LightClusterType)]);
 
-            for (int32_t y = y0; y < y1; ++y)
+            Context.TransitionResource(m_LightClusterAABB, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+            Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
+            Context.SetDynamicDescriptor(1, 1, LinearDepth.GetSRV());
+
+            Context.SetDynamicDescriptor(2, 0, m_LightClusterAABB.GetUAV());
+            //Context.SetDynamicDescriptor(2, 1, m_LightClusterBitMask.GetUAV());
+            
+            struct CSConstants
             {
-                float dy = (py == y) ? 0.0f : boundingBox.GetMin().GetY() + static_cast<float>(py < y ? y : y + 1) * invScale.GetY() - lightData.pos[1];
-                //float dy = (py == y) ? 0.0f : static_cast<float>(py < y ? y : y + 1) * invScale.GetY() - lightData.pos[1];
-                dy *= dy;
-                dy += dz;
+                uint32_t ViewportWidth, ViewportHeight;
+                //Matrix4 ViewProjMatrix;
+                Matrix4 InvProjMatrix;
+                //Matrix4 InvViewProj;
+                uint32_t TileCount[4];
+                float FarZ;
+                float NearZ;
+            } csConstants;
+            // todo: assumes 1920x1080 resolution
+            csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
+            csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
+            XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetProjMatrix()), camera.GetProjMatrix());
+            csConstants.InvProjMatrix = Matrix4(
+                Vector4(invProj.r[0]),
+                Vector4(invProj.r[1]),
+                Vector4(invProj.r[2]),
+                Vector4(invProj.r[3])
+            );
+            csConstants.TileCount[0] = tileCountX;
+            csConstants.TileCount[1] = tileCountY;
+            csConstants.TileCount[2] = tileCountZ;
+            csConstants.FarZ = camera.GetFarClip();
+            csConstants.NearZ = camera.GetNearClip();
+            Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
 
-                for (int32_t x = x0; x < x1; ++x)
-                {
-                    float dx = (px == x) ? 0.0f : boundingBox.GetMin().GetX() + static_cast<float>(px < x ? x : x + 1) * invScale.GetX() - lightData.pos[0];
-                    //float dx = (px == x) ? 0.0f : static_cast<float>(px < x ? x : x + 1) * invScale.GetX() - lightData.pos[0];
-                    dx *= dx;
-                    dx += dy;
-                    
-                    if (dx < lightData.radiusSq)
-                    {
-                        pLights[z * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] + y * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] + x] |= mask;
-                        //swprintf_s(
-                        //    szDebugMsg,
-                        //    L"%u/%u\t(%d, %d, %d)\t0x%08x\n",
-                        //    z * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] +
-                        //    y * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] +
-                        //    x,
-                        //    aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1],
-                        //    x,
-                        //    y,
-                        //    z,
-                        //    pLights[z * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] + y * aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] + x]
-                        //    );
-                        //OutputDebugString(szDebugMsg);
-                    }
-                }
-            }
+            // todo: assumes 1920x1080 resolution
+
+            Context.Dispatch(tileCountX, tileCountY, tileCountZ);
+
+            Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+            Context.TransitionResource(m_LightClusterAABB, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        }
+
+        // Cluster Light
+        {
+            //Context.SetRootSignature(m_FillLightClusterSig);
+            Context.SetPipelineState(Lighting::m_aForwardPSOs[static_cast<size_t>(lightType)][static_cast<size_t>(LightClusterType)]);
+
+            Context.TransitionResource(m_LightCluster, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+            Context.TransitionResource(m_LightClusterBitMask, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+            Context.TransitionResource(m_LightClusterAABB, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+            Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
+            Context.SetDynamicDescriptor(1, 1, LinearDepth.GetSRV());
+            Context.SetDynamicDescriptor(1, 2, m_LightClusterAABB.GetSRV());
+
+            Context.SetDynamicDescriptor(2, 0, m_LightCluster.GetUAV());
+            //Context.SetDynamicDescriptor(2, 1, m_LightClusterBitMask.GetUAV());
+
+            struct CSConstants
+            {
+                uint32_t ViewportWidth, ViewportHeight;
+                float InvTileDim;
+                float RcpZMagic;
+                uint32_t TileCount[2];
+                Matrix4 ViewProjMatrix;
+                Matrix4 ViewMatrix;
+                //Matrix4 InvProjMatrix;
+                //Matrix4 InvViewProj;
+                //float FarZ;
+                //float NearZ;
+            } csConstants;
+            // todo: assumes 1920x1080 resolution
+            csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
+            csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
+            csConstants.InvTileDim = 1.0f / aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0];
+            csConstants.RcpZMagic = RcpZMagic;
+            csConstants.TileCount[0] = tileCountX;
+            csConstants.TileCount[1] = tileCountY;
+            csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
+            csConstants.ViewMatrix = camera.GetViewMatrix();
+            //XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
+            //csConstants.InvViewProj = Matrix4(
+            //    Vector4(invViewProj.r[0]),
+            //    Vector4(invViewProj.r[1]),
+            //    Vector4(invViewProj.r[2]),
+            //    Vector4(invViewProj.r[3])
+            //);
+            //XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetProjMatrix()), camera.GetProjMatrix());
+            //csConstants.InvProjMatrix = Matrix4(
+            //    Vector4(invProj.r[0]),
+            //    Vector4(invProj.r[1]),
+            //    Vector4(invProj.r[2]),
+            //    Vector4(invProj.r[3])
+            //);
+            //csConstants.FarZ = camera.GetFarClip();
+            //csConstants.NearZ = camera.GetNearClip();
+            Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
+
+            // todo: assumes 1920x1080 resolution
+
+            Context.Dispatch(tileCountX, tileCountY, tileCountZ);
+
+            Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+            Context.TransitionResource(m_LightCluster, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+            //Context.TransitionResource(m_LightClusterBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         }
     }
+    else
+    {
+        Context.SetRootSignature(m_FillLightRootSig);
+        Context.SetPipelineState(Lighting::m_aForwardPSOs[static_cast<size_t>(lightType)][(static_cast<int>(LightGridDim) / 8) - 1]);
 
-    CommandContext::InitializeBuffer(
-        m_LightCluster, 
-        pLights, 
-        aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * 
-        aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0] * 
-        aLightClusterDimensions[static_cast<size_t>(LightClusterType)][1] * 
-        sizeof(uint32_t)
-    );
+        Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+        Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+        Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
-    free(pLights);
+        Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+        Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+        Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
+        Context.SetDynamicDescriptor(1, 1, LinearDepth.GetSRV());
+
+        Context.SetDynamicDescriptor(2, 0, m_LightGrid.GetUAV());
+        Context.SetDynamicDescriptor(2, 1, m_LightGridBitMask.GetUAV());
+
+        tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
+        tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
+
+        struct CSConstants
+        {
+            uint32_t ViewportWidth, ViewportHeight;
+            float InvTileDim;
+            float RcpZMagic;
+            uint32_t TileCount;
+            Matrix4 ViewProjMatrix;
+            Matrix4 InvViewProj;
+        } csConstants;
+        // todo: assumes 1920x1080 resolution
+        csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
+        csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
+        csConstants.InvTileDim = 1.0f / LightGridDim;
+        csConstants.RcpZMagic = RcpZMagic;
+        csConstants.TileCount = tileCountX;
+        csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
+        XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
+        csConstants.InvViewProj = Matrix4(
+            Vector4(invViewProj.r[0]),
+            Vector4(invViewProj.r[1]),
+            Vector4(invViewProj.r[2]),
+            Vector4(invViewProj.r[3])
+        );
+        Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
+
+        // todo: assumes 1920x1080 resolution
+
+        Context.Dispatch(tileCountX, tileCountY, tileCountZ);
+
+        Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    }
 }
+
+void Lighting::FillAndShadeLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle, Graphics::eLightType lightType, Graphics::eGBufferDataType gbufferType)
+{
+    ScopedTimer _prof(L"FillAndShadeLightGrid", gfxContext);
+
+    ASSERT(lightType == eLightType::TILED_DICE || lightType == eLightType::TILED_DICE_2_5 || lightType == eLightType::TILED_DICE_2_5_AABB || lightType == eLightType::TILED_INTEL);
+
+    ComputeContext& Context = gfxContext.GetComputeContext();
+
+    Context.SetRootSignature(m_KillzoneLightRootSig);
+
+    bool bIsCluster = lightType == eLightType::CLUSTERED;
+    if (bIsCluster)
+    {
+        Context.SetPipelineState(Lighting::m_aKillzonePSOs[static_cast<size_t>(lightType)][static_cast<size_t>(gbufferType)][static_cast<size_t>(LightClusterType)]);
+    }
+    else
+    {
+        Context.SetPipelineState(Lighting::m_aKillzonePSOs[static_cast<size_t>(lightType)][static_cast<size_t>(gbufferType)][(static_cast<int>(LightGridDim) / 8) - 1]);
+    }
+
+    float FarClipDist = camera.GetFarClip();
+    float NearClipDist = camera.GetNearClip();
+    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
+
+    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
+
+    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+    //g_aSceneGBuffers[static_cast<size_t>(eGBufferType::COUNT)]
+    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+    {
+        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+    }
+    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+    Context.SetDynamicDescriptor(1, 8, LinearDepth.GetSRV());
+    Context.SetDynamicDescriptor(1, 4, m_LightBuffer.GetSRV());
+    Context.SetDynamicDescriptor(1, 5, m_LightShadowArray.GetSRV());
+    Context.SetDescriptorTable(2, gBufferHandle);
+    Context.SetDynamicDescriptor(3, 0, g_SceneColorBuffer.GetUAV());
+
+    // todo: assumes 1920x1080 resolution
+    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
+    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
+
+    struct CSConstants
+    {
+        uint32_t ViewportWidth, ViewportHeight;
+        float InvTileDim;
+        float RcpZMagic;
+        uint32_t TileCount;
+        Matrix4 ViewProjMatrix;
+        Matrix4 InvViewProj;
+        //Matrix4 InvProj;
+        Vector3 ViewerPos;
+    } csConstants;
+    // todo: assumes 1920x1080 resolution
+    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
+    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
+    csConstants.InvTileDim = 1.0f / LightGridDim;
+    csConstants.RcpZMagic = RcpZMagic;
+    csConstants.TileCount = tileCountX;
+    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
+    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
+    csConstants.InvViewProj = Matrix4(
+        Vector4(invViewProj.r[0]),
+        Vector4(invViewProj.r[1]),
+        Vector4(invViewProj.r[2]),
+        Vector4(invViewProj.r[3])
+    );
+    csConstants.ViewerPos = camera.GetPosition();
+    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
+
+    Context.Dispatch(tileCountX, tileCountY, 1);
+
+    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+    {
+        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    }
+    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+}
+
+
+//void Lighting::KillzoneDiceLightGrid(GraphicsContext& gfxContext, const Camera& camera, const DescriptorHandle& gBufferHandle)
+//{
+//#if KILLZONE_GBUFFER
+//    ScopedTimer _prof(L"KillzoneDiceLightGrid", gfxContext);
+//
+//    ComputeContext& Context = gfxContext.GetComputeContext();
+//
+//    Context.SetRootSignature(m_KillzoneLightRootSig);
+//
+//    switch ((int)LightGridDim)
+//    {
+//    case  8: Context.SetPipelineState(m_KillzoneLightGridCS_8); break;
+//    case 16: Context.SetPipelineState(m_KillzoneLightGridCS_16); break;
+//    case 24: Context.SetPipelineState(m_KillzoneLightGridCS_24); break;
+//    case 32: Context.SetPipelineState(m_KillzoneLightGridCS_32); break;
+//    default: ASSERT(false); break;
+//    }
+//
+//    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
+//
+//    //g_aSceneGBuffers[static_cast<size_t>(eGBufferType::COUNT)]
+//    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+//    {
+//        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    }
+//    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    //Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+//
+//    //Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
+//    //gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, s_KillzoneTextureHeap.GetHeapPointer());
+//    //Context.SetDescriptorTable(1, resourcesHandle);
+//    //for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+//    //{
+//    //    Context.SetDynamicDescriptor(1, i, g_aSceneGBuffers[i].GetSRV());
+//    //}
+//    Context.SetDynamicDescriptor(1, 8, LinearDepth.GetSRV());
+//    Context.SetDynamicDescriptor(1, 4, m_LightBuffer.GetSRV());
+//    Context.SetDynamicDescriptor(1, 5, m_LightShadowArray.GetSRV());
+//    Context.SetDescriptorTable(2, gBufferHandle);
+//    //Context.SetDynamicDescriptor(1, static_cast<size_t>(eGBufferType::COUNT) + 2, m_LightShadowArray.GetSRV());
+//    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
+//    Context.SetDynamicDescriptor(3, 0, g_SceneColorBuffer.GetUAV());
+//
+//    // todo: assumes 1920x1080 resolution
+//    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
+//    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
+//
+//    float FarClipDist = camera.GetFarClip();
+//    float NearClipDist = camera.GetNearClip();
+//    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
+//
+//    struct CSConstants
+//    {
+//        uint32_t ViewportWidth, ViewportHeight;
+//        float InvTileDim;
+//        float RcpZMagic;
+//        uint32_t TileCount;
+//        Matrix4 ViewProjMatrix;
+//        Matrix4 InvViewProj;
+//        //Matrix4 InvProj;
+//        Vector3 ViewerPos;
+//    } csConstants;
+//    // todo: assumes 1920x1080 resolution
+//    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
+//    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
+//    csConstants.InvTileDim = 1.0f / LightGridDim;
+//    csConstants.RcpZMagic = RcpZMagic;
+//    csConstants.TileCount = tileCountX;
+//    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
+//    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
+//    csConstants.InvViewProj = Matrix4(
+//        Vector4(invViewProj.r[0]),
+//        Vector4(invViewProj.r[1]),
+//        Vector4(invViewProj.r[2]),
+//        Vector4(invViewProj.r[3])
+//    );
+//    csConstants.ViewerPos = camera.GetPosition();
+//    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
+//
+//    Context.Dispatch(tileCountX, tileCountY, 1);
+//
+//    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+//    {
+//        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//    }
+//    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+//    //Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//    //Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//#else
+//    UNREFERENCED_PARAMETER(gfxContext);
+//    UNREFERENCED_PARAMETER(camera);
+//#endif
+//}
+//
+//void Lighting::KillzoneDiceLightCullingGrid(GraphicsContext& gfxContext, const Camera& camera, const DescriptorHandle& gBufferHandle)
+//{
+//#if KILLZONE_GBUFFER
+//    ScopedTimer _prof(L"KillzoneDiceLightCullingGrid", gfxContext);
+//
+//    ComputeContext& Context = gfxContext.GetComputeContext();
+//
+//    Context.SetRootSignature(m_KillzoneLightRootSig);
+//
+//    switch ((int)LightGridDim)
+//    {
+//    case  8: Context.SetPipelineState(m_KillzoneLightCullingGridCS_8); break;
+//    case 16: Context.SetPipelineState(m_KillzoneLightCullingGridCS_16); break;
+//    case 24: Context.SetPipelineState(m_KillzoneLightCullingGridCS_24); break;
+//    case 32: Context.SetPipelineState(m_KillzoneLightCullingGridCS_32); break;
+//    default: ASSERT(false); break;
+//    }
+//
+//    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
+//
+//    //g_aSceneGBuffers[static_cast<size_t>(eGBufferType::COUNT)]
+//    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+//    {
+//        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    }
+//    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    //Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+//
+//    //Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
+//    //gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, s_KillzoneTextureHeap.GetHeapPointer());
+//    //Context.SetDescriptorTable(1, resourcesHandle);
+//    //for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+//    //{
+//    //    Context.SetDynamicDescriptor(1, i, g_aSceneGBuffers[i].GetSRV());
+//    //}
+//    Context.SetDynamicDescriptor(1, 8, LinearDepth.GetSRV());
+//    Context.SetDynamicDescriptor(1, 4, m_LightBuffer.GetSRV());
+//    Context.SetDynamicDescriptor(1, 5, m_LightShadowArray.GetSRV());
+//    Context.SetDescriptorTable(2, gBufferHandle);
+//    //Context.SetDynamicDescriptor(1, static_cast<size_t>(eGBufferType::COUNT) + 2, m_LightShadowArray.GetSRV());
+//    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
+//    Context.SetDynamicDescriptor(3, 0, g_SceneColorBuffer.GetUAV());
+//
+//    // todo: assumes 1920x1080 resolution
+//    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
+//    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
+//
+//    float FarClipDist = camera.GetFarClip();
+//    float NearClipDist = camera.GetNearClip();
+//    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
+//
+//    struct CSConstants
+//    {
+//        uint32_t ViewportWidth, ViewportHeight;
+//        float InvTileDim;
+//        float RcpZMagic;
+//        uint32_t TileCount;
+//        Matrix4 ViewProjMatrix;
+//        Matrix4 InvViewProj;
+//        //Matrix4 InvProj;
+//        Vector3 ViewerPos;
+//    } csConstants;
+//    // todo: assumes 1920x1080 resolution
+//    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
+//    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
+//    csConstants.InvTileDim = 1.0f / LightGridDim;
+//    csConstants.RcpZMagic = RcpZMagic;
+//    csConstants.TileCount = tileCountX;
+//    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
+//    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
+//    csConstants.InvViewProj = Matrix4(
+//        Vector4(invViewProj.r[0]),
+//        Vector4(invViewProj.r[1]),
+//        Vector4(invViewProj.r[2]),
+//        Vector4(invViewProj.r[3])
+//    );
+//    csConstants.ViewerPos = camera.GetPosition();
+//    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
+//
+//    Context.Dispatch(tileCountX, tileCountY, 1);
+//
+//    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+//    {
+//        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//    }
+//    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+//    //Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//    //Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//#else
+//    UNREFERENCED_PARAMETER(gfxContext);
+//    UNREFERENCED_PARAMETER(camera);
+//#endif
+//}
+//
+//void Lighting::KillzoneDiceLightAABBCullingGrid(GraphicsContext& gfxContext, const Camera& camera, const DescriptorHandle& gBufferHandle)
+//{
+//#if KILLZONE_GBUFFER
+//    ScopedTimer _prof(L"KillzoneDiceLightAABBCullingGrid", gfxContext);
+//
+//    ComputeContext& Context = gfxContext.GetComputeContext();
+//
+//    Context.SetRootSignature(m_KillzoneLightRootSig);
+//
+//    switch ((int)LightGridDim)
+//    {
+//    case  8: Context.SetPipelineState(m_KillzoneLightAABBCullingGridCS_8); break;
+//    case 16: Context.SetPipelineState(m_KillzoneLightAABBCullingGridCS_16); break;
+//    case 24: Context.SetPipelineState(m_KillzoneLightAABBCullingGridCS_24); break;
+//    case 32: Context.SetPipelineState(m_KillzoneLightAABBCullingGridCS_32); break;
+//    default: ASSERT(false); break;
+//    }
+//
+//    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
+//
+//    //g_aSceneGBuffers[static_cast<size_t>(eGBufferType::COUNT)]
+//    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+//    {
+//        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    }
+//    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    //Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+//
+//    //Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
+//    //gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, s_KillzoneTextureHeap.GetHeapPointer());
+//    //Context.SetDescriptorTable(1, resourcesHandle);
+//    //for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+//    //{
+//    //    Context.SetDynamicDescriptor(1, i, g_aSceneGBuffers[i].GetSRV());
+//    //}
+//    Context.SetDynamicDescriptor(1, 8, LinearDepth.GetSRV());
+//    Context.SetDynamicDescriptor(1, 4, m_LightBuffer.GetSRV());
+//    Context.SetDynamicDescriptor(1, 5, m_LightShadowArray.GetSRV());
+//    Context.SetDescriptorTable(2, gBufferHandle);
+//    //Context.SetDynamicDescriptor(1, static_cast<size_t>(eGBufferType::COUNT) + 2, m_LightShadowArray.GetSRV());
+//    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
+//    Context.SetDynamicDescriptor(3, 0, g_SceneColorBuffer.GetUAV());
+//
+//    // todo: assumes 1920x1080 resolution
+//    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
+//    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
+//
+//    float FarClipDist = camera.GetFarClip();
+//    float NearClipDist = camera.GetNearClip();
+//    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
+//
+//    struct CSConstants
+//    {
+//        uint32_t ViewportWidth, ViewportHeight;
+//        float InvTileDim;
+//        float RcpZMagic;
+//        uint32_t TileCount;
+//        Matrix4 ViewProjMatrix;
+//        Matrix4 InvViewProj;
+//        //Matrix4 InvProj;
+//        Vector3 ViewerPos;
+//    } csConstants;
+//    // todo: assumes 1920x1080 resolution
+//    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
+//    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
+//    csConstants.InvTileDim = 1.0f / LightGridDim;
+//    csConstants.RcpZMagic = RcpZMagic;
+//    csConstants.TileCount = tileCountX;
+//    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
+//    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
+//    csConstants.InvViewProj = Matrix4(
+//        Vector4(invViewProj.r[0]),
+//        Vector4(invViewProj.r[1]),
+//        Vector4(invViewProj.r[2]),
+//        Vector4(invViewProj.r[3])
+//    );
+//    csConstants.ViewerPos = camera.GetPosition();
+//    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
+//
+//    Context.Dispatch(tileCountX, tileCountY, 1);
+//
+//    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+//    {
+//        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//    }
+//    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+//    //Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//    //Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//#else
+//    UNREFERENCED_PARAMETER(gfxContext);
+//    UNREFERENCED_PARAMETER(camera);
+//#endif
+//}
+//
+//
+//void Lighting::KillzoneIntelLightGrid(GraphicsContext& gfxContext, const Camera& camera, const DescriptorHandle& gBufferHandle)
+//{
+//#if KILLZONE_GBUFFER
+//    ScopedTimer _prof(L"KillzoneIntelLightGrid", gfxContext);
+//
+//    ComputeContext& Context = gfxContext.GetComputeContext();
+//
+//    Context.SetRootSignature(m_KillzoneLightRootSig);
+//
+//    switch ((int)LightGridDim)
+//    {
+//    case  8: Context.SetPipelineState(m_KillzoneIntelLightGridCS_8); break;
+//    case 16: Context.SetPipelineState(m_KillzoneIntelLightGridCS_16); break;
+//    case 24: Context.SetPipelineState(m_KillzoneIntelLightGridCS_24); break;
+//    case 32: Context.SetPipelineState(m_KillzoneIntelLightGridCS_32); break;
+//    default: ASSERT(false); break;
+//    }
+//
+//    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
+//
+//    //g_aSceneGBuffers[static_cast<size_t>(eGBufferType::COUNT)]
+//    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+//    {
+//        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    }
+//    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    //Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+//
+//    //Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
+//    //gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, s_KillzoneTextureHeap.GetHeapPointer());
+//    //Context.SetDescriptorTable(1, resourcesHandle);
+//    //for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+//    //{
+//    //    Context.SetDynamicDescriptor(1, i, g_aSceneGBuffers[i].GetSRV());
+//    //}
+//    Context.SetDynamicDescriptor(1, 8, LinearDepth.GetSRV());
+//    Context.SetDynamicDescriptor(1, 4, m_LightBuffer.GetSRV());
+//    Context.SetDynamicDescriptor(1, 5, m_LightShadowArray.GetSRV());
+//    Context.SetDescriptorTable(2, gBufferHandle);
+//    //Context.SetDynamicDescriptor(1, static_cast<size_t>(eGBufferType::COUNT) + 2, m_LightShadowArray.GetSRV());
+//    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
+//    Context.SetDynamicDescriptor(3, 0, g_SceneColorBuffer.GetUAV());
+//
+//    // todo: assumes 1920x1080 resolution
+//    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
+//    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
+//
+//    float FarClipDist = camera.GetFarClip();
+//    float NearClipDist = camera.GetNearClip();
+//    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
+//
+//    struct CSConstants
+//    {
+//        uint32_t ViewportWidth, ViewportHeight;
+//        float InvTileDim;
+//        float RcpZMagic;
+//        uint32_t TileCount;
+//        Matrix4 ViewProjMatrix;
+//        Matrix4 InvViewProj;
+//        //Matrix4 InvProj;
+//        Vector3 ViewerPos;
+//    } csConstants;
+//    // todo: assumes 1920x1080 resolution
+//    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
+//    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
+//    csConstants.InvTileDim = 1.0f / LightGridDim;
+//    csConstants.RcpZMagic = RcpZMagic;
+//    csConstants.TileCount = tileCountX;
+//    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
+//    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
+//    csConstants.InvViewProj = Matrix4(
+//        Vector4(invViewProj.r[0]),
+//        Vector4(invViewProj.r[1]),
+//        Vector4(invViewProj.r[2]),
+//        Vector4(invViewProj.r[3])
+//    );
+//    csConstants.ViewerPos = camera.GetPosition();
+//    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
+//
+//    Context.Dispatch(tileCountX, tileCountY, 1);
+//
+//    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+//    {
+//        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//    }
+//    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+//    //Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//    //Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+//#else
+//    UNREFERENCED_PARAMETER(gfxContext);
+//    UNREFERENCED_PARAMETER(camera);
+//#endif
+//}

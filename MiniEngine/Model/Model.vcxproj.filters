@@ -51,6 +51,30 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{9169b7c9-f1a7-41d4-9098-58de36da850c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Fill Light Grid">
+      <UniqueIdentifier>{e48a48bc-ab40-4066-a01f-e175c3448c32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Fill Light Cluster">
+      <UniqueIdentifier>{8073f4ae-3b15-4b2d-9bb2-9a68e61a499e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Killzone GBuffer">
+      <UniqueIdentifier>{be712471-a616-4f60-b48f-64789e099377}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Killzone Intel">
+      <UniqueIdentifier>{f4ff4ca7-9cd3-4a99-bd6d-8eadf3165dcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Killzone DICE">
+      <UniqueIdentifier>{b502137c-f2ac-4ba5-853c-99f8c5ffb308}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Killzone DICE\2.5D AABB">
+      <UniqueIdentifier>{82852596-31a2-4b77-b07b-639433342e1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Killzone DICE\2.5D">
+      <UniqueIdentifier>{35cd53be-ac9c-4a8d-a39f-5c9c10e43c3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\ModelViewer">
+      <UniqueIdentifier>{0acf09be-1877-4346-bdd9-c58f361aaf74}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SponzaRenderer.h">
@@ -100,9 +124,6 @@
     <None Include="Shaders\Common.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Shaders\FillLightGridCS.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="Shaders\LightGrid.hlsli">
       <Filter>Shaders</Filter>
     </None>
@@ -110,17 +131,23 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="packages.config" />
-    <None Include="Shaders\FillLightClusterCS.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="Shaders\LightingClustered.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Shaders\KillzoneLightGridCS.hlsli">
-      <Filter>Shaders</Filter>
+    <None Include="Shaders\FillLightClusterCS.hlsli">
+      <Filter>Shaders\Fill Light Cluster</Filter>
+    </None>
+    <None Include="Shaders\FillLightGridCS.hlsli">
+      <Filter>Shaders\Fill Light Grid</Filter>
     </None>
     <None Include="Shaders\KillzoneIntelLightGridCS.hlsli">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\Killzone Intel</Filter>
+    </None>
+    <None Include="Shaders\KillzoneLightGridCS.hlsli">
+      <Filter>Shaders\Killzone DICE</Filter>
+    </None>
+    <None Include="Shaders\FillLightClusterAABBCS.hlsli">
+      <Filter>Shaders\Fill Light Cluster</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -137,24 +164,6 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\DepthViewerVS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\FillLightGridCS_8.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\FillLightGridCS_16.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\FillLightGridCS_24.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\FillLightGridCS_32.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\ModelViewerTiledPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\ModelViewerVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\CutoutDepthVS.hlsl">
@@ -223,48 +232,6 @@
     <FxCompile Include="Shaders\GBufferWorldPosPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\KillzoneDeferredPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferDepthPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferDiffuseAlbedoPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferGlossPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferLightAccumulationPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferMotionVectorPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferNormalPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferSpecularIntensityPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferSunOcclusionPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\ModelViewerDiffuseAlbedoPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\ModelViewerGlossPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\ModelViewerNormalPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\ModelViewerSpecularIntensityPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\ModelViewerWorldPosPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\DeferredPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
@@ -274,131 +241,332 @@
     <FxCompile Include="Shaders\GBufferDepthPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\ModelViewerClusteredPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferLightClusteredPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferLightTiledPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\FillLightClusterCS_8_8.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\FillLightClusterCS_16_16.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\FillLightClusterCS_24_16.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\FillLightClusterCS_32_16.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\FillLightClusterCS_64_16.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\FillLightClusterCS_64_32.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\FillLightClusterCS_32_32.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferDepthClusteredPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferDiffuseAlbedoClusteredPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferGlossClusteredPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferLightAccumulationClusteredPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferMotionVectorClusteredPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferNormalClusteredPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferSpecularIntensityClusteredPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneGBufferSunOcclusionClusteredPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneLightGridCS_8.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneLightGridCS_16.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneLightGridCS_24.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneLightGridCS_32.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneIntelLightGridCS_8.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneIntelLightGridCS_16.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneIntelLightGridCS_24.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneIntelLightGridCS_32.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneLightCullingGridCS_32.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneLightCullingGridCS_8.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneLightCullingGridCS_16.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneLightCullingGridCS_24.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneLightAABBCullingGridCS_8.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneLightAABBCullingGridCS_16.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneLightAABBCullingGridCS_24.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\KillzoneLightAABBCullingGridCS_32.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\FillLight2_5DGridCS_8.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\FillLight2_5DGridCS_16.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\FillLight2_5DGridCS_24.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\FillLight2_5DGridCS_32.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\FillLight2_5DAABBGridCS_32.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\FillLight2_5DAABBGridCS_8.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\Fill Light Grid</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\FillLight2_5DAABBGridCS_16.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\Fill Light Grid</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\FillLight2_5DAABBGridCS_24.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\Fill Light Grid</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLight2_5DAABBGridCS_32.hlsl">
+      <Filter>Shaders\Fill Light Grid</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLight2_5DGridCS_8.hlsl">
+      <Filter>Shaders\Fill Light Grid</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLight2_5DGridCS_16.hlsl">
+      <Filter>Shaders\Fill Light Grid</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLight2_5DGridCS_24.hlsl">
+      <Filter>Shaders\Fill Light Grid</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLight2_5DGridCS_32.hlsl">
+      <Filter>Shaders\Fill Light Grid</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightClusterCS_8_8.hlsl">
+      <Filter>Shaders\Fill Light Cluster</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightClusterCS_16_16.hlsl">
+      <Filter>Shaders\Fill Light Cluster</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightClusterCS_24_16.hlsl">
+      <Filter>Shaders\Fill Light Cluster</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightClusterCS_32_16.hlsl">
+      <Filter>Shaders\Fill Light Cluster</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightClusterCS_32_32.hlsl">
+      <Filter>Shaders\Fill Light Cluster</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightClusterCS_64_16.hlsl">
+      <Filter>Shaders\Fill Light Cluster</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightClusterCS_64_32.hlsl">
+      <Filter>Shaders\Fill Light Cluster</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightGridCS_8.hlsl">
+      <Filter>Shaders\Fill Light Grid</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightGridCS_16.hlsl">
+      <Filter>Shaders\Fill Light Grid</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightGridCS_24.hlsl">
+      <Filter>Shaders\Fill Light Grid</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightGridCS_32.hlsl">
+      <Filter>Shaders\Fill Light Grid</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneDeferredPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferDepthClusteredPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferDepthPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferDiffuseAlbedoClusteredPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferDiffuseAlbedoPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferGlossClusteredPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferGlossPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferLightAccumulationClusteredPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferLightAccumulationPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferLightClusteredDensityPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferLightClusteredFPRPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferLightClusteredPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferLightTiledDensityPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferLightTiledFPRPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferLightTiledPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferMotionVectorClusteredPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferMotionVectorPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferNormalClusteredPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferNormalPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferSpecularIntensityClusteredPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferSpecularIntensityPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferSunOcclusionClusteredPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneGBufferSunOcclusionPS.hlsl">
+      <Filter>Shaders\Killzone GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridCS_8.hlsl">
+      <Filter>Shaders\Killzone Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridCS_16.hlsl">
+      <Filter>Shaders\Killzone Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridCS_24.hlsl">
+      <Filter>Shaders\Killzone Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridCS_32.hlsl">
+      <Filter>Shaders\Killzone Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridDensityCS_8.hlsl">
+      <Filter>Shaders\Killzone Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridDensityCS_16.hlsl">
+      <Filter>Shaders\Killzone Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridDensityCS_24.hlsl">
+      <Filter>Shaders\Killzone Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridDensityCS_32.hlsl">
+      <Filter>Shaders\Killzone Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridFPRCS_8.hlsl">
+      <Filter>Shaders\Killzone Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridFPRCS_16.hlsl">
+      <Filter>Shaders\Killzone Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridFPRCS_24.hlsl">
+      <Filter>Shaders\Killzone Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneIntelLightGridFPRCS_32.hlsl">
+      <Filter>Shaders\Killzone Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridCS_8.hlsl">
+      <Filter>Shaders\Killzone DICE</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridCS_16.hlsl">
+      <Filter>Shaders\Killzone DICE</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridCS_24.hlsl">
+      <Filter>Shaders\Killzone DICE</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridCS_32.hlsl">
+      <Filter>Shaders\Killzone DICE</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridDensityCS_8.hlsl">
+      <Filter>Shaders\Killzone DICE</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridDensityCS_16.hlsl">
+      <Filter>Shaders\Killzone DICE</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridDensityCS_24.hlsl">
+      <Filter>Shaders\Killzone DICE</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridDensityCS_32.hlsl">
+      <Filter>Shaders\Killzone DICE</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridFPRCS_8.hlsl">
+      <Filter>Shaders\Killzone DICE</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridFPRCS_16.hlsl">
+      <Filter>Shaders\Killzone DICE</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridFPRCS_24.hlsl">
+      <Filter>Shaders\Killzone DICE</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightGridFPRCS_32.hlsl">
+      <Filter>Shaders\Killzone DICE</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightAABBCullingGridCS_8.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D AABB</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightAABBCullingGridCS_16.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D AABB</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightAABBCullingGridCS_24.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D AABB</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightAABBCullingGridCS_32.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D AABB</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightAABBCullingGridDensityCS_8.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D AABB</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightAABBCullingGridDensityCS_16.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D AABB</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightAABBCullingGridDensityCS_24.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D AABB</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightAABBCullingGridDensityCS_32.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D AABB</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightAABBCullingGridFPRCS_8.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D AABB</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightAABBCullingGridFPRCS_16.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D AABB</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightAABBCullingGridFPRCS_24.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D AABB</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightAABBCullingGridFPRCS_32.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D AABB</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridCS_8.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridCS_16.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridCS_24.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridCS_32.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridDensityCS_8.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridDensityCS_16.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridDensityCS_24.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridDensityCS_32.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridFPRCS_8.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridFPRCS_16.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridFPRCS_24.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\KillzoneLightCullingGridFPRCS_32.hlsl">
+      <Filter>Shaders\Killzone DICE\2.5D</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ModelViewerClusteredDensityPS.hlsl">
+      <Filter>Shaders\ModelViewer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ModelViewerClusteredFPRPS.hlsl">
+      <Filter>Shaders\ModelViewer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ModelViewerClusteredPS.hlsl">
+      <Filter>Shaders\ModelViewer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ModelViewerDiffuseAlbedoPS.hlsl">
+      <Filter>Shaders\ModelViewer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ModelViewerGlossPS.hlsl">
+      <Filter>Shaders\ModelViewer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ModelViewerNormalPS.hlsl">
+      <Filter>Shaders\ModelViewer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ModelViewerSpecularIntensityPS.hlsl">
+      <Filter>Shaders\ModelViewer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ModelViewerTiledDensityPS.hlsl">
+      <Filter>Shaders\ModelViewer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ModelViewerTiledFPRPS.hlsl">
+      <Filter>Shaders\ModelViewer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ModelViewerTiledPS.hlsl">
+      <Filter>Shaders\ModelViewer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ModelViewerVS.hlsl">
+      <Filter>Shaders\ModelViewer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ModelViewerWorldPosPS.hlsl">
+      <Filter>Shaders\ModelViewer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightClusterAABBCS_8_8.hlsl">
+      <Filter>Shaders\Fill Light Cluster</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightClusterAABBCS_16_16.hlsl">
+      <Filter>Shaders\Fill Light Cluster</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightClusterAABBCS_24_16.hlsl">
+      <Filter>Shaders\Fill Light Cluster</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightClusterAABBCS_32_16.hlsl">
+      <Filter>Shaders\Fill Light Cluster</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightClusterAABBCS_32_32.hlsl">
+      <Filter>Shaders\Fill Light Cluster</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightClusterAABBCS_64_16.hlsl">
+      <Filter>Shaders\Fill Light Cluster</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FillLightClusterAABBCS_64_32.hlsl">
+      <Filter>Shaders\Fill Light Cluster</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

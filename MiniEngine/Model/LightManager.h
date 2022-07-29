@@ -24,6 +24,12 @@ class GraphicsContext;
 class IntVar;
 class DescriptorHandle;
 
+namespace Graphics
+{
+    enum class eLightType : uint8_t;
+    enum class eGBufferDataType : uint8_t;
+}
+
 namespace Math
 {
     class Vector3;
@@ -50,7 +56,7 @@ namespace Lighting
     extern eClusterType LightClusterType;
     extern uint32_t aLightClusterDimensions[static_cast<size_t>(eClusterType::COUNT)][2];
 
-    enum { MaxLights = 192 };
+    enum { MaxLights = 128, MaxPointLights = 32, MaxConeLights = 32 };
 
     //LightData m_LightData[MaxLights];
     extern StructuredBuffer m_LightBuffer;
@@ -66,17 +72,20 @@ namespace Lighting
     extern ShadowBuffer m_LightShadowTempBuffer;
     extern Math::Matrix4 m_LightShadowMatrix[MaxLights];
 
+    extern uint32_t m_LightShadowParity[MaxLights / 32];
+
+    extern bool m_bUpdateLightsToggle;
+
     void InitializeResources(void);
     void CreateRandomLights(const Math::Vector3 minBound, const Math::Vector3 maxBound);
-    void FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera);
-    void FillLight2_5DGrid(GraphicsContext& gfxContext, const Math::Camera& camera);
-    void FillLight2_5DAABBGrid(GraphicsContext& gfxContext, const Math::Camera& camera);
-    void KillzoneDiceLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
-    void KillzoneDiceLightCullingGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
-    void KillzoneDiceLightAABBCullingGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
-    void KillzoneIntelLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
-    void FillLightCluster(GraphicsContext& gfxContext, const Math::Camera& camera, const Math::AxisAlignedBox& boundingBox);
-    void FillLightClusterCpu(GraphicsContext& gfxContext, const Math::Camera& camera, const Math::AxisAlignedBox& boundingBox);
+    void FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, Graphics::eLightType lightType);
+    void FillAndShadeLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle, Graphics::eLightType lightType, Graphics::eGBufferDataType gbufferType);
+    //void KillzoneDiceLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
+    //void KillzoneDiceLightCullingGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
+    //void KillzoneDiceLightAABBCullingGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
+    //void KillzoneIntelLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
+    //void FillLightCluster(GraphicsContext& gfxContext, const Math::Camera& camera, const Math::AxisAlignedBox& boundingBox, Graphics::eLightType lightType, Graphics::eGBufferType gbufferType);
+    void ResetLights(void);
     void Shutdown(void);
     void UpdateLights(float deltaTime);
 }

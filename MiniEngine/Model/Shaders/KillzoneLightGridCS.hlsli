@@ -11,6 +11,7 @@
 // Author(s):	Alex Nankervis
 //
 
+#include "Common.hlsli"
 #include "LightGrid.hlsli"
 
 // outdated warning about for-loop variable scope
@@ -283,6 +284,7 @@ void main(
 #if AABB_BASED_CULLING
     // https://wickedengine.net/2018/01/10/optimizing-tile-based-light-culling/
     // AABB based culling
+    
     float4 minAABB = float4(((float) Gid.x * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f, ((float) Gid.y * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f, tileMinDepth, 1.0f);
     minAABB.y *= -1.0f;
     minAABB = mul(InvViewProj, minAABB);
@@ -291,6 +293,46 @@ void main(
     maxAABB.y *= -1.0f;
     maxAABB = mul(InvViewProj, maxAABB);
     maxAABB /= maxAABB.w;
+    //float4 nearLeftBottom = float4(
+    //    ((float) Gid.x * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f, 
+    //    ((float) Gid.y * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f,
+    //    tileMinDepth, 
+    //    1.0f
+    //);
+    //nearLeftBottom.y *= -1.0f;
+    //nearLeftBottom = mul(InvViewProj, nearLeftBottom);
+    //nearLeftBottom /= nearLeftBottom.w;
+    //float4 nearRightTop = float4(
+    //    ((float) (Gid.x + 1) * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f,
+    //    ((float) (Gid.y + 1) * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f,
+    //    tileMinDepth,
+    //    1.0f
+    //);
+    //nearRightTop.y *= -1.0f;
+    //nearRightTop = mul(InvViewProj, nearRightTop);
+    //nearRightTop /= nearRightTop.w;
+    //
+    //float4 farLeftBottom = float4(
+    //    ((float) Gid.x * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f,
+    //    ((float) Gid.y * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f,
+    //    tileMaxDepth,
+    //    1.0f
+    //);
+    //farLeftBottom.y *= -1.0f;
+    //farLeftBottom = mul(InvViewProj, farLeftBottom);
+    //farLeftBottom /= farLeftBottom.w;
+    //float4 farRightTop = float4(
+    //    ((float) (Gid.x + 1) * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f,
+    //    ((float) (Gid.y + 1) * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f,
+    //    tileMaxDepth,
+    //    1.0f
+    //);
+    //farRightTop.y *= -1.0f;
+    //farRightTop = mul(InvViewProj, farRightTop);
+    //farRightTop /= farRightTop.w;
+    //
+    //float4 minAABB = float4(min(nearLeftBottom.x, farLeftBottom.x), min(nearLeftBottom.y, farLeftBottom.y), min(nearLeftBottom.z, farLeftBottom.z), 1.0f);
+    //float4 maxAABB = float4(max(nearRightTop.x, farRightTop.x), max(nearRightTop.y, farRightTop.y), max(nearRightTop.z, farRightTop.z), 1.0f);
     
     float4 centerAABB = (minAABB + maxAABB) / 2.0f;
     float4 extentAABB = abs(maxAABB - centerAABB);
@@ -340,13 +382,18 @@ void main(
     {
         uint lightIndex = passIt * threadCount + GI;
         
-        lightIndex = min(lightIndex, MAX_LIGHTS);
+        if (lightIndex > MAX_LIGHTS)
+        {
+            continue;
+        }
+        //lightIndex = min(lightIndex, MAX_LIGHTS);
         
         LightData lightData = gLightBuffer[lightIndex];
         float3 lightWorldPos = lightData.pos;
         float lightCullRadius = sqrt(lightData.radiusSq);
         
 #if AABB_BASED_CULLING
+        // Arvo Intersection Test
         float3 vDelta = max(0, abs(centerAABB.xyz - lightWorldPos) - extentAABB.xyz);
         float fDistSq = dot(vDelta, vDelta);
         
@@ -370,8 +417,8 @@ void main(
 #if LIGHT_CULLING_2_5
         // depthMaskL ← Compute mask using light extent
         uint localDepthMask = 0;
-        const float fLightMin = (lightWorldPos.z - lightCullRadius) * ViewProjMatrix._33 + ViewProjMatrix._43;
-        const float fLightMax = (lightWorldPos.z + lightCullRadius) * ViewProjMatrix._33 + ViewProjMatrix._43;
+        const float fLightMin = (lightWorldPos.z + lightCullRadius) * ViewProjMatrix._33 + ViewProjMatrix._43;
+        const float fLightMax = (lightWorldPos.z - lightCullRadius) * ViewProjMatrix._33 + ViewProjMatrix._43;
         const uint lightMaskCellIndexStart = max(0, min(32, floor((fLightMin - tileMinDepth) * depthRangeRecip)));
         const uint lightMaskCellIndexEnd = max(0, min(32, floor((fLightMax - tileMinDepth) * depthRangeRecip)));
         
@@ -416,6 +463,12 @@ void main(
         return;
     }
     
+#if LIGHT_DENSITY
+    float density = (float) (gSharedVisibleLightCountSphere + gSharedVisibleLightCountCone + gSharedVisibleLightCountConeShadowed) / (float) MAX_LIGHTS;
+    gOutputTexture[DTid.xy] += float4(ConvertToRadarColor(density), 1);
+    return;
+#else
+    
     float3 color = 0;
     
     //float4 rt0Data = gRt0[DTid.xy];
@@ -424,14 +477,14 @@ void main(
     //float gloss = rt0Data.a * 256.0;
     float4 rt1Data = gRt1[DTid.xy];
     float3 normal = rt1Data.xyz;
-    if (normal.x == 0 && normal.y == 0 && normal.z == 0)
-    {
-        return;
-    }
     float4 rt2Data = gRt2[DTid.xy];
     float specularMask = rt2Data.a;
     float4 rt3Data = gRt3[DTid.xy];
     float3 diffuseAlbedo = rt3Data.rgb;
+    if (dot(normal, 1.0) == 0.0 && dot(diffuseAlbedo, 1.0) == 0.0)
+    {
+        return;
+    }
     float gloss = rt3Data.a * 256.0;
     
     float4 clipSpacePosition = float4(((float) DTid.x / (float) ViewportWidth) * 2.0f - 1.0f, ((float) DTid.y / (float) ViewportHeight) * 2.0f - 1.0f, depth, 1.0f);
@@ -464,28 +517,106 @@ void main(
     lightData.shadowTextureMatrix, \
     lightIndex
     
+#if FALSE_POSITIVE_RATE
+    uint falsePositiveCount = 0;
+#endif
     uint lightIt = 0;
     for (; lightIt < gSharedVisibleLightCountSphere; ++lightIt)
     {
         uint lightIndex = gSharedVisibleLightIndicesSphere[lightIt];
         LightData lightData = gLightBuffer[lightIndex];
+#if FALSE_POSITIVE_RATE
+        float3 lightDir = lightData.pos - worldPos.xyz;
+        float lightDistSq = dot(lightDir, lightDir);
+        float invLightDist = rsqrt(lightDistSq);
+        lightDir *= invLightDist;
+
+        // modify 1/d^2 * R^2 to fall off at a fixed radius
+        // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
+        float distanceFalloff = lightData.radiusSq * (invLightDist * invLightDist);
+        distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
+
+        falsePositiveCount += (distanceFalloff == 0.0);
+        
+        float3 pointLightColor = ApplyPointLight(POINT_LIGHT_ARGS);
+        //falsePositiveCount += (pointLightColor.r == 0 && pointLightColor.g == 0 && pointLightColor.b == 0);
+        color += pointLightColor;
+#else
         color += ApplyPointLight(POINT_LIGHT_ARGS);
+#endif
     }
 
     for (lightIt = 0; lightIt < gSharedVisibleLightCountCone; ++lightIt)
     {
         uint lightIndex = gSharedVisibleLightIndicesCone[lightIt];
         LightData lightData = gLightBuffer[lightIndex];
+#if FALSE_POSITIVE_RATE
+        float3 lightDir = lightData.pos - worldPos.xyz;
+        float lightDistSq = dot(lightDir, lightDir);
+        float invLightDist = rsqrt(lightDistSq);
+        lightDir *= invLightDist;
+
+        // modify 1/d^2 * R^2 to fall off at a fixed radius
+        // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
+        float distanceFalloff = lightData.radiusSq * (invLightDist * invLightDist);
+        distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
+
+        float coneFalloff = dot(-lightDir, lightData.coneDir);
+        coneFalloff = saturate((coneFalloff - lightData.coneAngles.y) * lightData.coneAngles.x);
+        
+        falsePositiveCount += (distanceFalloff * coneFalloff == 0.0);
+        
+        float3 coneLightColor = ApplyConeLight(CONE_LIGHT_ARGS);
+        //falsePositiveCount += (coneLightColor.r == 0 && coneLightColor.g == 0 && coneLightColor.b == 0);
+        color += coneLightColor;
+#else
         color += ApplyConeLight(CONE_LIGHT_ARGS);
+#endif
     }
     
     for (lightIt = 0; lightIt < gSharedVisibleLightCountConeShadowed; ++lightIt)
     {
         uint lightIndex = gSharedVisibleLightIndicesConeShadowed[lightIt];
         LightData lightData = gLightBuffer[lightIndex];
+#if FALSE_POSITIVE_RATE
+        float3 lightDir = lightData.pos - worldPos.xyz;
+        float lightDistSq = dot(lightDir, lightDir);
+        float invLightDist = rsqrt(lightDistSq);
+        lightDir *= invLightDist;
+
+        // modify 1/d^2 * R^2 to fall off at a fixed radius
+        // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
+        float distanceFalloff = lightData.radiusSq * (invLightDist * invLightDist);
+        distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
+
+        float coneFalloff = dot(-lightDir, lightData.coneDir);
+        coneFalloff = saturate((coneFalloff - lightData.coneAngles.y) * lightData.coneAngles.x);
+        
+        falsePositiveCount += (distanceFalloff * coneFalloff == 0.0);
+        
+        float3 coneShadowedLightColor = ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
+        //falsePositiveCount += (coneShadowedLightColor.r == 0 && coneShadowedLightColor.g == 0 && coneShadowedLightColor.b == 0);
+        color += coneShadowedLightColor;
+#else
         color += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
+#endif
     }
     
+#if FALSE_POSITIVE_RATE
+    uint totalLightsCount = gSharedVisibleLightCountSphere + gSharedVisibleLightCountCone + gSharedVisibleLightCountConeShadowed;
+    if (totalLightsCount)
+    {
+        float fpr = (float) falsePositiveCount / (float) totalLightsCount;
+        gOutputTexture[DTid.xy] = float4(ConvertToRadarColor(fpr), 1);
+    }
+    else
+    {
+        gOutputTexture[DTid.xy] = 0;
+    }
+    return;
+#else
     gOutputTexture[DTid.xy] += float4(color, 1);
     //gOutputTexture[DTid.xy] += float4(lightDensity, lightDensity, lightDensity, 1);
+#endif
+#endif
 }

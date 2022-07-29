@@ -88,10 +88,6 @@ float3 main(VSOutput vsOutput) : SV_Target
     //float3 normal = 2.0f * rt1Data - 1.0f;
     //float3 normal = 2.0f * rt1Data.xyz - 1.0f;
     float3 normal = rt1Data.xyz;
-    if (normal.x == 0 && normal.y == 0 && normal.z == 0)
-    {
-        discard;
-    }
 #if NORMAL
     return normal;
 #endif
@@ -123,6 +119,10 @@ float3 main(VSOutput vsOutput) : SV_Target
 #endif
     float4 rt3Data = texRt3[pixelPos];
     float3 diffuseAlbedo = rt3Data.rgb;
+    if (dot(normal, 1.0) == 0.0 && dot(diffuseAlbedo, 1.0) == 0.0)
+    {
+        discard;
+    }
     float gloss = rt3Data.a * 256.0;
 #if GLOSS
     return gloss / 256.0;

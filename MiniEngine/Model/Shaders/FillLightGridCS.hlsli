@@ -67,7 +67,7 @@ void main(
     uint2 GTid : SV_GroupThreadID,
     uint GI : SV_GroupIndex)
 {
-    // initialize shared data
+    // initialize shared data    
     if (GI == 0)
     {
         tileLightCountSphere = 0;
@@ -80,12 +80,15 @@ void main(
         gSharedDepthMask = 0;
 #endif
     }
-    GroupMemoryBarrierWithGroupSync();
 
+    GroupMemoryBarrierWithGroupSync();
+    
     // Read all depth values for this tile and compute the tile min and max values
-    for (uint dx = GTid.x; dx < WORK_GROUP_SIZE_X; dx += 8)
+    uint dx;
+    uint dy;
+    for (dx = GTid.x; dx < WORK_GROUP_SIZE_X; dx += 8)
     {
-        for (uint dy = GTid.y; dy < WORK_GROUP_SIZE_Y; dy += 8)
+        for (dy = GTid.y; dy < WORK_GROUP_SIZE_Y; dy += 8)
         {
             uint2 DTid = Gid * uint2(WORK_GROUP_SIZE_X, WORK_GROUP_SIZE_Y) + uint2(dx, dy);
 
@@ -99,7 +102,6 @@ void main(
             }
         }
     }
-
     GroupMemoryBarrierWithGroupSync();
     //float tileMinDepth = asfloat(minDepthUInt);
     //float tileMaxDepth = asfloat(maxDepthUInt);
@@ -158,9 +160,9 @@ void main(
 #if LIGHT_CULLING_2_5
     const float depthRangeRecip = 32.f * invTileDepthRange;
     // Read all depth values for this tile and compute the tile min and max values
-    for (uint dx = GTid.x; dx < WORK_GROUP_SIZE_X; dx += 8)
+    for (dx = GTid.x; dx < WORK_GROUP_SIZE_X; dx += 8)
     {
-        for (uint dy = GTid.y; dy < WORK_GROUP_SIZE_Y; dy += 8)
+        for (dy = GTid.y; dy < WORK_GROUP_SIZE_Y; dy += 8)
         {
             uint2 DTid = Gid * uint2(WORK_GROUP_SIZE_X, WORK_GROUP_SIZE_Y) + uint2(dx, dy);
 
@@ -180,8 +182,6 @@ void main(
     
     uint tileIndex = GetTileIndex(Gid.xy, TileCountX);
     uint tileOffset = GetTileOffset(tileIndex);
-
-    uint4 perThreadLightBitMask = 0;
 
     // find set of lights that overlap this tile
     for (uint lightIndex = GI; lightIndex < MAX_LIGHTS; lightIndex += 64)
@@ -214,8 +214,8 @@ void main(
 #if LIGHT_CULLING_2_5
         // depthMaskL ← Compute mask using light extent
         uint localDepthMask = 0;
-        const float fLightMin = (lightWorldPos.z - lightCullRadius) * ViewProjMatrix._33 + ViewProjMatrix._43;
-        const float fLightMax = (lightWorldPos.z + lightCullRadius) * ViewProjMatrix._33 + ViewProjMatrix._43;
+        const float fLightMin = (lightWorldPos.z + lightCullRadius) * ViewProjMatrix._33 + ViewProjMatrix._43;
+        const float fLightMax = (lightWorldPos.z - lightCullRadius) * ViewProjMatrix._33 + ViewProjMatrix._43;
         const uint lightMaskCellIndexStart = max(0, min(32, floor((fLightMin - tileMinDepth) * depthRangeRecip)));
         const uint lightMaskCellIndexEnd = max(0, min(32, floor((fLightMax - tileMinDepth) * depthRangeRecip)));
         

@@ -55,6 +55,8 @@ public:
     virtual void Update( float deltaT ) override;
     virtual void RenderScene( void ) override;
 
+    virtual bool IsDebugMode() const noexcept override;
+
 private:
 
     Camera m_Camera;
@@ -250,6 +252,24 @@ void ModelViewer::Update( float deltaT )
         Sponza::SetPreviousLightType();
     }
 
+    if (GameInput::IsFirstPressed(GameInput::kKey_space))
+    {
+        Sponza::ToggleLightUpdate();
+    }
+
+    if (GameInput::IsFirstPressed(GameInput::kKey_c))
+    {
+        static WCHAR szDebugMsg[256];
+        swprintf_s(
+            szDebugMsg, 
+            L"Pos: (%f, %f, %f)\n",
+            m_Camera.GetPosition().GetX(),
+            m_Camera.GetPosition().GetY(),
+            m_Camera.GetPosition().GetZ()
+        );
+        OutputDebugString(szDebugMsg);
+    }
+
     m_CameraController->Update(deltaT);
 
     GraphicsContext& gfxContext = GraphicsContext::Begin(L"Scene Update");
@@ -393,4 +413,10 @@ void ModelViewer::RenderScene( void )
         MotionBlur::RenderObjectBlur(gfxContext, g_VelocityBuffer);
 
     gfxContext.Finish();
+}
+
+bool ModelViewer::IsDebugMode() const noexcept
+{
+    return (Sponza::m_CurrentRenderType == eRenderType::FORWARD && Sponza::m_CurrentForwardType != eForwardType::COUNT) || 
+        (Sponza::m_CurrentRenderType == eRenderType::DEFERRED && (Sponza::m_CurrentGBufferType != eGBufferDataType::COUNT));
 }

@@ -12,7 +12,7 @@
 //
 
 // keep in sync with C code
-#define MAX_LIGHTS 192
+#define MAX_LIGHTS (128)
 #define TILE_SIZE (4 + MAX_LIGHTS * 4)
 #define CLUSTER_SIZE (4 + MAX_LIGHTS * 4)
 

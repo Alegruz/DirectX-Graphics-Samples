@@ -24,6 +24,38 @@ namespace Graphics
 #define SIMPLE_GBUFFER (0)
 #define KILLZONE_GBUFFER (1)
 
+    enum class eRenderType : UINT8
+    {
+        FORWARD,
+        DEFERRED,
+        COUNT,
+    };
+
+    enum class eForwardType : UINT8
+    {
+        WORLD_POS,
+        DIFFUSE_ALBEDO,
+        GLOSS,
+        NORMAL,
+        SPECULAR_INTENSITY,
+        LIGHT_DENSITY,
+        FALSE_POSITIVE_RATE,
+        COUNT,
+    };
+
+    enum class eLightType : UINT8
+    {
+        TILED,
+        TILED_2_5,
+        TILED_2_5_AABB,
+        TILED_DICE,
+        TILED_DICE_2_5,
+        TILED_DICE_2_5_AABB,
+        TILED_INTEL,
+        CLUSTERED,
+        COUNT,
+    };
+
     enum class eGBufferType : UINT8
     {
 #if SIMPLE_GBUFFER
@@ -58,6 +90,8 @@ namespace Graphics
         RT2_SPEC_INTENSITY,
         RT3_DIFFUSE_ALBEDO,
         RT3_SUN_OCCLUSION,
+        LIGHT_DENSITY,
+        FALSE_POSITIVE_RATE,
 #endif
         COUNT,
     };

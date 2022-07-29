@@ -18,12 +18,12 @@ cbuffer StartVertex : register(b1)
     uint materialIdx;
     float4x4 ModelToProjection;
     float4x4 InvViewProj;
-    float4x4 InvProj;
+    //float4x4 InvProj;
     float4x4 modelToShadow;
     float4 ViewerPos;
-//    float NearZ;
-//    float FarZ;
     uint2 ViewportSize;
+    //float NearZ;
+    //float FarZ;
 //    float CameraForward;
 };
 
@@ -66,9 +66,16 @@ float3 main(VSOutput vsOutput) : SV_Target
         color = 0.0;
         return color;
     }
-
+    
+    //float4 viewSpaceDepth = float4(0.0, 0.0, depth, 1.0f);
+    //viewSpaceDepth = mul(InvProj, viewSpaceDepth);
+    //viewSpaceDepth.z *= -1.0;
+    //viewSpaceDepth /= viewSpaceDepth.w;
+    //viewSpaceDepth.z = N
+    //uint slice = (uint) floor(log(viewSpaceDepth.z) * TileCount[2] / log(FarZ / NearZ) - TileCount[2] * log(NearZ) / log(FarZ / NearZ));
 #if DEPTH
-    return depth;
+    //return sqrt((float) slice / (float) TileCount[2]);
+    return sqrt(depth);
 #endif
     
     //float4 rt0Data = texRt0[pixelPos];
@@ -90,10 +97,6 @@ float3 main(VSOutput vsOutput) : SV_Target
     //float3 normal = 2.0f * rt1Data - 1.0f;
     //float3 normal = 2.0f * rt1Data.xyz - 1.0f;
     float3 normal = rt1Data.xyz;
-    if (normal.x == 0 && normal.y == 0 && normal.z == 0)
-    {
-        discard;
-    }
 #if NORMAL
     return normal;
 #endif
@@ -106,8 +109,8 @@ float3 main(VSOutput vsOutput) : SV_Target
     clipSpacePosition.y *= -1.0f;
     float4 worldPos = mul(InvViewProj, clipSpacePosition);
     worldPos /= worldPos.w;
-    float4 viewPos = mul(InvProj, clipSpacePosition);
-    viewPos /= viewPos.w;
+    //float4 viewPos = mul(InvProj, clipSpacePosition);
+    //viewPos /= viewPos.w;
     //return ((normalize(viewPos.xyz) + 1) * 0.5f).z;
     //if (dot(normal, normalize(ViewerPos - worldPos.xyz)) < 0.0)
     //{
@@ -122,6 +125,10 @@ float3 main(VSOutput vsOutput) : SV_Target
 #endif
     float4 rt3Data = texRt3[pixelPos];
     float3 diffuseAlbedo = rt3Data.rgb;
+    if (dot(normal, 1.0) == 0.0 && dot(diffuseAlbedo, 1.0) == 0.0)
+    {
+        discard;
+    }
     float gloss = rt3Data.a * 256.0;
 #if GLOSS
     return gloss / 256.0;
@@ -135,11 +142,10 @@ float3 main(VSOutput vsOutput) : SV_Target
   
     float3 specularAlbedo = float3( 0.56, 0.56, 0.56 );
     //float3 viewDir = normalize(float3(vsOutput.projPos.xy, depth) - ViewerPos);
-    float3 viewDir = normalize(worldPos.xyz - ViewerPos);
+    float3 viewDir = normalize(worldPos.xyz - ViewerPos.xyz);
     float3 shadowCoord = mul(modelToShadow, float4(worldPos.xyz, 1.0)).xyz;
     
     ShadeLights(
-	//ShadeLightsCpu(
 		color,
 		pixelPos,
 		diffuseAlbedo,

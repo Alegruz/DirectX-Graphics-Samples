@@ -11,7 +11,7 @@
 // Author(s):	James Stanard
 
 #include "Common.hlsli"
-#include "Lighting.hlsli"
+#include "LightingClustered.hlsli"
 
 Texture2D<float3> texDiffuse : register(t0);
 Texture2D<float3> texSpecular : register(t1);
@@ -21,6 +21,21 @@ Texture2D<float3> texNormal : register(t3);
 //Texture2D<float4> texReflection	: register(t5);
 Texture2D<float> texSSAO : register(t12);
 Texture2D<float> texShadow : register(t13);
+Texture2D<float> texDepth : register(t18);
+
+cbuffer StartVertex : register(b1)
+{
+    uint materialIdx;
+    float4x4 ModelToProjection;
+    float4x4 InvViewProj;
+    float4x4 InvProj;
+    float4x4 modelToShadow;
+    float4 ViewerPos;
+    uint2 ViewportSize;
+    float NearZ;
+    float FarZ;
+//    float CameraForward;
+};
 
 struct VSOutput
 {
@@ -107,8 +122,11 @@ MRT main(VSOutput vsOutput)
 		gloss,
 		normal,
 		viewDir,
-		vsOutput.worldPos
-		);
+		vsOutput.worldPos,
+        texDepth[pixelPos],
+        NearZ,
+        FarZ
+    );
     
     //colorSum += lights;
     // Thibieroz, Nicolas, “Deferred Shading with Multisampling Anti-Aliasing in DirectX 10,” in Wolfgang Engel, ed., ShaderX7, Charles River Media, pp. 225–242, 2009.

@@ -61,8 +61,8 @@ VSOutput main(VSInput vsInput, uint vertexID : SV_VertexID)
 {
     VSOutput vsOutput;
 
-    float4 position = mul(modelToProjection, float4(vsInput.position, 1.0));
-    vsOutput.position = position;
+    //float4 position = mul(modelToProjection, float4(vsInput.position, 1.0));
+    vsOutput.position = mul(modelToProjection, float4(vsInput.position, 1.0));
     vsOutput.viewPos = mul(modelToView, float4(vsInput.position, 1.0)).xyz;
     vsOutput.worldPos = vsInput.position;
     vsOutput.texCoord = vsInput.texcoord0;

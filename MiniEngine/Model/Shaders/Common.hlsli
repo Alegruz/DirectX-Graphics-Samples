@@ -67,4 +67,72 @@ uint HashTriangleID(uint vertexID)
 
 #endif // ENABLE_TRIANGLE_ID
 
+float3 ConvertToRadarColor(float scale)
+{
+    if (scale >= 1.0f)
+    {
+        return 0;   // WHITE
+    }
+    else if (scale >= 0.9375f)
+    {
+        return float3(195.f, 163.f, 212.f) / 255.f; // VIOLET
+    }
+    else if (scale >= 0.875f)
+    {
+        return float3(121.f, 51.f, 160.f) / 255.f; // LIGHT VIOLET
+    }
+    else if (scale >= 0.8125f)
+    {
+        return float3(121.f, 0.f, 109.f) / 255.f; // DARK RED
+    }
+    else if (scale >= 0.75f)
+    {
+        return float3(188.f, 0.f, 54.f) / 255.f; // MED RED
+    }
+    else if (scale >= 0.6875f)
+    {
+        return float3(221.f, 0.f, 27.f) / 255.f; // ADDED
+    }
+    else if (scale >= 0.625)
+    {
+        return float3(1.f, 0.f, 0.f); // RED
+    }
+    else if (scale >= 0.5625f)
+    {
+        return float3(255.f, 152.f, 0.f) / 255.f; // LIGHT ORANGE
+    }
+    else if (scale >= 0.5f)
+    {
+        return float3(255.f, 214.f, 0.f) / 255.f; // YELLOW
+    }
+    else if (scale >= 0.4375f)
+    {
+        return float3(8.f, 175.f, 20.f) / 255.f; // DARK GREEN
+    }
+    else if (scale >= 0.375f)
+    {
+        return float3(0.f, 1.f, 0.f); // GREEN
+    }
+    else if (scale >= 0.3125f)
+    {
+        return float3(9.f, 130.f, 175.f) / 255.f; // LIGHT GREEN
+    }
+    else if (scale >= 0.25f)
+    {
+        return float3(0.f, 0.f, 1.f); // BLUE
+    }
+    else if (scale >= 0.1875f)
+    {
+        return float3(0.f, 157.f, 255.f) / 255.f; // LIGHT BLUE
+    }
+    else if (scale >= 0.125f)
+    {
+        return float3(0.f, 1.f, 1.f); // CYAN
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 #endif // __COMMON_HLSLI__

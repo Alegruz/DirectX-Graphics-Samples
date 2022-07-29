@@ -594,17 +594,39 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
     uint tileLightCountCone = (tileLightCount >> 8) & 0xff;
     uint tileLightCountConeShadowed = (tileLightCount >> 16) & 0xff;
 
+#if LIGHT_DENSITY
+    colorSum = ConvertToRadarColor((float) (tileLightCountSphere + tileLightCountCone + tileLightCountConeShadowed) / (float) MAX_LIGHTS);
+    return;
+#else
     uint tileLightLoadOffset = tileOffset + 4;
-
+#if FALSE_POSITIVE_RATE
+    uint falsePositiveCount = 0;
+#endif
     // sphere
     uint n;
     for (n = 0; n < tileLightCountSphere; n++, tileLightLoadOffset += 4)
     {
         uint lightIndex = lightGrid.Load(tileLightLoadOffset);
         LightData lightData = lightBuffer[lightIndex];
-        //float3 pointLight = ApplyPointLight(POINT_LIGHT_ARGS);
-        //colorSum += pointLight;
+#if FALSE_POSITIVE_RATE
+        float3 lightDir = lightData.pos - worldPos.xyz;
+        float lightDistSq = dot(lightDir, lightDir);
+        float invLightDist = rsqrt(lightDistSq);
+        lightDir *= invLightDist;
+
+        // modify 1/d^2 * R^2 to fall off at a fixed radius
+        // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
+        float distanceFalloff = lightData.radiusSq * (invLightDist * invLightDist);
+        distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
+
+        falsePositiveCount += (distanceFalloff == 0.0);
+        
+        float3 pointLightColor = ApplyPointLight(POINT_LIGHT_ARGS);
+        //falsePositiveCount += (pointLightColor.r == 0 && pointLightColor.g == 0 && pointLightColor.b == 0);
+        colorSum += pointLightColor;
+#else
         colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
+#endif
     }
     
     // cone
@@ -612,7 +634,28 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
     {
         uint lightIndex = lightGrid.Load(tileLightLoadOffset);
         LightData lightData = lightBuffer[lightIndex];
+#if FALSE_POSITIVE_RATE
+        float3 lightDir = lightData.pos - worldPos.xyz;
+        float lightDistSq = dot(lightDir, lightDir);
+        float invLightDist = rsqrt(lightDistSq);
+        lightDir *= invLightDist;
+
+        // modify 1/d^2 * R^2 to fall off at a fixed radius
+        // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
+        float distanceFalloff = lightData.radiusSq * (invLightDist * invLightDist);
+        distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
+
+        float coneFalloff = dot(-lightDir, lightData.coneDir);
+        coneFalloff = saturate((coneFalloff - lightData.coneAngles.y) * lightData.coneAngles.x);
+        
+        falsePositiveCount += (distanceFalloff * coneFalloff == 0.0);
+        
+        float3 coneLightColor = ApplyConeLight(CONE_LIGHT_ARGS);
+        //falsePositiveCount += (coneLightColor.r == 0 && coneLightColor.g == 0 && coneLightColor.b == 0);
+        colorSum += coneLightColor;
+#else
         colorSum += ApplyConeLight(CONE_LIGHT_ARGS);
+#endif
     }
     
     // cone w/ shadow map
@@ -620,7 +663,43 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
     {
         uint lightIndex = lightGrid.Load(tileLightLoadOffset);
         LightData lightData = lightBuffer[lightIndex];
+#if FALSE_POSITIVE_RATE
+        float3 lightDir = lightData.pos - worldPos.xyz;
+        float lightDistSq = dot(lightDir, lightDir);
+        float invLightDist = rsqrt(lightDistSq);
+        lightDir *= invLightDist;
+
+        // modify 1/d^2 * R^2 to fall off at a fixed radius
+        // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
+        float distanceFalloff = lightData.radiusSq * (invLightDist * invLightDist);
+        distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
+
+        float coneFalloff = dot(-lightDir, lightData.coneDir);
+        coneFalloff = saturate((coneFalloff - lightData.coneAngles.y) * lightData.coneAngles.x);
+        
+        falsePositiveCount += (distanceFalloff * coneFalloff == 0.0);
+        
+        float3 coneShadowedLightColor = ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
+        //falsePositiveCount += (coneShadowedLightColor.r == 0 && coneShadowedLightColor.g == 0 && coneShadowedLightColor.b == 0);
+        colorSum += coneShadowedLightColor;
+#else
         colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
+#endif
     }
+    
+#if FALSE_POSITIVE_RATE
+    uint totalLightsCount = tileLightCountSphere + tileLightCountCone + tileLightCountConeShadowed;
+    if (totalLightsCount)
+    {
+        float fpr = (float) falsePositiveCount / (float) totalLightsCount;
+        colorSum = ConvertToRadarColor(fpr);
+    }
+    else
+    {
+        colorSum = 0;
+    }
+    return;
+#endif
+#endif
 #endif
 }

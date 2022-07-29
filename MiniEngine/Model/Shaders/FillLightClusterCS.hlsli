@@ -28,15 +28,23 @@ cbuffer CSConstants : register(b0)
     float RcpZMagic;
     uint2 TileCount;
     float4x4 ViewProjMatrix;
+    float4x4 ViewMatrix;
+};
+
+struct VolumeTileAABB
+{
+    float4 MinPoint;
+    float4 MaxPoint;
 };
 
 StructuredBuffer<LightData> lightBuffer : register(t0);
 Texture2D<float> depthTex : register(t1);
+StructuredBuffer<VolumeTileAABB> lightClusterAABB : register(t2);
 RWByteAddressBuffer lightCluster : register(u0);
 RWByteAddressBuffer lightClusterBitMask : register(u1);
 
-groupshared uint gSharedMinDepthUInt;
-groupshared uint gSharedMaxDepthUInt;
+//groupshared uint gSharedMinDepthUInt;
+//groupshared uint gSharedMaxDepthUInt;
 
 groupshared uint gClusterLightCountSphere;
 groupshared uint gClusterLightCountCone;
@@ -46,12 +54,15 @@ groupshared uint gClusterLightIndicesSphere[MAX_LIGHTS];
 groupshared uint gClusterLightIndicesCone[MAX_LIGHTS];
 groupshared uint gClusterLightIndicesConeShadowed[MAX_LIGHTS];
 
-groupshared uint4 gClusterLightBitMask;
+//groupshared uint4 gClusterLightBitMask;
+
+float GetDistSqPointAABB(float3 position, uint tileIndex);
+bool TestSphereAABB(uint lightIndex, uint tileIndex);
 
 #define _RootSig \
     "RootFlags(0), " \
     "CBV(b0), " \
-    "DescriptorTable(SRV(t0, numDescriptors = 2))," \
+    "DescriptorTable(SRV(t0, numDescriptors = 3))," \
     "DescriptorTable(UAV(u0, numDescriptors = 2))"
 
 [RootSignature(_RootSig)]
@@ -67,12 +78,12 @@ void main(
         gClusterLightCountSphere = 0;
         gClusterLightCountCone = 0;
         gClusterLightCountConeShadowed = 0;
-        gClusterLightBitMask = 0;
+        //gClusterLightBitMask = 0;
         
         //gSharedMinDepthUInt = 0xffffffff;
         //gSharedMaxDepthUInt = 0;
-        gSharedMinDepthUInt = asuint((1.0f / (float) WORK_GROUP_SIZE_Z) * (Gid.z + 1)) + FLT_MIN;
-        gSharedMaxDepthUInt = asuint((1.0f / (float) WORK_GROUP_SIZE_Z) * (Gid.z)) - FLT_MIN;
+        //gSharedMinDepthUInt = asuint(((1.0f / (float) WORK_GROUP_SIZE_Z) * (Gid.z + 1)) + FLT_MIN);
+        //gSharedMaxDepthUInt = asuint(((1.0f / (float) WORK_GROUP_SIZE_Z) * (Gid.z)) - FLT_MIN);
         //gClusterMinDepth = ((FarPlane - NearPlane) / WORK_GROUP_SIZE_Z) * (Gid.z + 1);
         //gClusterMaxDepth = ((FarPlane - NearPlane) / WORK_GROUP_SIZE_Z) * (Gid.z);
     }
@@ -81,26 +92,27 @@ void main(
     // Cluster Key
     
     // Read all depth values for this tile and compute the tile min and max values
-    for (uint dx = GTid.x; dx < WORK_GROUP_SIZE_X; dx += 8)
-    {
-        for (uint dy = GTid.y; dy < WORK_GROUP_SIZE_Y; dy += 8)
-        {
-            uint2 DTid = Gid.xy * uint2(WORK_GROUP_SIZE_X, WORK_GROUP_SIZE_Y) + uint2(dx, dy);
-                
-            // If pixel coordinates are in bounds...
-            if (DTid.x < ViewportWidth && DTid.y < ViewportHeight)
-            {
-                // Load and compare depth
-                uint depthUInt = asuint(depthTex[DTid.xy]);
-                
-                InterlockedMin(gSharedMinDepthUInt, depthUInt);
-                InterlockedMax(gSharedMaxDepthUInt, depthUInt);
-            }
-        }
-    }
+    //for (uint dx = GTid.x; dx < WORK_GROUP_SIZE_X; dx += 8)
+    //{
+    //    for (uint dy = GTid.y; dy < WORK_GROUP_SIZE_Y; dy += 8)
+    //    {
+    //        uint2 DTid = Gid.xy * uint2(WORK_GROUP_SIZE_X, WORK_GROUP_SIZE_Y) + uint2(dx, dy);
+    //            
+    //        // If pixel coordinates are in bounds...
+    //        if (DTid.x < ViewportWidth && DTid.y < ViewportHeight)
+    //        {
+    //            // Load and compare depth
+    //            uint depthUInt = asuint(depthTex[DTid.xy]);
+    //            
+    //            InterlockedMin(gSharedMinDepthUInt, depthUInt);
+    //            InterlockedMax(gSharedMaxDepthUInt, depthUInt);
+    //        }
+    //    }
+    //}
+    //
+    //GroupMemoryBarrierWithGroupSync();
     
-    GroupMemoryBarrierWithGroupSync();
-    
+    /*
     float clusterMinDepth = (rcp(asfloat(gSharedMaxDepthUInt)) - 1.0) * RcpZMagic;
     float clusterMaxDepth = (rcp(asfloat(gSharedMinDepthUInt)) - 1.0) * RcpZMagic;
     
@@ -139,31 +151,21 @@ void main(
     {
         clusterPlanes[n] *= rsqrt(dot(clusterPlanes[n].xyz, clusterPlanes[n].xyz));
     }
+    */
     
     //uint tileIndex = GetTileIndex(Gid.xy, TileCount.x);
     uint clusterIndex = GetClusterIndex(Gid.xyz, TileCount);
     //uint tileOffset = GetTileOffset(tileIndex);
     uint clusterOffset = GetClusterOffset(clusterIndex);
 
-    uint4 perThreadLightBitMask = 0;
-
     // find set of lights that overlap this tile
     for (uint lightIndex = GI; lightIndex < MAX_LIGHTS; lightIndex += 64)
     {
         LightData lightData = lightBuffer[lightIndex];
-        float3 lightWorldPos = lightData.pos;
-        float lightCullRadius = sqrt(lightData.radiusSq);
+        //float3 lightWorldPos = lightData.pos;
+        //float lightCullRadius = sqrt(lightData.radiusSq);
 
-        bool overlapping = true;
-        for (int p = 0; p < 6; p++)
-        {
-            //float d = dot(lightWorldPos, frustumPlanes[p].xyz) + frustumPlanes[p].w;
-            float d = dot(lightWorldPos, clusterPlanes[p].xyz) + clusterPlanes[p].w;
-            if (d < -lightCullRadius)
-            {
-                overlapping = false;
-            }
-        }
+        bool overlapping = TestSphereAABB(lightIndex, clusterIndex);
         
         if (!overlapping)
             continue;
@@ -189,7 +191,7 @@ void main(
         }
 
         // update bitmask
-        InterlockedOr(gClusterLightBitMask[lightIndex / 32], 1 << (lightIndex % 32));
+        //InterlockedOr(gClusterLightBitMask[lightIndex / 32], 1 << (lightIndex % 32));
     }
 
     GroupMemoryBarrierWithGroupSync();
@@ -223,6 +225,41 @@ void main(
         }
 
         //lightGridBitMask.Store4(tileIndex * 16, gClusterLightBitMask);
-        lightClusterBitMask.Store4(clusterIndex * 16, gClusterLightBitMask);
+        //lightClusterBitMask.Store4(clusterIndex * 16, gClusterLightBitMask);
     }
+}
+
+
+bool TestSphereAABB(uint lightIndex, uint tileIndex)
+{
+    float radiusSq = lightBuffer[lightIndex].radiusSq;
+    float3 center = mul(ViewMatrix, float4(lightBuffer[lightIndex].pos, 1.0)).xyz;
+    float distSq = GetDistSqPointAABB(center, tileIndex);
+    
+    return distSq <= radiusSq;
+}
+
+float GetDistSqPointAABB(float3 position, uint tileIndex)
+{
+    float distSq = 0.0;
+    
+    VolumeTileAABB currentCell = lightClusterAABB[tileIndex];
+    
+    currentCell.MaxPoint.z = tileIndex;
+    
+    for (uint i = 0; i < 3; ++i)
+    {
+        float v = position[i];
+        if (v < currentCell.MinPoint[i])
+        {
+            distSq += (currentCell.MinPoint[i] - v) * (currentCell.MinPoint[i] - v);
+        }
+        
+        if (v < currentCell.MaxPoint[i])
+        {
+            distSq += (v - currentCell.MaxPoint[i]) * (v - currentCell.MaxPoint[i]);
+        }
+    }
+    
+    return distSq;
 }

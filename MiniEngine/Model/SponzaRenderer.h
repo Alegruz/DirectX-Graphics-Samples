@@ -26,38 +26,21 @@ namespace Math
     class Vector3;
 }
 
-enum class eRenderType : UINT8
+namespace Graphics
 {
-    FORWARD,
-    DEFERRED,
-    COUNT,
-};
-
-enum class eForwardType : UINT8
-{
-    WORLD_POS,
-    DIFFUSE_ALBEDO,
-    GLOSS,
-    NORMAL,
-    SPECULAR_INTENSITY,
-    COUNT,
-};
-
-enum class eLightType : UINT8
-{
-    TILED,
-    TILED_2_5,
-    TILED_2_5_AABB,
-    TILED_DICE,
-    TILED_DICE_2_5,
-    TILED_DICE_2_5_AABB,
-    TILED_INTEL,
-    CLUSTERED,
-    COUNT,
-};
+    enum class eRenderType : UINT8;
+    enum class eForwardType : UINT8;
+    enum class eGBufferDataType : UINT8;
+    enum class eLightType : UINT8;
+}
 
 namespace Sponza
 {
+    extern Graphics::eRenderType m_CurrentRenderType;
+    extern Graphics::eForwardType m_CurrentForwardType;
+    extern Graphics::eGBufferDataType m_CurrentGBufferType;
+    extern Graphics::eLightType m_CurrentLightType;
+
     void Startup( Math::Camera& camera );
     void Cleanup( void );
 
@@ -73,11 +56,12 @@ namespace Sponza
 
     const ModelH3D& GetModel();
 
-    void SetRenderType(eRenderType renderType) noexcept;
+    void SetRenderType(Graphics::eRenderType renderType) noexcept;
     void SetNextBufferOutput();
     void SetPreviousBufferOutput();
     void SetNextLightType();
     void SetPreviousLightType();
+    void ToggleLightUpdate();
 
     extern Math::Vector3 m_SunDirection;
     extern ShadowCamera m_SunShadow;

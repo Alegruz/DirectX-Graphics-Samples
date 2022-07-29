@@ -38,6 +38,8 @@ namespace GameCore
         // Official rendering pass
         virtual void RenderScene( void ) = 0;
 
+        virtual bool IsDebugMode() const noexcept = 0;
+
         // Optional UI (overlay) rendering pass.  This is LDR.  The buffer is already cleared.
         virtual void RenderUI( class GraphicsContext& ) {};
 
