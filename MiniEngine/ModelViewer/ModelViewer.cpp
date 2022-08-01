@@ -232,27 +232,27 @@ void ModelViewer::Update( float deltaT )
         Sponza::SetRenderType(eRenderType::DEFERRED);
     }
 
-    if (GameInput::IsFirstPressed(GameInput::kKey_right))
+    if (GameInput::IsFirstPressed(GameInput::kKey_period))
     {
         Sponza::SetNextBufferOutput();
     }
 
-    if (GameInput::IsFirstPressed(GameInput::kKey_left))
+    if (GameInput::IsFirstPressed(GameInput::kKey_slash))
     {
         Sponza::SetPreviousBufferOutput();
     }
 
-    if (GameInput::IsFirstPressed(GameInput::kKey_up))
+    if (GameInput::IsFirstPressed(GameInput::kKey_apostrophe))
     {
         Sponza::SetNextLightType();
     }
 
-    if (GameInput::IsFirstPressed(GameInput::kKey_down))
+    if (GameInput::IsFirstPressed(GameInput::kKey_semicolon))
     {
         Sponza::SetPreviousLightType();
     }
 
-    if (GameInput::IsFirstPressed(GameInput::kKey_space))
+    if (GameInput::IsFirstPressed(GameInput::kKey_l))
     {
         Sponza::ToggleLightUpdate();
     }

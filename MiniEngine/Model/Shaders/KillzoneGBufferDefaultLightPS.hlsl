@@ -11,7 +11,7 @@
 // Author(s):	James Stanard
 
 #include "Common.hlsli"
-#include "LightingClustered.hlsli"
+#include "LightingDefault.hlsli"
 
 cbuffer StartVertex : register(b1)
 {
@@ -21,9 +21,9 @@ cbuffer StartVertex : register(b1)
     float4x4 InvProj;
     float4x4 modelToShadow;
     float4 ViewerPos;
+//    float NearZ;
+//    float FarZ;
     uint2 ViewportSize;
-    float NearZ;
-    float FarZ;
 //    float CameraForward;
 };
 
@@ -53,36 +53,11 @@ struct VSOutput
     sample float2 uv : TexCoord0;
 };
 
-float4 TransformScreenSpaceToViewSpace(float4 vec);
-float4 TransformClipSpaceToViewSpace(float4 vec);
-
-float4 TransformScreenSpaceToViewSpace(float4 vec)
-{
-    // Convert to NDC
-    float2 texCoord = vec.xy / float2(ViewportSize);
-    
-    // Convert to clip space
-    float4 clipSpace = float4(texCoord * 2.0f - 1.0f, vec.z, vec.w);
-    
-    return TransformClipSpaceToViewSpace(clipSpace);
-}
-
-float4 TransformClipSpaceToViewSpace(float4 vec)
-{
-    // View space transformation
-    float4 viewSpace = mul(InvProj, vec);
-    
-    // Perspective projection
-    viewSpace /= viewSpace.w;
-    
-    return viewSpace;
-}
-
 [RootSignature(Renderer_RootSig)]
 float3 main(VSOutput vsOutput) : SV_Target
 {
     float3 color = 0.0;
-	
+    
 	uint2 pixelPos = uint2(vsOutput.projPos.xy);
 	
     float depth = texDepth[pixelPos];
@@ -91,21 +66,12 @@ float3 main(VSOutput vsOutput) : SV_Target
         color = 0.0;
         return color;
     }
-    
-    //float4 viewSpaceDepth = float4(0.0, 0.0, depth, 1.0f);
-    //viewSpaceDepth = mul(InvProj, viewSpaceDepth);
-    //viewSpaceDepth.z *= -1.0;
-    //viewSpaceDepth /= viewSpaceDepth.w;
-    //viewSpaceDepth.z = N
-    //uint slice = (uint) floor(log(viewSpaceDepth.z) * TileCount[2] / log(FarZ / NearZ) - TileCount[2] * log(NearZ) / log(FarZ / NearZ));
 #if DEPTH
-    //return sqrt((float) slice / (float) TileCount[2]);
     return sqrt(depth);
 #endif
-    
     //float4 rt0Data = texRt0[pixelPos];
     //color = rt0Data.rgb;
-    color  = texRt0[pixelPos];
+    color = texRt0[pixelPos];
     //float gloss = rt0Data.a * 256.0;
 #if LIGHT_ACCUMULATION
     return color;
@@ -113,7 +79,7 @@ float3 main(VSOutput vsOutput) : SV_Target
 //#if GLOSS
 //    return gloss / 256.0;
 //#endif
-    
+
     //float2 rt1Data = texRt1[pixelPos];
     float4 rt1Data = texRt1[pixelPos];
     //float4 rt1Data = texRt1[pixelPos];
@@ -130,13 +96,16 @@ float3 main(VSOutput vsOutput) : SV_Target
     //float3 worldPos = rt2Data.xyz;
     float specularMask = rt2Data.a;
     
+    // Deferred Shading, Shawn Hargreaves, GDC 2004.
+    // Deferred Shading, Shawn Hargreaves. Mark Harris, NDC 2004.
+    // Reconstruct position from depth
     float4 clipSpacePosition = float4((vsOutput.projPos.x / ViewportSize.x) * 2.0f - 1.0f, (vsOutput.projPos.y / ViewportSize.y) * 2.0f - 1.0f, depth, 1.0f);
     clipSpacePosition.y *= -1.0f;
     float4 worldPos = mul(InvViewProj, clipSpacePosition);
     worldPos /= worldPos.w;
-    //float4 viewPos = mul(InvProj, clipSpacePosition);
-    //viewPos /= viewPos.w;
-    //return ((normalize(viewPos.xyz) + 1) * 0.5f).z;
+    float4 viewPos = mul(InvProj, clipSpacePosition);
+    viewPos /= viewPos.w;
+    
     //if (dot(normal, normalize(ViewerPos - worldPos.xyz)) < 0.0)
     //{
     //    normal.z *= -1.0f;
@@ -170,32 +139,23 @@ float3 main(VSOutput vsOutput) : SV_Target
     float3 viewDir = normalize(worldPos.xyz - ViewerPos.xyz);
     float3 shadowCoord = mul(modelToShadow, float4(worldPos.xyz, 1.0)).xyz;
     
-    //float viewSpaceDepth = TransformScreenSpaceToViewSpace(float4(0.0f, 0.0f, depth, 1.0f));
-    float4 viewDepth = mul(InvProj, clipSpacePosition);
-    viewDepth /= viewDepth.w;
-
-    ShadeLights(
+	ShadeLights(
 		color,
 		pixelPos,
 		diffuseAlbedo,
 		specularAlbedo,
-    	specularMask,
+		specularMask,
 		gloss,
 		normal,
 		viewDir,
-		worldPos.xyz,
-        viewDepth.z,
-        NearZ,
-        FarZ,
-        ViewportSize
+		worldPos.xyz
 		);
-
+    
     // Thibieroz, Nicolas, “Deferred Shading with Multisampling Anti-Aliasing in DirectX 10,” in Wolfgang Engel, ed., ShaderX7, Charles River Media, pp. 225–242, 2009.
     if (dot(color, 1.0f) == 0)
     {
         discard;
     }
     
-    //return viewPos.z;
     return color;
 }

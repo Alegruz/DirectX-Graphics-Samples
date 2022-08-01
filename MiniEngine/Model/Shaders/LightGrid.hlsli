@@ -12,7 +12,7 @@
 //
 
 // keep in sync with C code
-#define MAX_LIGHTS (128)
+#define MAX_LIGHTS (32)
 #define TILE_SIZE (4 + MAX_LIGHTS * 4)
 #define CLUSTER_SIZE (4 + MAX_LIGHTS * 4)
 
@@ -48,7 +48,7 @@ uint GetTileIndex(uint2 tilePos, uint tileCountX)
 }
 uint GetClusterIndex(uint3 clusterPos, uint2 clusterCount)
 {
-    return clusterPos.z * clusterCount.y * clusterCount.x + clusterPos.y * clusterCount.x + clusterPos.x;
+    return clusterPos.z * (clusterCount.y * clusterCount.x) + clusterPos.y * clusterCount.x + clusterPos.x;
 }
 uint GetTileOffset(uint tileIndex)
 {

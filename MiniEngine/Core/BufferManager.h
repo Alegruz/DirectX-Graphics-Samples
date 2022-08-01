@@ -45,6 +45,7 @@ namespace Graphics
 
     enum class eLightType : UINT8
     {
+        DEFAULT,
         TILED,
         TILED_2_5,
         TILED_2_5_AABB,

@@ -12,6 +12,8 @@
 //             James Stanard
 //
 
+#include <cwchar>
+
 #include "LightManager.h"
 #include "PipelineState.h"
 #include "RootSignature.h"
@@ -163,6 +165,13 @@ namespace Lighting
 
     ComputePSO m_aForwardPSOs[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eClusterType::COUNT)] =
     {
+        // Forward
+        {
+            { (L"Fill Light Grid 8 CS") },
+            { (L"Fill Light Grid 16 CS") },
+            { (L"Fill Light Grid 24 CS") },
+            { (L"Fill Light Grid 32 CS") },
+        },
         // Forward+
         {
             { (L"Fill Light Grid 8 CS") }, 
@@ -239,6 +248,86 @@ namespace Lighting
 #if KILLZONE_GBUFFER
     ComputePSO m_aKillzonePSOs[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eGBufferDataType::COUNT) + 1][static_cast<size_t>(eClusterType::COUNT)] =
     {
+        // Default
+        {
+            // Depth
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT0_INTENSITY
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+        },
         // Tiled
         {
             // Depth
@@ -917,6 +1006,13 @@ namespace Lighting
 
     std::pair<const unsigned char* const, size_t> m_aForwardComputeShaders[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eClusterType::COUNT)] =
     {
+        // Forward
+        {
+            { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+            { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+            { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+            { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+        },
         // Forward+
         {
             { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
@@ -993,6 +1089,86 @@ namespace Lighting
 #if KILLZONE_GBUFFER
     std::pair<const unsigned char* const, size_t> m_aKillzoneComputeShaders[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eGBufferDataType::COUNT) + 1][static_cast<size_t>(eClusterType::COUNT)] =
     {
+        // Default
+        {
+            // Depth
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT0_INTENSITY
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT3_SUN_OCCLUSION
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // FINAL
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+        },
         // Tiled
         {
             // Depth
@@ -1692,6 +1868,19 @@ namespace Lighting
         0,
     };
 
+    constexpr const WCHAR A_SZ_LIGHT_PROF_NAME[static_cast<size_t>(eLightType::COUNT)][32] =
+    {
+        L"Default",
+        L"Tiled",
+        L"Tiled 2.5D",
+        L"Tiled 2.5D AABB",
+        L"Tiled (D)",
+        L"Tiled 2.5D (D)",
+        L"Tiled 2.5D AABB (D)",
+        L"Tiled (I)",
+        L"Clustered",
+    };
+
     bool m_bUpdateLightsToggle = false;
 
     void InitializeResources(void);
@@ -1973,7 +2162,8 @@ void Lighting::UpdateLights(float deltaTime)
     XMMATRIX rotationY = XMMatrixRotationY(deltaTime * 0.1f);
     XMMATRIX rotationX = XMMatrixRotationX(deltaTime * 0.1f);
 
-    for (size_t i = MaxPointLights + MaxConeLights; i < MaxLights; i += 2)
+    //for (size_t i = MaxPointLights + MaxConeLights; i < MaxLights; i += 2)
+    for (size_t i = 0; i < MaxLights; i += 2)
     {
         XMVECTOR position = XMVector4Transform(XMVectorSet(m_LightData[i].pos[0], m_LightData[i].pos[1], m_LightData[i].pos[2], 1.0f), rotationY);
         m_LightData[i].pos[0] = XMVectorGetX(position);
@@ -1993,7 +2183,8 @@ void Lighting::UpdateLights(float deltaTime)
         std::memcpy(m_LightData[i].shadowTextureMatrix, &shadowTextureMatrix, sizeof(shadowTextureMatrix));
     }
 
-    for (size_t i = MaxPointLights + MaxConeLights + 1; i < MaxLights; i += 2)
+    //for (size_t i = MaxPointLights + MaxConeLights + 1; i < MaxLights; i += 2)
+    for (size_t i = 1; i < MaxLights; i += 2)
     {
         XMVECTOR position = XMVector4Transform(XMVectorSet(m_LightData[i].pos[0], m_LightData[i].pos[1], m_LightData[i].pos[2], 1.0f), rotationX);
         m_LightData[i].pos[0] = XMVectorGetX(position);
@@ -2015,12 +2206,12 @@ void Lighting::UpdateLights(float deltaTime)
 
     CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
     
-    UNREFERENCED_PARAMETER(deltaTime);
+    //UNREFERENCED_PARAMETER(deltaTime);
 }
 
 void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, Graphics::eLightType lightType)
 {
-    ScopedTimer _prof(L"FillLightGrid", gfxContext);
+    ScopedTimer _prof(A_SZ_LIGHT_PROF_NAME[static_cast<size_t>(lightType)], gfxContext);
 
     ComputeContext& Context = gfxContext.GetComputeContext();
 
@@ -2063,7 +2254,7 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& ca
                 uint32_t ViewportWidth, ViewportHeight;
                 //Matrix4 ViewProjMatrix;
                 Matrix4 InvProjMatrix;
-                //Matrix4 InvViewProj;
+                Matrix4 InvViewMatrix;
                 uint32_t TileCount[4];
                 float FarZ;
                 float NearZ;
@@ -2077,6 +2268,14 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& ca
                 Vector4(invProj.r[1]),
                 Vector4(invProj.r[2]),
                 Vector4(invProj.r[3])
+            );
+
+            XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewMatrix()), camera.GetViewMatrix());
+            csConstants.InvViewMatrix = Matrix4(
+                Vector4(invView.r[0]),
+                Vector4(invView.r[1]),
+                Vector4(invView.r[2]),
+                Vector4(invView.r[3])
             );
             csConstants.TileCount[0] = tileCountX;
             csConstants.TileCount[1] = tileCountY;
@@ -2115,7 +2314,7 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& ca
                 float RcpZMagic;
                 uint32_t TileCount[2];
                 Matrix4 ViewProjMatrix;
-                Matrix4 ViewMatrix;
+                Matrix4 InvViewMatrix;
                 //Matrix4 InvProjMatrix;
                 //Matrix4 InvViewProj;
                 //float FarZ;
@@ -2129,7 +2328,7 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& ca
             csConstants.TileCount[0] = tileCountX;
             csConstants.TileCount[1] = tileCountY;
             csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
-            csConstants.ViewMatrix = camera.GetViewMatrix();
+            //csConstants.ViewMatrix = camera.GetViewMatrix();
             //XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
             //csConstants.InvViewProj = Matrix4(
             //    Vector4(invViewProj.r[0]),
@@ -2144,6 +2343,13 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& ca
             //    Vector4(invProj.r[2]),
             //    Vector4(invProj.r[3])
             //);
+            XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewMatrix()), camera.GetViewMatrix());
+            csConstants.InvViewMatrix = Matrix4(
+                Vector4(invView.r[0]),
+                Vector4(invView.r[1]),
+                Vector4(invView.r[2]),
+                Vector4(invView.r[3])
+            );
             //csConstants.FarZ = camera.GetFarClip();
             //csConstants.NearZ = camera.GetNearClip();
             Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
@@ -2214,7 +2420,7 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& ca
 
 void Lighting::FillAndShadeLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle, Graphics::eLightType lightType, Graphics::eGBufferDataType gbufferType)
 {
-    ScopedTimer _prof(L"FillAndShadeLightGrid", gfxContext);
+    ScopedTimer _prof(A_SZ_LIGHT_PROF_NAME[static_cast<size_t>(lightType)], gfxContext);
 
     ASSERT(lightType == eLightType::TILED_DICE || lightType == eLightType::TILED_DICE_2_5 || lightType == eLightType::TILED_DICE_2_5_AABB || lightType == eLightType::TILED_INTEL);
 

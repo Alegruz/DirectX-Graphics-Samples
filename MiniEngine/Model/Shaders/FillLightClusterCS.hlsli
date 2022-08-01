@@ -28,7 +28,7 @@ cbuffer CSConstants : register(b0)
     float RcpZMagic;
     uint2 TileCount;
     float4x4 ViewProjMatrix;
-    float4x4 ViewMatrix;
+    //float4x4 InvViewMatrix;
 };
 
 struct VolumeTileAABB
@@ -57,7 +57,7 @@ groupshared uint gClusterLightIndicesConeShadowed[MAX_LIGHTS];
 //groupshared uint4 gClusterLightBitMask;
 
 float GetDistSqPointAABB(float3 position, uint tileIndex);
-bool TestSphereAABB(uint lightIndex, uint tileIndex);
+bool TestSphereAABB(float lightRadiusSq, float3 lightPos, uint tileIndex);
 
 #define _RootSig \
     "RootFlags(0), " \
@@ -165,7 +165,7 @@ void main(
         //float3 lightWorldPos = lightData.pos;
         //float lightCullRadius = sqrt(lightData.radiusSq);
 
-        bool overlapping = TestSphereAABB(lightIndex, clusterIndex);
+        bool overlapping = TestSphereAABB(lightData.radiusSq, lightData.pos, clusterIndex);
         
         if (!overlapping)
             continue;
@@ -230,13 +230,12 @@ void main(
 }
 
 
-bool TestSphereAABB(uint lightIndex, uint tileIndex)
+bool TestSphereAABB(float lightRadiusSq, float3 lightPos, uint tileIndex)
 {
-    float radiusSq = lightBuffer[lightIndex].radiusSq;
-    float3 center = mul(ViewMatrix, float4(lightBuffer[lightIndex].pos, 1.0)).xyz;
-    float distSq = GetDistSqPointAABB(center, tileIndex);
+    //float4 center = mul(ViewMatrix, float4(lightPos, 1.0));
+    float distSq = GetDistSqPointAABB(lightPos, tileIndex);
     
-    return distSq <= radiusSq;
+    return distSq <= lightRadiusSq;
 }
 
 float GetDistSqPointAABB(float3 position, uint tileIndex)
@@ -245,8 +244,7 @@ float GetDistSqPointAABB(float3 position, uint tileIndex)
     
     VolumeTileAABB currentCell = lightClusterAABB[tileIndex];
     
-    currentCell.MaxPoint.z = tileIndex;
-    
+    currentCell.MaxPoint.w = tileIndex;
     for (uint i = 0; i < 3; ++i)
     {
         float v = position[i];
@@ -254,8 +252,7 @@ float GetDistSqPointAABB(float3 position, uint tileIndex)
         {
             distSq += (currentCell.MinPoint[i] - v) * (currentCell.MinPoint[i] - v);
         }
-        
-        if (v < currentCell.MaxPoint[i])
+        else if (v > currentCell.MaxPoint[i])
         {
             distSq += (v - currentCell.MaxPoint[i]) * (v - currentCell.MaxPoint[i]);
         }

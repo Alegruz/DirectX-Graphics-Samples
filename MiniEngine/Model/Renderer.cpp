@@ -233,8 +233,10 @@ void Renderer::Initialize(void)
         g_ShadowBuffer.GetSRV(),            //  13
         Lighting::m_LightBuffer.GetSRV(),   //  14
         Lighting::m_LightShadowArray.GetSRV(),  // 15
-        Lighting::m_LightGrid.GetSRV(),         // 16
-        Lighting::m_LightGridBitMask.GetSRV(),  // 17
+        //Lighting::m_LightGrid.GetSRV(),         // 16
+        //Lighting::m_LightGridBitMask.GetSRV(),  // 17
+        Lighting::m_LightCluster.GetSRV(),         // 16
+        Lighting::m_LightClusterBitMask.GetSRV(),  // 17
         g_SceneDepthBuffer.GetDepthSRV(),       // 18
         //g_aSceneGBuffers[0].GetSRV(),
         //g_aSceneGBuffers[1].GetSRV(),

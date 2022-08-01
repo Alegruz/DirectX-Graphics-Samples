@@ -37,13 +37,6 @@ Texture2DArray<float> lightShadowArrayTex : register(t15);
 ByteAddressBuffer lightCluster : register(t16);
 //ByteAddressBuffer lightClusterBitMask : register(t17);
 
-float GetLinearDepth(float depth, float nearZ, float farZ)
-{
-    float linearDepth = 2.0 * nearZ * farZ / (farZ + nearZ - depth * (farZ - nearZ));
-    
-    return linearDepth;
-}
-
 void AntiAliasSpecular( inout float3 texNormal, inout float gloss )
 {
     float normalLenSq = dot(texNormal, texNormal);
@@ -723,12 +716,47 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
 	float3 worldPos,
     float depth,
     float nearZ,
-    float farZ
+    float farZ,
+    uint2 viewportSize
 	)
 {
     //uint3 clusterPos = GetClusterPos(float3(pixelPos, depth), InvTileDim.xyz);
-    uint zTile = (uint) max(log2(GetLinearDepth(depth, nearZ, farZ)) * Scale.z + Bias.z, 0.0);
-    uint3 tiles = uint3(pixelPos * InvTileDim.xy, zTile);
+    uint zSlice = floor((log(-depth / nearZ) / log(farZ / nearZ)) * TileCount.z);
+    uint3 tiles = uint3(pixelPos * InvTileDim.xy, zSlice);
+    
+    //switch (zSlice % 8)
+    //{
+    //    case 0:
+    //        colorSum = 1.0;
+    //        break;
+    //    case 1:
+    //        colorSum = float3(1.0, 0.0, 0.0);
+    //        break;
+    //    case 2:
+    //        colorSum = float3(1.0, 0.6, 0.0);
+    //        break;
+    //    case 3:
+    //        colorSum = float3(1.0, 1.0, 0.0);
+    //        break;
+    //    case 4:
+    //        colorSum = float3(0.0, 1.0, 0.0);
+    //        break;
+    //    case 5:
+    //        colorSum = float3(0.0, 0.0, 1.0);
+    //        break;
+    //    case 6:
+    //        colorSum = float3(0.0, 0.0, 0.5);
+    //        break;
+    //    case 7:
+    //        colorSum = float3(0.5, 0.0, 0.5);
+    //        break;
+    //    default:
+    //        colorSum = 0;
+    //        break;
+    //};
+    //
+    //return;
+    
     //uint clusterIndex = GetClusterIndex(clusterPos, TileCount.x);
     uint clusterIndex = tiles.x + tiles.y * TileCount.x + tiles.z * (TileCount.x * TileCount.y);
     uint clusterOffset = GetClusterOffset(clusterIndex);

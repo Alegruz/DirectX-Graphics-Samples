@@ -56,7 +56,7 @@ namespace Lighting
     extern eClusterType LightClusterType;
     extern uint32_t aLightClusterDimensions[static_cast<size_t>(eClusterType::COUNT)][2];
 
-    enum { MaxLights = 128, MaxPointLights = 32, MaxConeLights = 32 };
+    enum { MaxLights = 32, MaxPointLights = 32, MaxConeLights = 0 };
 
     //LightData m_LightData[MaxLights];
     extern StructuredBuffer m_LightBuffer;

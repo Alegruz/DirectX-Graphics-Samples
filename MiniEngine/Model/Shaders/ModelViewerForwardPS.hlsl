@@ -11,7 +11,7 @@
 // Author(s):	James Stanard
 
 #include "Common.hlsli"
-#include "LightingClustered.hlsli"
+#include "LightingDefault.hlsli"
 
 Texture2D<float3> texDiffuse : register(t0);
 Texture2D<float3> texSpecular : register(t1);
@@ -21,21 +21,6 @@ Texture2D<float3> texNormal : register(t3);
 //Texture2D<float4> texReflection	: register(t5);
 Texture2D<float> texSSAO : register(t12);
 Texture2D<float> texShadow : register(t13);
-Texture2D<float> texDepth : register(t18);
-
-cbuffer StartVertex : register(b1)
-{
-    uint materialIdx;
-    float4x4 ModelToProjection;
-    float4x4 InvViewProj;
-    float4x4 InvProj;
-    float4x4 modelToShadow;
-    float4 ViewerPos;
-    uint2 ViewportSize;
-    float NearZ;
-    float FarZ;
-//    float CameraForward;
-};
 
 struct VSOutput
 {
@@ -56,35 +41,12 @@ struct MRT
     float4 Normal : SV_Target1;
 };
 
-float4 TransformScreenSpaceToViewSpace(float4 vec);
-float4 TransformClipSpaceToViewSpace(float4 vec);
-
-float4 TransformScreenSpaceToViewSpace(float4 vec)
-{
-    // Convert to NDC
-    float2 texCoord = vec.xy / float2(ViewportSize);
-    
-    // Convert to clip space
-    float4 clipSpace = float4(texCoord * 2.0f - 1.0f, vec.z, vec.w);
-    
-    return TransformClipSpaceToViewSpace(clipSpace);
-}
-
-float4 TransformClipSpaceToViewSpace(float4 vec)
-{
-    // View space transformation
-    float4 viewSpace = mul(InvProj, vec);
-    
-    // Perspective projection
-    viewSpace /= viewSpace.w;
-    
-    return viewSpace;
-}
-
 [RootSignature(Renderer_RootSig)]
 MRT main(VSOutput vsOutput)
 {
     MRT mrt;
+    
+    //mrt.Color = ((normalize(vsOutput.viewPos) + 1) * 0.5f).z;
 	
     uint2 pixelPos = uint2(vsOutput.position.xy);
 	
@@ -104,6 +66,7 @@ MRT main(VSOutput vsOutput)
     float specularMask = SAMPLE_TEX(texSpecular).g;
 	
     mrt.Normal = float4(normal, 0.0f);
+    
 #if WORLD_POS
 	mrt.Color = vsOutput.worldPos;
 	
@@ -124,7 +87,8 @@ MRT main(VSOutput vsOutput)
 	mrt.Color = specularMask;
 	
 	return mrt;
-#else
+#endif
+	
     float3 colorSum = 0;
 	{
         float ao = texSSAO[pixelPos];
@@ -138,15 +102,7 @@ MRT main(VSOutput vsOutput)
     colorSum += ApplyDirectionalLight(diffuseAlbedo, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection, SunColor, vsOutput.shadowCoord, texShadow);
     //colorSum += directionalColor;
     //float3 lights = 0;
-    
-    float screenSpaceDepth = texDepth[pixelPos];
-    //float viewSpaceDepth = TransformScreenSpaceToViewSpace(float4(0.0f, 0.0f, screenSpaceDepth, 1.0f));
     //ShadeLights(lights, pixelPos,
-    float4 clipSpacePosition = float4((vsOutput.position.x / ViewportSize.x) * 2.0f - 1.0f, (vsOutput.position.y / ViewportSize.y) * 2.0f - 1.0f, screenSpaceDepth, 1.0f);
-    clipSpacePosition.y *= -1.0f;
-    float4 viewDepth = mul(InvProj, clipSpacePosition);
-    viewDepth /= viewDepth.w;
-    
     ShadeLights(colorSum, pixelPos,
     	diffuseAlbedo,
 		specularAlbedo,
@@ -154,14 +110,11 @@ MRT main(VSOutput vsOutput)
 		gloss,
 		normal,
 		viewDir,
-		vsOutput.worldPos,
-        viewDepth.z,
-        NearZ,
-        FarZ,
-        ViewportSize
-    );
+		vsOutput.worldPos
+		);
     
     //colorSum += lights;
+    
     // Thibieroz, Nicolas, “Deferred Shading with Multisampling Anti-Aliasing in DirectX 10,” in Wolfgang Engel, ed., ShaderX7, Charles River Media, pp. 225–242, 2009.
     if (dot(colorSum, 1.0f) == 0)
     {
@@ -169,6 +122,8 @@ MRT main(VSOutput vsOutput)
     }
     
     mrt.Color = colorSum;
+    
+    //mrt.Color = vsOutput.viewPos.z;
+    
     return mrt;
-#endif
 }

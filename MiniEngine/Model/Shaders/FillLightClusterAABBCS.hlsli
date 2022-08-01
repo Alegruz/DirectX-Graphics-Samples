@@ -25,6 +25,7 @@ cbuffer CSConstants : register(b0)
 {
     uint ViewportWidth, ViewportHeight;
     float4x4 InvProjMatrix;
+    float4x4 InvViewMatrix;
     uint4 TileCount;
     float FarZ;
     float NearZ;
@@ -61,7 +62,7 @@ void main(
 {
     const float3 eyePosition = 0.0;
     
-    uint tileSizePx = WORK_GROUP_SIZE_X * WORK_GROUP_SIZE_Y * WORK_GROUP_SIZE_Z;
+    uint2 tileSizePx = uint2(WORK_GROUP_SIZE_X, WORK_GROUP_SIZE_Y);
     uint tileIndex = Gid.x + Gid.y * TileCount.x + Gid.z * (TileCount.x * TileCount.y);
     
     // Calculating the min / max point in screen space
@@ -73,7 +74,7 @@ void main(
     float3 viewSpaceMinPoint = TransformScreenSpaceToViewSpace(screenSpaceMinPoint).xyz;
     
     // Near and far values of the cluster in view space
-    float tileNear = -NearZ * pow(FarZ / NearZ, Gid.z / (float) TileCount.z);
+    float tileNear = -NearZ * pow(FarZ / NearZ, (float) Gid.z / (float) TileCount.z);
     float tileFar = -NearZ * pow(FarZ / NearZ, (Gid.z + 1) / (float) TileCount.z);
     
     //Finding the 4 intersection points made from the maxPoint to the cluster near/far plane
@@ -85,8 +86,11 @@ void main(
     float3 aabbMinPoint = min(min(nearMinPoint, farMinPoint), min(nearMaxPoint, farMaxPoint));
     float3 aabbMaxPoint = max(max(nearMinPoint, farMinPoint), max(nearMaxPoint, farMaxPoint));
     
-    lightClusterAABB[tileIndex].MinPoint = float4(aabbMinPoint, 0.0);
-    lightClusterAABB[tileIndex].MaxPoint = float4(aabbMaxPoint, 0.0);
+    float4 worldSpaceAabbMinPoint = mul(InvViewMatrix, float4(aabbMinPoint, 1.0f));
+    float4 worldSpaceAabbMaxPoint = mul(InvViewMatrix, float4(aabbMaxPoint, 1.0f));
+    
+    lightClusterAABB[tileIndex].MinPoint = float4(worldSpaceAabbMinPoint.xyz - FLT_MIN, 0.0);
+    lightClusterAABB[tileIndex].MaxPoint = float4(worldSpaceAabbMaxPoint.xyz + FLT_MIN, 0.0);
 }
 
 float4 TransformScreenSpaceToViewSpace(float4 vec)
@@ -104,6 +108,7 @@ float4 TransformClipSpaceToViewSpace(float4 vec)
 {
     // View space transformation
     float4 viewSpace = mul(InvProjMatrix, vec);
+    viewSpace.y *= -1.0;
     
     // Perspective projection
     viewSpace /= viewSpace.w;
@@ -124,7 +129,11 @@ float3 ConvertLineIntersectionToZPlane(float3 lineA, float3 lineB, float zDistan
     float t = (zDistance - dot(normal, lineA)) / dot(normal, ab);
     
     // Computing the actual xyz position of the point along the line
-    float3 result = lineA + t * ab;
+    float3 result = 0.0;
+    if (0 <= t && t <= 1.0f)
+    {
+        result = lineA + t * ab;
+    }
     
     return result;
 }
