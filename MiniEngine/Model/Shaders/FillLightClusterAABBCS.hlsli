@@ -75,7 +75,7 @@ void main(
     
     // Near and far values of the cluster in view space
     float tileNear = -NearZ * pow(FarZ / NearZ, (float) Gid.z / (float) TileCount.z);
-    float tileFar = -NearZ * pow(FarZ / NearZ, (Gid.z + 1) / (float) TileCount.z);
+    float tileFar = -NearZ * pow(FarZ / NearZ, (float) (Gid.z + 1) / (float) TileCount.z);
     
     //Finding the 4 intersection points made from the maxPoint to the cluster near/far plane
     float3 nearMinPoint = ConvertLineIntersectionToZPlane(eyePosition, viewSpaceMinPoint, tileNear);

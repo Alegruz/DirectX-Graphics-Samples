@@ -1881,7 +1881,7 @@ namespace Lighting
         L"Clustered",
     };
 
-    bool m_bUpdateLightsToggle = false;
+    bool m_bUpdateLightsToggle = true;
 
     void InitializeResources(void);
     void CreateRandomLights(const Vector3 minBound, const Vector3 maxBound);

@@ -370,6 +370,11 @@ public:
         sm_RootScope.StoreToGraph();
     }
 
+    static void PrintHistory()
+    {
+        sm_RootScope.PrintNodeHistory();
+    }
+
     void Toggle()
     { 
         //if (m_GraphHandle == PERF_GRAPH_ERROR)
@@ -379,7 +384,7 @@ public:
     bool IsGraphed(){ return m_IsGraphed;}
 
 private:
-
+    void PrintNodeHistory();
     void DisplayNode( TextContext& Text, float x, float indent );
     void StoreToGraph(void);
     void DeleteChildren( void )
@@ -407,6 +412,9 @@ private:
     static NestedTimingTree sm_RootScope;
     static NestedTimingTree* sm_CurrentNode;
     static NestedTimingTree* sm_SelectedScope;
+
+    static unordered_map<wstring, float> sm_AvgCpuDuration;
+    static unordered_map<wstring, float> sm_AvgGpuDuration;
 
     static bool sm_CursorOnGraph;
 
@@ -496,6 +504,11 @@ namespace EngineProfiling
         Text.GetCommandContext().SetScissor(0, 0, g_DisplayWidth, g_DisplayHeight);
     }
 
+    void PrintHistory()
+    {
+        NestedTimingTree::PrintHistory();
+    }
+
 } // EngineProfiling
 
 void NestedTimingTree::PushProfilingMarker( const wstring& name, CommandContext* Context )
@@ -556,6 +569,81 @@ void NestedTimingTree::Update( void )
         sm_SelectedScope->Toggle();
     }
 
+}
+
+void NestedTimingTree::PrintNodeHistory()
+{
+    if (this == &sm_RootScope)
+    {
+        m_IsExpanded = true;
+        sm_RootScope.FirstChild()->m_IsExpanded = true;
+    }
+    else
+    {
+        if (m_Name == L"Scene Render" ||
+            m_Name == L"Clustered" ||
+            m_Name == L"Tiled" ||
+            m_Name == L"Tiled 2.5D" ||
+            m_Name == L"Tiled 2.5D AABB" ||
+            m_Name == L"Tiled (D)" ||
+            m_Name == L"Tiled 2.5D (D)" ||
+            m_Name == L"Tiled 2.5D AABB (D)" ||
+            m_Name == L"Tiled (I)" ||
+            m_Name == L"F Clustered Color" ||
+            m_Name == L"F Color" ||
+            m_Name == L"F+ Color" ||
+            m_Name == L"F+ 2.5D Color" ||
+            m_Name == L"F+ 2.5D AABB Color" ||
+            m_Name == L"D C Color" ||
+            m_Name == L"D Color" ||
+            m_Name == L"D T Color" ||
+            m_Name == L"D T 2.5D Color" ||
+            m_Name == L"D T 2.5D AABB Color" ||
+            m_Name == L"D T (D) Color" ||
+            m_Name == L"D T 2.5D (D) Color" ||
+            m_Name == L"D T 2.5D AABB (D) Color" ||
+            m_Name == L"D T (I) Color" ||
+            m_Name == L"Geometry Phase" ||
+            m_Name == L"Lighting Phase" ||
+            m_Name == L"Forward Opaque" ||
+            m_Name == L"Non-opaque Render")
+        {
+            OutputDebugString(m_Name.c_str());
+            OutputDebugString(L":\n\tCPU TIME:\t");
+
+            const float* pCpuTimeHistory = m_CpuTime.GetHistory();
+            uint32_t uCpuTimeHistoryLength = m_CpuTime.GetHistoryLength();
+            float avgCpuTime = 0.0f;
+            for (uint32_t cpuHistoryIdx = 0; cpuHistoryIdx < uCpuTimeHistoryLength; ++cpuHistoryIdx)
+            {
+                avgCpuTime += pCpuTimeHistory[cpuHistoryIdx];
+            }
+            avgCpuTime /= uCpuTimeHistoryLength;
+
+            WCHAR szDebugMsg[32];
+            swprintf_s(szDebugMsg, L"%6.6f\n", avgCpuTime);
+            OutputDebugString(szDebugMsg);
+            OutputDebugString(L"\tGPU TIME:\t");
+
+            const float* pGpuTimeHistory = m_GpuTime.GetHistory();
+            uint32_t uGpuTimeHistoryLength = m_GpuTime.GetHistoryLength();
+            float avgGpuTime = 0.0f;
+            for (uint32_t gpuHistoryIdx = 0; gpuHistoryIdx < uGpuTimeHistoryLength; ++gpuHistoryIdx)
+            {
+                avgGpuTime += pGpuTimeHistory[gpuHistoryIdx];
+            }
+            avgGpuTime /= uGpuTimeHistoryLength;
+
+            swprintf_s(szDebugMsg, L"%6.6f\n", avgGpuTime);
+            OutputDebugString(szDebugMsg);
+        }
+    }
+
+    //if (!m_IsExpanded)
+    //    return;
+
+    for (auto node : m_Children)
+        node->PrintNodeHistory();
 }
 
 void NestedTimingTree::DisplayNode( TextContext& Text, float leftMargin, float indent )

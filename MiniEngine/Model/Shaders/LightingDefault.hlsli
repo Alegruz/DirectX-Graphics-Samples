@@ -15,7 +15,7 @@
 
 #include "Common.hlsli"
 
-#define MAX_LIGHTS (32)
+#define MAX_LIGHTS (192)
 
 struct LightData
 {

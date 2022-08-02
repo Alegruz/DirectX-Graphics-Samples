@@ -165,10 +165,19 @@ void main(
         //float3 lightWorldPos = lightData.pos;
         //float lightCullRadius = sqrt(lightData.radiusSq);
 
-        bool overlapping = TestSphereAABB(lightData.radiusSq, lightData.pos, clusterIndex);
+        //bool overlapping = TestSphereAABB(lightData.radiusSq, lightData.pos, clusterIndex);
+
+        // Arvo Intersection Test
+        float4 centerAABB = (lightClusterAABB[clusterIndex].MinPoint + lightClusterAABB[clusterIndex].MaxPoint) / 2.0;
+        float4 extentAABB = abs(lightClusterAABB[clusterIndex].MaxPoint - centerAABB);
+        float3 vDelta = max(0, abs(centerAABB.xyz - lightData.pos) - extentAABB.xyz);
+        float fDistSq = dot(vDelta, vDelta);
         
-        if (!overlapping)
+        if (fDistSq > lightData.radiusSq)
             continue;
+        
+        //if (!overlapping)
+        //    continue;
 
         uint slot;
 

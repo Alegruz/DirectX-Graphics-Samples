@@ -155,11 +155,21 @@ MRT main(VSOutput vsOutput)
 		normal,
 		viewDir,
 		vsOutput.worldPos,
-        viewDepth.z,
+        vsOutput.viewPos.z,
         NearZ,
         FarZ,
         ViewportSize
     );
+    
+    //for (uint lightIdx = 0; lightIdx < MAX_LIGHTS; ++lightIdx)
+    //{
+    //    float4 screenSpaceLightPos = mul(ModelToProjection, float4(lightBuffer[lightIdx].pos, 1.0));
+    //    
+    //    if (dot(screenSpaceLightPos.xy - vsOutput.position.xy, screenSpaceLightPos.xy - vsOutput.position.xy) < 16.0)
+    //    {
+    //        colorSum = lightBuffer[lightIdx].color;
+    //    }
+    //}
     
     //colorSum += lights;
     // Thibieroz, Nicolas, “Deferred Shading with Multisampling Anti-Aliasing in DirectX 10,” in Wolfgang Engel, ed., ShaderX7, Charles River Media, pp. 225–242, 2009.

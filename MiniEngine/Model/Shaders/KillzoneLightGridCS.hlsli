@@ -285,57 +285,43 @@ void main(
     // https://wickedengine.net/2018/01/10/optimizing-tile-based-light-culling/
     // AABB based culling
     
-    float4 minAABB = float4(((float) Gid.x * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f, ((float) Gid.y * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f, tileMinDepth, 1.0f);
-    minAABB.y *= -1.0f;
-    minAABB = mul(InvViewProj, minAABB);
-    minAABB /= minAABB.w;
-    float4 maxAABB = float4(((float) (Gid.x + 1) * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f, ((float) (Gid.y + 1) * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f, tileMaxDepth, 1.0f);
-    maxAABB.y *= -1.0f;
-    maxAABB = mul(InvViewProj, maxAABB);
-    maxAABB /= maxAABB.w;
-    //float4 nearLeftBottom = float4(
-    //    ((float) Gid.x * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f, 
-    //    ((float) Gid.y * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f,
-    //    tileMinDepth, 
-    //    1.0f
-    //);
-    //nearLeftBottom.y *= -1.0f;
-    //nearLeftBottom = mul(InvViewProj, nearLeftBottom);
-    //nearLeftBottom /= nearLeftBottom.w;
-    //float4 nearRightTop = float4(
-    //    ((float) (Gid.x + 1) * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f,
-    //    ((float) (Gid.y + 1) * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f,
-    //    tileMinDepth,
-    //    1.0f
-    //);
-    //nearRightTop.y *= -1.0f;
-    //nearRightTop = mul(InvViewProj, nearRightTop);
-    //nearRightTop /= nearRightTop.w;
-    //
-    //float4 farLeftBottom = float4(
-    //    ((float) Gid.x * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f,
-    //    ((float) Gid.y * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f,
-    //    tileMaxDepth,
-    //    1.0f
-    //);
-    //farLeftBottom.y *= -1.0f;
-    //farLeftBottom = mul(InvViewProj, farLeftBottom);
-    //farLeftBottom /= farLeftBottom.w;
-    //float4 farRightTop = float4(
-    //    ((float) (Gid.x + 1) * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f,
-    //    ((float) (Gid.y + 1) * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f,
-    //    tileMaxDepth,
-    //    1.0f
-    //);
-    //farRightTop.y *= -1.0f;
-    //farRightTop = mul(InvViewProj, farRightTop);
-    //farRightTop /= farRightTop.w;
-    //
-    //float4 minAABB = float4(min(nearLeftBottom.x, farLeftBottom.x), min(nearLeftBottom.y, farLeftBottom.y), min(nearLeftBottom.z, farLeftBottom.z), 1.0f);
-    //float4 maxAABB = float4(max(nearRightTop.x, farRightTop.x), max(nearRightTop.y, farRightTop.y), max(nearRightTop.z, farRightTop.z), 1.0f);
+    float4 nearMinPoint = float4(((float) Gid.x * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f, ((float) Gid.y * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f, tileMinDepth, 1.0f);
+    float4 farMinPoint = float4(((float) Gid.x * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f, ((float) Gid.y * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f, tileMaxDepth, 1.0f);
+    float4 nearMaxPoint = float4(((float) (Gid.x + 1) * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f, ((float) (Gid.y + 1) * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f, tileMinDepth, 1.0f);
+    float4 farMaxPoint = float4(((float) (Gid.x + 1) * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f, ((float) (Gid.y + 1) * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f, tileMaxDepth, 1.0f);
     
-    float4 centerAABB = (minAABB + maxAABB) / 2.0f;
-    float4 extentAABB = abs(maxAABB - centerAABB);
+    nearMinPoint.y *= -1.0f;
+    farMinPoint.y *= -1.0f;
+    nearMaxPoint.y *= -1.0f;
+    farMaxPoint.y *= -1.0f;
+    
+    nearMinPoint = mul(InvViewProj, nearMinPoint);
+    farMinPoint = mul(InvViewProj, farMinPoint);
+    nearMaxPoint = mul(InvViewProj, nearMaxPoint);
+    farMaxPoint = mul(InvViewProj, farMaxPoint);
+    
+    nearMinPoint /= nearMinPoint.w;
+    farMinPoint /= farMinPoint.w;
+    nearMaxPoint /= nearMaxPoint.w;
+    farMaxPoint /= farMaxPoint.w;
+    
+    float4 aabbMinPoint = min(min(nearMinPoint, farMinPoint), min(nearMaxPoint, farMaxPoint));
+    float4 aabbMaxPoint = max(max(nearMinPoint, farMinPoint), max(nearMaxPoint, farMaxPoint));
+    
+    //float4 minAABB = float4(((float) Gid.x * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f, ((float) Gid.y * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f, tileMinDepth, 1.0f);
+    //minAABB.y *= -1.0f;
+    //minAABB = mul(InvViewProj, minAABB);
+    //minAABB /= minAABB.w;
+    //float4 maxAABB = float4(((float) (Gid.x + 1) * WORK_GROUP_SIZE_X / (float) ViewportWidth) * 2.0f - 1.0f, ((float) (Gid.y + 1) * WORK_GROUP_SIZE_Y / (float) ViewportHeight) * 2.0f - 1.0f, tileMaxDepth, 1.0f);
+    //maxAABB.y *= -1.0f;
+    //maxAABB = mul(InvViewProj, maxAABB);
+    //maxAABB /= maxAABB.w;
+    
+    float4 centerAABB = (aabbMinPoint + aabbMaxPoint) / 2.0f;
+    float4 extentAABB = abs(aabbMaxPoint - centerAABB);
+    
+    //float4 centerAABB = (minAABB + maxAABB) / 2.0f;
+    //float4 extentAABB = abs(maxAABB - centerAABB);
 #else
     // construct transform from world space to tile space (projection space constrained to tile area)
     float2 invTileSize2X = float2(ViewportWidth, ViewportHeight) * InvTileDim;

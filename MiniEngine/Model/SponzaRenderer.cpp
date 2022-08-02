@@ -1027,7 +1027,7 @@ namespace Sponza
 
     DescriptorHandle m_GBufferSRVs;
 
-    eRenderType m_CurrentRenderType = eRenderType::FORWARD;
+    eRenderType m_CurrentRenderType = eRenderType::DEFERRED;
     eForwardType m_CurrentForwardType = eForwardType::COUNT;
     eGBufferDataType m_CurrentGBufferType = eGBufferDataType::COUNT;
     eLightType m_CurrentLightType = eLightType::CLUSTERED;
@@ -2597,11 +2597,6 @@ void Sponza::RenderScene(
                     gfxContext
                 );
 
-                gfxContext.TransitionResource(g_SSAOFullScreen, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-                gfxContext.SetDescriptorTable(Renderer::kCommonSRVs, Renderer::m_CommonTextures);
-                gfxContext.SetDynamicConstantBufferView(Renderer::kMaterialConstants, sizeof(psConstants), &psConstants);
-
                 {
                     //gfxContext.SetPipelineState(m_ModelPSO);
                     //gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
@@ -2612,16 +2607,35 @@ void Sponza::RenderScene(
                     {
                     case eRenderType::FORWARD:
                     {
+                        ScopedTimer _prof3(L"Forward Opaque", gfxContext);
+                        gfxContext.TransitionResource(g_SSAOFullScreen, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+                        gfxContext.SetDescriptorTable(Renderer::kCommonSRVs, Renderer::m_CommonTextures);
+                        gfxContext.SetDynamicConstantBufferView(Renderer::kMaterialConstants, sizeof(psConstants), &psConstants);
                         gfxContext.SetPipelineState(m_aForwardPSOs[static_cast<size_t>(m_CurrentLightType)][static_cast<size_t>(m_CurrentForwardType)]);
                         gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
                         D3D12_CPU_DESCRIPTOR_HANDLE rtvs[]{ g_SceneColorBuffer.GetRTV(), g_SceneNormalBuffer.GetRTV() };
                         gfxContext.SetRenderTargets(ARRAYSIZE(rtvs), rtvs, g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+                        gfxContext.SetViewportAndScissor(viewport, scissor);
+
+                        if (m_CurrentLightType == eLightType::CLUSTERED)
+                        {
+                            RenderClusteredObjects(gfxContext, camera, camera.GetPosition(), Sponza::kOpaque);
+                        }
+                        else
+                        {
+                            RenderObjects(gfxContext, camera, camera.GetPosition(), Sponza::kOpaque);
+                        }
                     }
                     break;
                     case eRenderType::DEFERRED:
                     {
                         {
                             ScopedTimer _prof3(L"Geometry Phase", gfxContext);
+                            gfxContext.TransitionResource(g_SSAOFullScreen, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+                            gfxContext.SetDescriptorTable(Renderer::kCommonSRVs, Renderer::m_CommonTextures);
+                            gfxContext.SetDynamicConstantBufferView(Renderer::kMaterialConstants, sizeof(psConstants), &psConstants);
                             std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvs;
                             rtvs.reserve(static_cast<size_t>(eGBufferType::COUNT));
                             for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
@@ -2636,11 +2650,17 @@ void Sponza::RenderScene(
                             //RenderObjects(gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kOpaque);
                         }
 
-                        if (m_CurrentLightType != eLightType::TILED_DICE && 
-                            m_CurrentLightType != eLightType::TILED_DICE_2_5 && 
-                            m_CurrentLightType != eLightType::TILED_DICE_2_5_AABB && 
-                            m_CurrentLightType != eLightType::TILED_INTEL)
+                        switch (m_CurrentLightType)
                         {
+                        case eLightType::DEFAULT:
+                            // intentional fallthrough
+                        case eLightType::TILED:
+                            // intentional fallthrough
+                        case eLightType::TILED_2_5:
+                            // intentional fallthrough
+                        case eLightType::TILED_2_5_AABB:
+                        {
+                            ScopedTimer _prof4(L"Lighting Phase", gfxContext);
                             for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
                             {
                                 gfxContext.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
@@ -2651,7 +2671,55 @@ void Sponza::RenderScene(
                             gfxContext.SetDescriptorTable(Renderer::kCommonSRVs, Renderer::m_CommonTextures);
                             gfxContext.SetDynamicConstantBufferView(Renderer::kMaterialConstants, sizeof(psConstants), &psConstants);
                             gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_GENERIC_READ);
+                            gfxContext.SetPipelineState(m_aGBufferPSOs[static_cast<size_t>(m_CurrentLightType)][static_cast<size_t>(m_CurrentGBufferType)]);
+                            gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV());
+                            gfxContext.SetViewportAndScissor(viewport, scissor);
+                            RenderDeferredObjects(gfxContext, camera, camera.GetPosition());
                         }
+                        gfxContext.SetIndexBuffer(m_Model.GetIndexBuffer());
+                        gfxContext.SetVertexBuffer(0, m_Model.GetVertexBuffer());
+                        break;
+                        case eLightType::TILED_DICE:
+                            // intentional fallthrough
+                        case eLightType::TILED_DICE_2_5:
+                            // intentional fallthrough
+                        case eLightType::TILED_DICE_2_5_AABB:
+                            // intentional fallthrough
+                        case eLightType::TILED_INTEL:
+                        {
+                            ScopedTimer _prof4(L"Lighting Phase", gfxContext);
+                            Lighting::FillAndShadeLightGrid(gfxContext, camera, m_GBufferSRVs, m_CurrentLightType, m_CurrentGBufferType);
+                            pfnSetupGraphicsState();
+                        }
+                        break;
+                        case eLightType::CLUSTERED:
+                        {
+                            ScopedTimer _prof4(L"Lighting Phase", gfxContext);
+                            for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
+                            {
+                                gfxContext.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
+                            }
+
+                            gfxContext.SetIndexBuffer(m_GBufferIndexBuffer);
+                            gfxContext.SetVertexBuffer(0, m_GBufferVertexBuffer);
+                            gfxContext.SetDescriptorTable(Renderer::kCommonSRVs, Renderer::m_CommonTextures);
+                            gfxContext.SetDynamicConstantBufferView(Renderer::kMaterialConstants, sizeof(psConstants), &psConstants);
+                            gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_GENERIC_READ);
+                            gfxContext.SetPipelineState(m_aGBufferPSOs[static_cast<size_t>(m_CurrentLightType)][static_cast<size_t>(m_CurrentGBufferType)]);
+                            gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV());
+                            gfxContext.SetViewportAndScissor(viewport, scissor);
+                            RenderDeferredClusteredObjects(gfxContext, camera, camera.GetPosition());
+                        }
+                        gfxContext.SetIndexBuffer(m_Model.GetIndexBuffer());
+                        gfxContext.SetVertexBuffer(0, m_Model.GetVertexBuffer());
+                        break;
+                        case eLightType::COUNT:
+                            // intentional fallthrough
+                        default:
+                            ASSERT(false);
+                            break;
+                        }
+                        
                     }
                     break;
                     case eRenderType::COUNT:
@@ -2660,79 +2728,6 @@ void Sponza::RenderScene(
                         ASSERT(false);
                         break;
                     }
-
-                    //gfxContext.SetRenderTargets(0, nullptr, g_SceneDepthBuffer.GetDSV_DepthReadOnly());
-                    gfxContext.SetViewportAndScissor(viewport, scissor);
-                }
-                
-                switch (m_CurrentRenderType)
-                {
-                case eRenderType::FORWARD:
-                    if (m_CurrentLightType == eLightType::CLUSTERED)
-                    {
-                        RenderClusteredObjects(gfxContext, camera, camera.GetPosition(), Sponza::kOpaque);
-                    }
-                    else
-                    {
-                        RenderObjects(gfxContext, camera, camera.GetPosition(), Sponza::kOpaque);
-                    }
-                    //RenderObjects(gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kOpaque);
-                    break;
-                case eRenderType::DEFERRED:
-                    switch (m_CurrentLightType)
-                    {
-                    case eLightType::DEFAULT:
-                        // intentional fallthrough
-                    case eLightType::TILED:
-                        // intentional fallthrough
-                    case eLightType::TILED_2_5:
-                        // intentional fallthrough
-                    case eLightType::TILED_2_5_AABB:
-                    {
-                        ScopedTimer _prof4(L"Lighting Phase", gfxContext);
-                        gfxContext.SetPipelineState(m_aGBufferPSOs[static_cast<size_t>(m_CurrentLightType)][static_cast<size_t>(m_CurrentGBufferType)]);
-                        gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV());
-                        RenderDeferredObjects(gfxContext, camera, camera.GetPosition());
-                    }
-                    gfxContext.SetIndexBuffer(m_Model.GetIndexBuffer());
-                    gfxContext.SetVertexBuffer(0, m_Model.GetVertexBuffer());
-                        break;
-                    case eLightType::TILED_DICE:
-                        // intentional fallthrough
-                    case eLightType::TILED_DICE_2_5:
-                        // intentional fallthrough
-                    case eLightType::TILED_DICE_2_5_AABB:
-                        // intentional fallthrough
-                    case eLightType::TILED_INTEL:
-                    {
-                        ScopedTimer _prof4(L"Lighting Phase", gfxContext);
-                        Lighting::FillAndShadeLightGrid(gfxContext, camera, m_GBufferSRVs, m_CurrentLightType, m_CurrentGBufferType);
-                        pfnSetupGraphicsState();
-                    }
-                        break;
-                    case eLightType::CLUSTERED:
-                    {
-                        ScopedTimer _prof4(L"Lighting Phase", gfxContext);
-                        gfxContext.SetPipelineState(m_aGBufferPSOs[static_cast<size_t>(m_CurrentLightType)][static_cast<size_t>(m_CurrentGBufferType)]);
-                        gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV());
-                        RenderDeferredClusteredObjects(gfxContext, camera, camera.GetPosition());
-                    }
-                    gfxContext.SetIndexBuffer(m_Model.GetIndexBuffer());
-                    gfxContext.SetVertexBuffer(0, m_Model.GetVertexBuffer());
-                        break;
-                    case eLightType::COUNT:
-                        // intentional fallthrough
-                    default:
-                        ASSERT(false);
-                        break;
-                    }
-                    
-                    break;
-                case eRenderType::COUNT:
-                    // intentional fallthrough
-                default:
-                    ASSERT(false);
-                    break;
                 }
 
                 //RenderObjects( gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kOpaque );

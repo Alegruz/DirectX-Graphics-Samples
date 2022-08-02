@@ -232,12 +232,12 @@ void ModelViewer::Update( float deltaT )
         Sponza::SetRenderType(eRenderType::DEFERRED);
     }
 
-    if (GameInput::IsFirstPressed(GameInput::kKey_period))
+    if (GameInput::IsFirstPressed(GameInput::kKey_slash))
     {
         Sponza::SetNextBufferOutput();
     }
 
-    if (GameInput::IsFirstPressed(GameInput::kKey_slash))
+    if (GameInput::IsFirstPressed(GameInput::kKey_period))
     {
         Sponza::SetPreviousBufferOutput();
     }
