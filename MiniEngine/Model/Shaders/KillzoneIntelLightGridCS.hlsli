@@ -39,7 +39,8 @@ Texture2DArray<float> gLightShadowArrayTex : register(t5);
 Texture2D<float> gDepthTex : register(t8);
 Texture2D<float3> gRt0 : register(t10);
 //Texture2D<float4> gRt0 : register(t10);
-Texture2D<float4> gRt1 : register(t11);
+//Texture2D<float4> gRt1 : register(t11);
+Texture2D<half4> gRt1 : register(t11);
 Texture2D<float4> gRt2 : register(t12);
 Texture2D<float4> gRt3 : register(t13);
 
@@ -360,8 +361,10 @@ void main(
     //color = rt0Data.rgb;
     color = gRt0[DTid.xy];
     //float gloss = rt0Data.a * 256.0;
-    float4 rt1Data = gRt1[DTid.xy];
-    float3 normal = rt1Data.xyz;
+    //float4 rt1Data = gRt1[DTid.xy];
+    half4 rt1Data = gRt1[DTid.xy];
+    //float3 normal = rt1Data.xyz;
+    float3 normal = (float3) BaseDecode(rt1Data);
     float4 rt2Data = gRt2[DTid.xy];
     float specularMask = rt2Data.a;
     float4 rt3Data = gRt3[DTid.xy];

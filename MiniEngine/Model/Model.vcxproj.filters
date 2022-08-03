@@ -93,6 +93,36 @@
     <Filter Include="Shaders\Killzone GBuffer\Default">
       <UniqueIdentifier>{9bd02c0d-0f3c-44aa-a125-aee50b317530}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Thin GBuffer">
+      <UniqueIdentifier>{e4cdba17-7f2f-40b0-ad64-9e7630cfde9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Thin GBuffer\Tiled">
+      <UniqueIdentifier>{d285314e-253f-4ca7-bc6c-3155246ce1df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Thin GBuffer\Tiled\DICE">
+      <UniqueIdentifier>{ed155c38-6475-4bcf-a45d-aa3dcd87018e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Thin GBuffer\Tiled\DICE\Default">
+      <UniqueIdentifier>{7fab55ed-f8cc-469a-a020-86168f75d860}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Thin GBuffer\Tiled\DICE\2.5D Culling">
+      <UniqueIdentifier>{6b0d487a-cdc8-49bb-8bf7-9bbba324dd66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Thin GBuffer\Tiled\DICE\2.5D AABB Culling">
+      <UniqueIdentifier>{7fd7484d-2be7-48d6-b9e3-220bc89dbc8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Thin GBuffer\Tiled\Intel">
+      <UniqueIdentifier>{aa5af81a-5620-47ab-bad2-980d053f0716}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Thin GBuffer\Tiled\Default">
+      <UniqueIdentifier>{5944f5ee-3546-47f4-9159-3faa5bf05cec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Thin GBuffer\Default">
+      <UniqueIdentifier>{76ea3836-3712-4445-ac26-0ace04878ee2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Thin GBuffer\Clustered">
+      <UniqueIdentifier>{47e36bde-2aa2-4e41-8a9c-45608badbe98}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SponzaRenderer.h">
@@ -169,6 +199,12 @@
     </None>
     <None Include="Shaders\LightingDefault.hlsli">
       <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\ThinGBufferTiledDiceCS.hlsli">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE</Filter>
+    </None>
+    <None Include="Shaders\ThinGBufferTiledIntelCS.hlsli">
+      <Filter>Shaders\Thin GBuffer\Tiled\Intel</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -660,6 +696,234 @@
     </FxCompile>
     <FxCompile Include="Shaders\ModelViewerVS.hlsl">
       <Filter>Shaders\ModelViewer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDiceCS_8.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDiceCS_16.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDiceCS_24.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDiceCS_32.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDiceDensityCS_8.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDiceDensityCS_16.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDiceDensityCS_24.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDiceDensityCS_32.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDiceFPRCS_8.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDiceFPRCS_16.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDiceFPRCS_24.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDiceFPRCS_32.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DCullingCS_8.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DCullingCS_16.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DCullingCS_24.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DCullingCS_32.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DCullingDensityCS_8.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DCullingDensityCS_16.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DCullingDensityCS_24.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DCullingDensityCS_32.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DCullingFPRCS_8.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DCullingFPRCS_16.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DCullingFPRCS_24.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DCullingFPRCS_32.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DAABBCullingCS_8.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D AABB Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DAABBCullingCS_16.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D AABB Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DAABBCullingCS_24.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D AABB Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DAABBCullingCS_32.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D AABB Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DAABBCullingDensityCS_8.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D AABB Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DAABBCullingDensityCS_16.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D AABB Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DAABBCullingDensityCS_24.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D AABB Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DAABBCullingDensityCS_32.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D AABB Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DAABBCullingFPRCS_8.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D AABB Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DAABBCullingFPRCS_16.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D AABB Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DAABBCullingFPRCS_24.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D AABB Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDice2_5DAABBCullingFPRCS_32.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\DICE\2.5D AABB Culling</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledIntelCS_8.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledIntelCS_16.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledIntelCS_24.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledIntelCS_32.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledIntelDensityCS_8.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledIntelDensityCS_16.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledIntelDensityCS_24.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledIntelDensityCS_32.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledIntelFPRCS_8.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledIntelFPRCS_16.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledIntelFPRCS_24.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledIntelFPRCS_32.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Intel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferDeferredPS.hlsl">
+      <Filter>Shaders\Thin GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferDefaultDensityPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferDefaultDepthPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferDefaultDiffuseAlbedoPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferDefaultFPRPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferDefaultGlossPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferDefaultLightAccumulationPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferDefaultNormalPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferDefaultPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferDefaultSpecularIntensityPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferClusteredDensityPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Clustered</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferClusteredDepthPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Clustered</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferClusteredDiffuseAlbedoPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Clustered</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferClusteredFPRPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Clustered</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferClusteredGlossPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Clustered</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferClusteredLightAccumulationPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Clustered</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferClusteredNormalPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Clustered</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferClusteredPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Clustered</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferClusteredSpecularIntensityPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Clustered</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDensityPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDepthPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledDiffuseAlbedoPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledFPRPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledGlossPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledLightAccumulationPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledNormalPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferTiledSpecularIntensityPS.hlsl">
+      <Filter>Shaders\Thin GBuffer\Tiled\Default</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

@@ -56,6 +56,7 @@ namespace GameCore
 
     bool UpdateApplication( IGameApp& game )
     {
+        //static uint32_t uFrameCount = 480;
         EngineProfiling::Update();
 
         float DeltaTime = Graphics::GetFrameTime();
@@ -85,6 +86,14 @@ namespace GameCore
         UiContext.Finish();
 
         Display::Present();
+
+        //--uFrameCount;
+        //
+        //if (!uFrameCount)
+        //{
+        //    EngineProfiling::PrintHistory();
+        //    return false;
+        //}
 
         return !game.IsDone();
     }

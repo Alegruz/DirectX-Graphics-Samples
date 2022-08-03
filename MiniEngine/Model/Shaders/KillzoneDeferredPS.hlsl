@@ -41,7 +41,7 @@ struct MRT
 	//float4 RT0 : SV_Target0;
     //float2 RT1 : SV_Target1;
     //float3 RT1 : SV_Target1;
-    float4 RT1 : SV_Target1;
+    half4 RT1 : SV_Target1;
     float4 RT2 : SV_Target2;
     float4 RT3 : SV_Target3;
 };
@@ -85,14 +85,14 @@ MRT main(VSOutput vsOutput)
     //    ) + 1.0f), 
     //    1
     //);
-    float4 rt1Data = float4(
-        float3(
+    half4 rt1Data = BaseEncode(
+        half3(
             normal.x * !((asuint(normal.x) & 0x7fffffff) > 0x7f800000),
             normal.y * !((asuint(normal.y) & 0x7fffffff) > 0x7f800000),
             normal.z * !((asuint(normal.z) & 0x7fffffff) > 0x7f800000)
-        ), 
-        1
+        )
     );
+        
     mrt.RT1 = rt1Data;
     //mrt.RT1 = float4(normal, 0);
 	

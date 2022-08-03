@@ -93,6 +93,9 @@ namespace Graphics
     DXGI_FORMAT KillzoneGBufferDefaultFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
     DXGI_FORMAT KillzoneLBufferDefaultFormat = DXGI_FORMAT_R11G11B10_FLOAT;
     DXGI_FORMAT KillzoneGBufferNormalFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+#elif THIN_GBUFFER
+    DXGI_FORMAT ThinGBufferDefaultFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+    DXGI_FORMAT ThinLBufferFormat = DXGI_FORMAT_R11G11B10_FLOAT;
 #endif
 }
 
@@ -132,6 +135,10 @@ void Graphics::InitializeRenderingBuffers( uint32_t bufferWidth, uint32_t buffer
         g_aSceneGBuffers[static_cast<size_t>(eGBufferType::RT1)].Create(L"G-Buffer Normal", bufferWidth, bufferHeight, 1, KillzoneGBufferNormalFormat, esram);
         g_aSceneGBuffers[static_cast<size_t>(eGBufferType::RT2)].Create(L"G-Buffer Motion Vectors", bufferWidth, bufferHeight, 1, KillzoneGBufferDefaultFormat, esram);
         g_aSceneGBuffers[static_cast<size_t>(eGBufferType::RT3)].Create(L"G-Buffer Diffuse Albedo", bufferWidth, bufferHeight, 1, KillzoneGBufferDefaultFormat, esram);
+#elif THIN_GBUFFER
+        g_aSceneGBuffers[static_cast<size_t>(eGBufferType::RT0)].Create(L"G-Buffer Lighting", bufferWidth, bufferHeight, 1, ThinLBufferFormat, esram);
+        g_aSceneGBuffers[static_cast<size_t>(eGBufferType::RT1)].Create(L"G-Buffer Normal, Glossiness, Z Sign", bufferWidth, bufferHeight, 1, ThinGBufferDefaultFormat, esram);
+        g_aSceneGBuffers[static_cast<size_t>(eGBufferType::RT2)].Create(L"G-Buffer Diffuse Albedo", bufferWidth, bufferHeight, 1, ThinGBufferDefaultFormat, esram);
 #endif
         g_SceneNormalBuffer.Create( L"Normals Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, esram );
         g_VelocityBuffer.Create( L"Motion Vectors", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT );

@@ -42,7 +42,8 @@ Texture2D<float3> texRt0	: register(t21);
 //Texture2D<float4> texRt0 : register(t21);
 //Texture2D<float2> texRt1	: register(t22);
 //Texture2D<float3> texRt1    : register(t22);
-Texture2D<float4> texRt1	: register(t22);
+//Texture2D<float4> texRt1	: register(t22);
+Texture2D<half4> texRt1 : register(t22);    // Baseline
 Texture2D<float4> texRt2	: register(t23);
 Texture2D<float4> texRt3    : register(t24);
 
@@ -81,13 +82,13 @@ float3 main(VSOutput vsOutput) : SV_Target
 //#endif
 
     //float2 rt1Data = texRt1[pixelPos];
-    float4 rt1Data = texRt1[pixelPos];
     //float4 rt1Data = texRt1[pixelPos];
+    half4 rt1Data = texRt1[pixelPos];
     //float3 normal = normalize(float3(rt1Data.x, rt1Data.y, sqrt(1.0 - rt1Data.x * rt1Data.x - rt1Data.y * rt1Data.y)));
     //float3 normal = 2.0f * (rt1Data.xyz - 0.5f);
     //float3 normal = 2.0f * rt1Data - 1.0f;
     //float3 normal = 2.0f * rt1Data.xyz - 1.0f;
-    float3 normal = rt1Data.xyz;
+    float3 normal = (float3) BaseDecode(rt1Data);
 #if NORMAL
     return normal;
 #endif

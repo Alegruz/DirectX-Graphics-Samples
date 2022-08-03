@@ -135,4 +135,39 @@ float3 ConvertToRadarColor(float scale)
     }
 }
 
+#define NO_ENCODING (0)
+#define BASELINE (0)
+#define Z_RECONSTRUCTION (1)
+
+half4 BaseEncode(half3 n)
+{
+#if NO_ENCODING
+    return half4(n, 0.0);
+#elif BASELINE
+    return half4(n.xyz * 0.5 + 0.5, 0.0);
+#elif Z_RECONSTRUCTION
+    return half4(n.xy * 0.5 + 0.5, 0.0, 0.0);
+#endif
+}
+
+half3 BaseDecode(
+#if NO_ENCODING || BASELINE
+    half4 enc
+#elif Z_RECONSTRUCTION
+    half3 enc
+#endif
+)
+{
+#if NO_ENCODING
+    return enc.xyz;
+#elif BASELINE
+    return enc.xyz * 2.0 - 1.0;
+#elif Z_RECONSTRUCTION
+    half3 n;
+    n.xy = enc.xy * 2.0 - 1.0;
+    n.z = sqrt(1.0 - dot(n.xy, n.xy)) * (2.0 * !!enc.z - 1.0);
+    return n;
+#endif
+}
+
 #endif // __COMMON_HLSLI__

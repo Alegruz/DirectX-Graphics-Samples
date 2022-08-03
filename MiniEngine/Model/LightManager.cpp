@@ -114,6 +114,66 @@
 #include "CompiledShaders/KillzoneIntelLightGridFPRCS_16.h"
 #include "CompiledShaders/KillzoneIntelLightGridFPRCS_24.h"
 #include "CompiledShaders/KillzoneIntelLightGridFPRCS_32.h"
+#elif THIN_GBUFFER
+#include "CompiledShaders/ThinGBufferTiledDiceCS_8.h"
+#include "CompiledShaders/ThinGBufferTiledDiceCS_16.h"
+#include "CompiledShaders/ThinGBufferTiledDiceCS_24.h"
+#include "CompiledShaders/ThinGBufferTiledDiceCS_32.h"
+
+#include "CompiledShaders/ThinGBufferTiledDiceDensityCS_8.h"
+#include "CompiledShaders/ThinGBufferTiledDiceDensityCS_16.h"
+#include "CompiledShaders/ThinGBufferTiledDiceDensityCS_24.h"
+#include "CompiledShaders/ThinGBufferTiledDiceDensityCS_32.h"
+
+#include "CompiledShaders/ThinGBufferTiledDiceFPRCS_8.h"
+#include "CompiledShaders/ThinGBufferTiledDiceFPRCS_16.h"
+#include "CompiledShaders/ThinGBufferTiledDiceFPRCS_24.h"
+#include "CompiledShaders/ThinGBufferTiledDiceFPRCS_32.h"
+
+#include "CompiledShaders/ThinGBufferTiledDice2_5DCullingCS_8.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DCullingCS_16.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DCullingCS_24.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DCullingCS_32.h"
+
+#include "CompiledShaders/ThinGBufferTiledDice2_5DCullingDensityCS_8.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DCullingDensityCS_16.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DCullingDensityCS_24.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DCullingDensityCS_32.h"
+
+#include "CompiledShaders/ThinGBufferTiledDice2_5DCullingFPRCS_8.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DCullingFPRCS_16.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DCullingFPRCS_24.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DCullingFPRCS_32.h"
+
+#include "CompiledShaders/ThinGBufferTiledDice2_5DAABBCullingCS_8.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DAABBCullingCS_16.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DAABBCullingCS_24.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DAABBCullingCS_32.h"
+
+#include "CompiledShaders/ThinGBufferTiledDice2_5DAABBCullingDensityCS_8.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DAABBCullingDensityCS_16.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DAABBCullingDensityCS_24.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DAABBCullingDensityCS_32.h"
+
+#include "CompiledShaders/ThinGBufferTiledDice2_5DAABBCullingFPRCS_8.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DAABBCullingFPRCS_16.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DAABBCullingFPRCS_24.h"
+#include "CompiledShaders/ThinGBufferTiledDice2_5DAABBCullingFPRCS_32.h"
+
+#include "CompiledShaders/ThinGBufferTiledIntelCS_8.h"
+#include "CompiledShaders/ThinGBufferTiledIntelCS_16.h"
+#include "CompiledShaders/ThinGBufferTiledIntelCS_24.h"
+#include "CompiledShaders/ThinGBufferTiledIntelCS_32.h"
+
+#include "CompiledShaders/ThinGBufferTiledIntelDensityCS_8.h"
+#include "CompiledShaders/ThinGBufferTiledIntelDensityCS_16.h"
+#include "CompiledShaders/ThinGBufferTiledIntelDensityCS_24.h"
+#include "CompiledShaders/ThinGBufferTiledIntelDensityCS_32.h"
+
+#include "CompiledShaders/ThinGBufferTiledIntelFPRCS_8.h"
+#include "CompiledShaders/ThinGBufferTiledIntelFPRCS_16.h"
+#include "CompiledShaders/ThinGBufferTiledIntelFPRCS_24.h"
+#include "CompiledShaders/ThinGBufferTiledIntelFPRCS_32.h"
 #endif
 
 using namespace Math;
@@ -161,6 +221,8 @@ namespace Lighting
     RootSignature m_FillLightClusterSig;
 #if KILLZONE_GBUFFER
     RootSignature m_KillzoneLightRootSig;
+#elif THIN_GBUFFER
+    RootSignature m_ThinGBufferLightRootSig;
 #endif
 
     ComputePSO m_aForwardPSOs[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eClusterType::COUNT)] =
@@ -961,6 +1023,631 @@ namespace Lighting
                 { (L"Fill Light Cluster 64 x 64 x 32 CS") },
             },
             // RT3_SUN_OCCLUSION
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+        }
+    };
+#elif THIN_GBUFFER
+    ComputePSO m_aThinGBufferPSOs[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eGBufferDataType::COUNT) + 1][static_cast<size_t>(eClusterType::COUNT)] =
+    {
+        // Default
+        {
+            // Depth
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT1_GLOSSINESS
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT3_SPEC_INTENSITY
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+        },
+        // Tiled
+        {
+            // Depth
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT1_GLOSSINESS
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT2_DIFFUSE_ALBEDO
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"Fill Light Grid 8 CS") },
+                { (L"Fill Light Grid 16 CS") },
+                { (L"Fill Light Grid 24 CS") },
+                { (L"Fill Light Grid 32 CS") },
+            },
+        },
+        // Tiled 2.5D Culling
+        {
+            // Depth
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // RT1_GLOSSINESS
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // RT2_DIFFUSE_ALBEDO
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"Fill Light 2.5D Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D Culling Grid 32 CS") },
+            },
+        },
+        // Tiled 2.5D AABB Culling
+        {
+            // Depth
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // RT1_GLOSSINESS
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // RT2_DIFFUSE_ALBEDO
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"Fill Light 2.5D AABB Culling Grid 8 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 16 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 24 CS") },
+                { (L"Fill Light 2.5D AABB Culling Grid 32 CS") },
+            },
+        },
+        // DICE Tiled
+        {
+            // Depth
+            {
+                { (L"DICE Depth Tiled 8 CS") },
+                { (L"DICE Depth Tiled 16 CS") },
+                { (L"DICE Depth Tiled 24 CS") },
+                { (L"DICE Depth Tiled 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"DICE Light Accumulation Tiled 8 CS") },
+                { (L"DICE Light Accumulation Tiled 16 CS") },
+                { (L"DICE Light Accumulation Tiled 24 CS") },
+                { (L"DICE Light Accumulation Tiled 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"DICE Normal Tiled 8 CS") },
+                { (L"DICE Normal Tiled 16 CS") },
+                { (L"DICE Normal Tiled 24 CS") },
+                { (L"DICE Normal Tiled 32 CS") },
+            },
+            // RT1_GLOSSINESS
+            {
+                { (L"DICE Glossiness Tiled 8 CS") },
+                { (L"DICE Glossiness Tiled 16 CS") },
+                { (L"DICE Glossiness Tiled 24 CS") },
+                { (L"DICE Glossiness Tiled 32 CS") },
+            },
+            // RT2_DIFFUSE_ALBEDO
+            {
+                { (L"DICE Diffuse Albedo Tiled 8 CS") },
+                { (L"DICE Diffuse Albedo Tiled 16 CS") },
+                { (L"DICE Diffuse Albedo Tiled 24 CS") },
+                { (L"DICE Diffuse Albedo Tiled 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { (L"DICE Specular Intensity Tiled 8 CS") },
+                { (L"DICE Specular Intensity Tiled 16 CS") },
+                { (L"DICE Specular Intensity Tiled 24 CS") },
+                { (L"DICE Specular Intensity Tiled 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"DICE Light Density Tiled 8 CS") },
+                { (L"DICE Light Density Tiled 16 CS") },
+                { (L"DICE Light Density Tiled 24 CS") },
+                { (L"DICE Light Density Tiled 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"DICE False Positive Rate Tiled 8 CS") },
+                { (L"DICE False Positive Rate Tiled 16 CS") },
+                { (L"DICE False Positive Rate Tiled 24 CS") },
+                { (L"DICE False Positive Rate Tiled 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"DICE Tiled 8 CS") },
+                { (L"DICE Tiled 16 CS") },
+                { (L"DICE Tiled 24 CS") },
+                { (L"DICE Tiled 32 CS") },
+            },
+        },
+        // DICE Tiled 2.5D Culling
+        {
+            // Depth
+            {
+                { (L"DICE Depth Tiled 2.5D Culling 8 CS") },
+                { (L"DICE Depth Tiled 2.5D Culling 16 CS") },
+                { (L"DICE Depth Tiled 2.5D Culling 24 CS") },
+                { (L"DICE Depth Tiled 2.5D Culling 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"DICE Light Accumulation Tiled 2.5D Culling 8 CS") },
+                { (L"DICE Light Accumulation Tiled 2.5D Culling 16 CS") },
+                { (L"DICE Light Accumulation Tiled 2.5D Culling 24 CS") },
+                { (L"DICE Light Accumulation Tiled 2.5D Culling 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"DICE Normal Tiled 2.5D Culling 8 CS") },
+                { (L"DICE Normal Tiled 2.5D Culling 16 CS") },
+                { (L"DICE Normal Tiled 2.5D Culling 24 CS") },
+                { (L"DICE Normal Tiled 2.5D Culling 32 CS") },
+            },
+            // RT1_GLOSSINESS
+            {
+                { (L"DICE Glossiness Tiled 2.5D Culling 8 CS") },
+                { (L"DICE Glossiness Tiled 2.5D Culling 16 CS") },
+                { (L"DICE Glossiness Tiled 2.5D Culling 24 CS") },
+                { (L"DICE Glossiness Tiled 2.5D Culling 32 CS") },
+            },
+            // RT2_DIFFUSE_ALBEDO
+            {
+                { (L"DICE Diffuse Albedo Tiled 2.5D Culling 8 CS") },
+                { (L"DICE Diffuse Albedo Tiled 2.5D Culling 16 CS") },
+                { (L"DICE Diffuse Albedo Tiled 2.5D Culling 24 CS") },
+                { (L"DICE Diffuse Albedo Tiled 2.5D Culling 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { (L"DICE Specular Intensity Tiled 2.5D Culling 8 CS") },
+                { (L"DICE Specular Intensity Tiled 2.5D Culling 16 CS") },
+                { (L"DICE Specular Intensity Tiled 2.5D Culling 24 CS") },
+                { (L"DICE Specular Intensity Tiled 2.5D Culling 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"DICE Light Density Tiled 2.5D Culling 8 CS") },
+                { (L"DICE Light Density Tiled 2.5D Culling 16 CS") },
+                { (L"DICE Light Density Tiled 2.5D Culling 24 CS") },
+                { (L"DICE Light Density Tiled 2.5D Culling 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"DICE False Positive Rate Tiled 2.5D Culling 8 CS") },
+                { (L"DICE False Positive Rate Tiled 2.5D Culling 16 CS") },
+                { (L"DICE False Positive Rate Tiled 2.5D Culling 24 CS") },
+                { (L"DICE False Positive Rate Tiled 2.5D Culling 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"DICE Tiled 2.5D Culling 8 CS") },
+                { (L"DICE Tiled 2.5D Culling 16 CS") },
+                { (L"DICE Tiled 2.5D Culling 24 CS") },
+                { (L"DICE Tiled 2.5D Culling 32 CS") },
+            },
+        },
+        // DICE Tiled 2.5D AABB Culling
+        {
+            // Depth
+            {
+                { (L"DICE Depth Tiled 2.5D AABB Culling 8 CS") },
+                { (L"DICE Depth Tiled 2.5D AABB Culling 16 CS") },
+                { (L"DICE Depth Tiled 2.5D AABB Culling 24 CS") },
+                { (L"DICE Depth Tiled 2.5D AABB Culling 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"DICE Light Accumulation Tiled 2.5D AABB Culling 8 CS") },
+                { (L"DICE Light Accumulation Tiled 2.5D AABB Culling 16 CS") },
+                { (L"DICE Light Accumulation Tiled 2.5D AABB Culling 24 CS") },
+                { (L"DICE Light Accumulation Tiled 2.5D AABB Culling 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"DICE Normal Tiled 2.5D AABB Culling 8 CS") },
+                { (L"DICE Normal Tiled 2.5D AABB Culling 16 CS") },
+                { (L"DICE Normal Tiled 2.5D AABB Culling 24 CS") },
+                { (L"DICE Normal Tiled 2.5D AABB Culling 32 CS") },
+            },
+            // RT1_GLOSSINESS
+            {
+                { (L"DICE Glossiness Tiled 2.5D AABB Culling 8 CS") },
+                { (L"DICE Glossiness Tiled 2.5D AABB Culling 16 CS") },
+                { (L"DICE Glossiness Tiled 2.5D AABB Culling 24 CS") },
+                { (L"DICE Glossiness Tiled 2.5D AABB Culling 32 CS") },
+            },
+            // RT2_DIFFUSE_ALBEDO
+            {
+                { (L"DICE Diffuse Albedo Tiled 2.5D AABB Culling 8 CS") },
+                { (L"DICE Diffuse Albedo Tiled 2.5D AABB Culling 16 CS") },
+                { (L"DICE Diffuse Albedo Tiled 2.5D AABB Culling 24 CS") },
+                { (L"DICE Diffuse Albedo Tiled 2.5D AABB Culling 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { (L"DICE Specular Intensity Tiled 2.5D AABB Culling 8 CS") },
+                { (L"DICE Specular Intensity Tiled 2.5D AABB Culling 16 CS") },
+                { (L"DICE Specular Intensity Tiled 2.5D AABB Culling 24 CS") },
+                { (L"DICE Specular Intensity Tiled 2.5D AABB Culling 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"DICE Light Density Tiled 2.5D AABB Culling 8 CS") },
+                { (L"DICE Light Density Tiled 2.5D AABB Culling 16 CS") },
+                { (L"DICE Light Density Tiled 2.5D AABB Culling 24 CS") },
+                { (L"DICE Light Density Tiled 2.5D AABB Culling 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"DICE False Positive Rate Tiled 2.5D AABB Culling 8 CS") },
+                { (L"DICE False Positive Rate Tiled 2.5D AABB Culling 16 CS") },
+                { (L"DICE False Positive Rate Tiled 2.5D AABB Culling 24 CS") },
+                { (L"DICE False Positive Rate Tiled 2.5D AABB Culling 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"DICE Tiled 2.5D AABB Culling 8 CS") },
+                { (L"DICE Tiled 2.5D AABB Culling 16 CS") },
+                { (L"DICE Tiled 2.5D AABB Culling 24 CS") },
+                { (L"DICE Tiled 2.5D AABB Culling 32 CS") },
+            },
+        },
+        // INTEL Tiled
+        {
+            // Depth
+            {
+                { (L"Intel Depth Tiled 8 CS") },
+                { (L"Intel Depth Tiled 16 CS") },
+                { (L"Intel Depth Tiled 24 CS") },
+                { (L"Intel Depth Tiled 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"Intel Light Accumulation Tiled 8 CS") },
+                { (L"Intel Light Accumulation Tiled 16 CS") },
+                { (L"Intel Light Accumulation Tiled 24 CS") },
+                { (L"Intel Light Accumulation Tiled 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"Intel Normal Tiled 8 CS") },
+                { (L"Intel Normal Tiled 16 CS") },
+                { (L"Intel Normal Tiled 24 CS") },
+                { (L"Intel Normal Tiled 32 CS") },
+            },
+            // RT1_GLOSSINESS
+            {
+                { (L"Intel Glossiness Tiled 8 CS") },
+                { (L"Intel Glossiness Tiled 16 CS") },
+                { (L"Intel Glossiness Tiled 24 CS") },
+                { (L"Intel Glossiness Tiled 32 CS") },
+            },
+            // RT2_DIFFUSE_ALBEDO
+            {
+                { (L"Intel Diffuse Albedo Tiled 8 CS") },
+                { (L"Intel Diffuse Albedo Tiled 16 CS") },
+                { (L"Intel Diffuse Albedo Tiled 24 CS") },
+                { (L"Intel Diffuse Albedo Tiled 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { (L"Intel Specular Intensity Tiled 8 CS") },
+                { (L"Intel Specular Intensity Tiled 16 CS") },
+                { (L"Intel Specular Intensity Tiled 24 CS") },
+                { (L"Intel Specular Intensity Tiled 32 CS") },
+            },
+            // LIGHT_DENSITY
+            {
+                { (L"Intel Light Density Tiled 8 CS") },
+                { (L"Intel Light Density Tiled 16 CS") },
+                { (L"Intel Light Density Tiled 24 CS") },
+                { (L"Intel Light Density Tiled 32 CS") },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { (L"Intel False Positive Rate Tiled 8 CS") },
+                { (L"Intel False Positive Rate Tiled 16 CS") },
+                { (L"Intel False Positive Rate Tiled 24 CS") },
+                { (L"Intel False Positive Rate Tiled 32 CS") },
+            },
+            // FINAL
+            {
+                { (L"Intel Tiled 8 CS") },
+                { (L"Intel Tiled 16 CS") },
+                { (L"Intel Tiled 24 CS") },
+                { (L"Intel Tiled 32 CS") },
+            },
+        },
+        // Clustered?
+        {
+            // Depth
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // RT1_NORMAL
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // RT1_GLOSSINESS
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // RT2_DIFFUSE_ALBEDO
+            {
+                { (L"Fill Light Cluster 8 x 8 x 8 CS") },
+                { (L"Fill Light Cluster 16 x 16 x 16 CS") },
+                { (L"Fill Light Cluster 24 x 24 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 16 CS") },
+                { (L"Fill Light Cluster 32 x 32 x 32 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 16 CS") },
+                { (L"Fill Light Cluster 64 x 64 x 32 CS") },
+            },
+            // RT2_SPEC_INTENSITY
             {
                 { (L"Fill Light Cluster 8 x 8 x 8 CS") },
                 { (L"Fill Light Cluster 16 x 16 x 16 CS") },
@@ -1843,6 +2530,631 @@ namespace Lighting
             },
         },
     };
+#elif THIN_GBUFFER
+    std::pair<const unsigned char* const, size_t> m_aThinGBufferComputeShaders[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eGBufferDataType::COUNT) + 1][static_cast<size_t>(eClusterType::COUNT)] =
+    {
+        // Default
+        {
+            // Depth
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT1_GLOSSINESS
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT2_DIFFUSE_ALBEDO
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // FINAL
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+        },
+        // Tiled
+        {
+            // Depth
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT1_GLOSSINESS
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT2_DIFFUSE_ALBEDO
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+            // FINAL
+            {
+                { g_pFillLightGridCS_8, sizeof(g_pFillLightGridCS_8) },
+                { g_pFillLightGridCS_16, sizeof(g_pFillLightGridCS_16) },
+                { g_pFillLightGridCS_24, sizeof(g_pFillLightGridCS_24) },
+                { g_pFillLightGridCS_32, sizeof(g_pFillLightGridCS_32) },
+            },
+        },
+        // Tiled 2.5D Culling
+        {
+            // Depth
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // RT1_GLOSSINESS
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // RT2_DIFFUSE_ALBEDO
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+            // FINAL
+            {
+                { g_pFillLight2_5DGridCS_8, sizeof(g_pFillLight2_5DGridCS_8) },
+                { g_pFillLight2_5DGridCS_16, sizeof(g_pFillLight2_5DGridCS_16) },
+                { g_pFillLight2_5DGridCS_24, sizeof(g_pFillLight2_5DGridCS_24) },
+                { g_pFillLight2_5DGridCS_32, sizeof(g_pFillLight2_5DGridCS_32) },
+            },
+        },
+        // Tiled 2.5D AABB Culling
+        {
+            // Depth
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // RT1_GLOSSINESS
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // RT2_DIFFUSE_ALBEDO
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+            // FINAL
+            {
+                { g_pFillLight2_5DAABBGridCS_8, sizeof(g_pFillLight2_5DAABBGridCS_8) },
+                { g_pFillLight2_5DAABBGridCS_16, sizeof(g_pFillLight2_5DAABBGridCS_16) },
+                { g_pFillLight2_5DAABBGridCS_24, sizeof(g_pFillLight2_5DAABBGridCS_24) },
+                { g_pFillLight2_5DAABBGridCS_32, sizeof(g_pFillLight2_5DAABBGridCS_32) },
+            },
+        },
+        // DICE Tiled
+        {
+            // Depth
+            {
+                { g_pThinGBufferTiledDiceCS_8,  sizeof(g_pThinGBufferTiledDiceCS_8)  },
+                { g_pThinGBufferTiledDiceCS_16, sizeof(g_pThinGBufferTiledDiceCS_16) },
+                { g_pThinGBufferTiledDiceCS_24, sizeof(g_pThinGBufferTiledDiceCS_24) },
+                { g_pThinGBufferTiledDiceCS_32, sizeof(g_pThinGBufferTiledDiceCS_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pThinGBufferTiledDiceCS_8,  sizeof(g_pThinGBufferTiledDiceCS_8)  },
+                { g_pThinGBufferTiledDiceCS_16, sizeof(g_pThinGBufferTiledDiceCS_16) },
+                { g_pThinGBufferTiledDiceCS_24, sizeof(g_pThinGBufferTiledDiceCS_24) },
+                { g_pThinGBufferTiledDiceCS_32, sizeof(g_pThinGBufferTiledDiceCS_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pThinGBufferTiledDiceCS_8,  sizeof(g_pThinGBufferTiledDiceCS_8)  },
+                { g_pThinGBufferTiledDiceCS_16, sizeof(g_pThinGBufferTiledDiceCS_16) },
+                { g_pThinGBufferTiledDiceCS_24, sizeof(g_pThinGBufferTiledDiceCS_24) },
+                { g_pThinGBufferTiledDiceCS_32, sizeof(g_pThinGBufferTiledDiceCS_32) },
+            },
+            // RT1_GLOSSINESS
+            {
+                { g_pThinGBufferTiledDiceCS_8,  sizeof(g_pThinGBufferTiledDiceCS_8)  },
+                { g_pThinGBufferTiledDiceCS_16, sizeof(g_pThinGBufferTiledDiceCS_16) },
+                { g_pThinGBufferTiledDiceCS_24, sizeof(g_pThinGBufferTiledDiceCS_24) },
+                { g_pThinGBufferTiledDiceCS_32, sizeof(g_pThinGBufferTiledDiceCS_32) },
+            },
+            // RT2_DIFFUSE_ALBEDO
+            {
+                { g_pThinGBufferTiledDiceCS_8,  sizeof(g_pThinGBufferTiledDiceCS_8)  },
+                { g_pThinGBufferTiledDiceCS_16, sizeof(g_pThinGBufferTiledDiceCS_16) },
+                { g_pThinGBufferTiledDiceCS_24, sizeof(g_pThinGBufferTiledDiceCS_24) },
+                { g_pThinGBufferTiledDiceCS_32, sizeof(g_pThinGBufferTiledDiceCS_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pThinGBufferTiledDiceCS_8,  sizeof(g_pThinGBufferTiledDiceCS_8)  },
+                { g_pThinGBufferTiledDiceCS_16, sizeof(g_pThinGBufferTiledDiceCS_16) },
+                { g_pThinGBufferTiledDiceCS_24, sizeof(g_pThinGBufferTiledDiceCS_24) },
+                { g_pThinGBufferTiledDiceCS_32, sizeof(g_pThinGBufferTiledDiceCS_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pThinGBufferTiledDiceDensityCS_8,  sizeof(g_pThinGBufferTiledDiceDensityCS_8)  },
+                { g_pThinGBufferTiledDiceDensityCS_16, sizeof(g_pThinGBufferTiledDiceDensityCS_16) },
+                { g_pThinGBufferTiledDiceDensityCS_24, sizeof(g_pThinGBufferTiledDiceDensityCS_24) },
+                { g_pThinGBufferTiledDiceDensityCS_32, sizeof(g_pThinGBufferTiledDiceDensityCS_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pThinGBufferTiledDiceFPRCS_8,  sizeof(g_pThinGBufferTiledDiceFPRCS_8) },
+                { g_pThinGBufferTiledDiceFPRCS_16, sizeof(g_pThinGBufferTiledDiceFPRCS_16)},
+                { g_pThinGBufferTiledDiceFPRCS_24, sizeof(g_pThinGBufferTiledDiceFPRCS_24)},
+                { g_pThinGBufferTiledDiceFPRCS_32, sizeof(g_pThinGBufferTiledDiceFPRCS_32)},
+            },
+            // FINAL
+            {
+                { g_pThinGBufferTiledDiceCS_8,  sizeof(g_pThinGBufferTiledDiceCS_8)  },
+                { g_pThinGBufferTiledDiceCS_16, sizeof(g_pThinGBufferTiledDiceCS_16) },
+                { g_pThinGBufferTiledDiceCS_24, sizeof(g_pThinGBufferTiledDiceCS_24) },
+                { g_pThinGBufferTiledDiceCS_32, sizeof(g_pThinGBufferTiledDiceCS_32) },
+            },
+        },
+        // DICE Tiled 2.5D Culling
+        {
+            // Depth
+            {
+                { g_pThinGBufferTiledDice2_5DCullingCS_8,  sizeof(g_pThinGBufferTiledDice2_5DCullingCS_8)  },
+                { g_pThinGBufferTiledDice2_5DCullingCS_16, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_16) },
+                { g_pThinGBufferTiledDice2_5DCullingCS_24, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_24) },
+                { g_pThinGBufferTiledDice2_5DCullingCS_32, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pThinGBufferTiledDice2_5DCullingCS_8,  sizeof(g_pThinGBufferTiledDice2_5DCullingCS_8)  },
+                { g_pThinGBufferTiledDice2_5DCullingCS_16, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_16) },
+                { g_pThinGBufferTiledDice2_5DCullingCS_24, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_24) },
+                { g_pThinGBufferTiledDice2_5DCullingCS_32, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pThinGBufferTiledDice2_5DCullingCS_8,  sizeof(g_pThinGBufferTiledDice2_5DCullingCS_8)  },
+                { g_pThinGBufferTiledDice2_5DCullingCS_16, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_16) },
+                { g_pThinGBufferTiledDice2_5DCullingCS_24, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_24) },
+                { g_pThinGBufferTiledDice2_5DCullingCS_32, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_32) },
+            },
+            // RT1_GLOSSINESS
+            {
+                { g_pThinGBufferTiledDice2_5DCullingCS_8,  sizeof(g_pThinGBufferTiledDice2_5DCullingCS_8)  },
+                { g_pThinGBufferTiledDice2_5DCullingCS_16, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_16) },
+                { g_pThinGBufferTiledDice2_5DCullingCS_24, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_24) },
+                { g_pThinGBufferTiledDice2_5DCullingCS_32, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_32) },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { g_pThinGBufferTiledDice2_5DCullingCS_8,  sizeof(g_pThinGBufferTiledDice2_5DCullingCS_8)  },
+                { g_pThinGBufferTiledDice2_5DCullingCS_16, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_16) },
+                { g_pThinGBufferTiledDice2_5DCullingCS_24, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_24) },
+                { g_pThinGBufferTiledDice2_5DCullingCS_32, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pThinGBufferTiledDice2_5DCullingCS_8,  sizeof(g_pThinGBufferTiledDice2_5DCullingCS_8)  },
+                { g_pThinGBufferTiledDice2_5DCullingCS_16, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_16) },
+                { g_pThinGBufferTiledDice2_5DCullingCS_24, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_24) },
+                { g_pThinGBufferTiledDice2_5DCullingCS_32, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pThinGBufferTiledDice2_5DCullingDensityCS_8,  sizeof(g_pThinGBufferTiledDice2_5DCullingDensityCS_8)  },
+                { g_pThinGBufferTiledDice2_5DCullingDensityCS_16, sizeof(g_pThinGBufferTiledDice2_5DCullingDensityCS_16) },
+                { g_pThinGBufferTiledDice2_5DCullingDensityCS_24, sizeof(g_pThinGBufferTiledDice2_5DCullingDensityCS_24) },
+                { g_pThinGBufferTiledDice2_5DCullingDensityCS_32, sizeof(g_pThinGBufferTiledDice2_5DCullingDensityCS_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pThinGBufferTiledDice2_5DCullingFPRCS_8,  sizeof(g_pThinGBufferTiledDice2_5DCullingFPRCS_8) },
+                { g_pThinGBufferTiledDice2_5DCullingFPRCS_16, sizeof(g_pThinGBufferTiledDice2_5DCullingFPRCS_16)},
+                { g_pThinGBufferTiledDice2_5DCullingFPRCS_24, sizeof(g_pThinGBufferTiledDice2_5DCullingFPRCS_24)},
+                { g_pThinGBufferTiledDice2_5DCullingFPRCS_32, sizeof(g_pThinGBufferTiledDice2_5DCullingFPRCS_32)},
+            },
+            // FINAL
+            {
+                { g_pThinGBufferTiledDice2_5DCullingCS_8,  sizeof(g_pThinGBufferTiledDice2_5DCullingCS_8)  },
+                { g_pThinGBufferTiledDice2_5DCullingCS_16, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_16) },
+                { g_pThinGBufferTiledDice2_5DCullingCS_24, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_24) },
+                { g_pThinGBufferTiledDice2_5DCullingCS_32, sizeof(g_pThinGBufferTiledDice2_5DCullingCS_32) },
+            },
+        },
+        // DICE Tiled 2.5D AABB Culling
+        {
+            // Depth
+            {
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_8,  sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_8)  },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_16, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_16) },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_24, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_24) },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_32, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_8,  sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_8)  },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_16, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_16) },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_24, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_24) },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_32, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_8,  sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_8)  },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_16, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_16) },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_24, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_24) },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_32, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_32) },
+            },
+            // RT1_GLOSSINESS
+            {
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_8,  sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_8)  },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_16, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_16) },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_24, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_24) },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_32, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_32) },
+            },
+            // RT2_DIFFUSE_ALBEDO
+            {
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_8,  sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_8)  },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_16, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_16) },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_24, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_24) },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_32, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_8,  sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_8)  },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_16, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_16) },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_24, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_24) },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_32, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pThinGBufferTiledDice2_5DAABBCullingDensityCS_8,  sizeof(g_pThinGBufferTiledDice2_5DAABBCullingDensityCS_8)  },
+                { g_pThinGBufferTiledDice2_5DAABBCullingDensityCS_16, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingDensityCS_16) },
+                { g_pThinGBufferTiledDice2_5DAABBCullingDensityCS_24, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingDensityCS_24) },
+                { g_pThinGBufferTiledDice2_5DAABBCullingDensityCS_32, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingDensityCS_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pThinGBufferTiledDice2_5DAABBCullingFPRCS_8,  sizeof(g_pThinGBufferTiledDice2_5DAABBCullingFPRCS_8)},
+                { g_pThinGBufferTiledDice2_5DAABBCullingFPRCS_16, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingFPRCS_16)},
+                { g_pThinGBufferTiledDice2_5DAABBCullingFPRCS_24, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingFPRCS_24)},
+                { g_pThinGBufferTiledDice2_5DAABBCullingFPRCS_32, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingFPRCS_32)},
+            },
+            // FINAL
+            {
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_8,  sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_8)  },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_16, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_16) },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_24, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_24) },
+                { g_pThinGBufferTiledDice2_5DAABBCullingCS_32, sizeof(g_pThinGBufferTiledDice2_5DAABBCullingCS_32) },
+            },
+        },
+        // INTEL Tiled
+        {
+            // Depth
+            {
+                { g_pThinGBufferTiledIntelCS_8,  sizeof(g_pThinGBufferTiledIntelCS_8)  },
+                { g_pThinGBufferTiledIntelCS_16, sizeof(g_pThinGBufferTiledIntelCS_16) },
+                { g_pThinGBufferTiledIntelCS_24, sizeof(g_pThinGBufferTiledIntelCS_24) },
+                { g_pThinGBufferTiledIntelCS_32, sizeof(g_pThinGBufferTiledIntelCS_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pThinGBufferTiledIntelCS_8,  sizeof(g_pThinGBufferTiledIntelCS_8)  },
+                { g_pThinGBufferTiledIntelCS_16, sizeof(g_pThinGBufferTiledIntelCS_16) },
+                { g_pThinGBufferTiledIntelCS_24, sizeof(g_pThinGBufferTiledIntelCS_24) },
+                { g_pThinGBufferTiledIntelCS_32, sizeof(g_pThinGBufferTiledIntelCS_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pThinGBufferTiledIntelCS_8,  sizeof(g_pThinGBufferTiledIntelCS_8)  },
+                { g_pThinGBufferTiledIntelCS_16, sizeof(g_pThinGBufferTiledIntelCS_16) },
+                { g_pThinGBufferTiledIntelCS_24, sizeof(g_pThinGBufferTiledIntelCS_24) },
+                { g_pThinGBufferTiledIntelCS_32, sizeof(g_pThinGBufferTiledIntelCS_32) },
+            },
+            // RT2_MOTION_VECTORS
+            {
+                { g_pThinGBufferTiledIntelCS_8,  sizeof(g_pThinGBufferTiledIntelCS_8)  },
+                { g_pThinGBufferTiledIntelCS_16, sizeof(g_pThinGBufferTiledIntelCS_16) },
+                { g_pThinGBufferTiledIntelCS_24, sizeof(g_pThinGBufferTiledIntelCS_24) },
+                { g_pThinGBufferTiledIntelCS_32, sizeof(g_pThinGBufferTiledIntelCS_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pThinGBufferTiledIntelCS_8,  sizeof(g_pThinGBufferTiledIntelCS_8)  },
+                { g_pThinGBufferTiledIntelCS_16, sizeof(g_pThinGBufferTiledIntelCS_16) },
+                { g_pThinGBufferTiledIntelCS_24, sizeof(g_pThinGBufferTiledIntelCS_24) },
+                { g_pThinGBufferTiledIntelCS_32, sizeof(g_pThinGBufferTiledIntelCS_32) },
+            },
+            // RT3_DIFFUSE_ALBEDO
+            {
+                { g_pThinGBufferTiledIntelCS_8,  sizeof(g_pThinGBufferTiledIntelCS_8)  },
+                { g_pThinGBufferTiledIntelCS_16, sizeof(g_pThinGBufferTiledIntelCS_16) },
+                { g_pThinGBufferTiledIntelCS_24, sizeof(g_pThinGBufferTiledIntelCS_24) },
+                { g_pThinGBufferTiledIntelCS_32, sizeof(g_pThinGBufferTiledIntelCS_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pThinGBufferTiledIntelDensityCS_8,  sizeof(g_pThinGBufferTiledIntelDensityCS_8)  },
+                { g_pThinGBufferTiledIntelDensityCS_16, sizeof(g_pThinGBufferTiledIntelDensityCS_16) },
+                { g_pThinGBufferTiledIntelDensityCS_24, sizeof(g_pThinGBufferTiledIntelDensityCS_24) },
+                { g_pThinGBufferTiledIntelDensityCS_32, sizeof(g_pThinGBufferTiledIntelDensityCS_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pThinGBufferTiledIntelFPRCS_8,  sizeof(g_pThinGBufferTiledIntelFPRCS_8) },
+                { g_pThinGBufferTiledIntelFPRCS_16, sizeof(g_pThinGBufferTiledIntelFPRCS_16)},
+                { g_pThinGBufferTiledIntelFPRCS_24, sizeof(g_pThinGBufferTiledIntelFPRCS_24)},
+                { g_pThinGBufferTiledIntelFPRCS_32, sizeof(g_pThinGBufferTiledIntelFPRCS_32)},
+            },
+            // FINAL
+            {
+                { g_pThinGBufferTiledIntelCS_8,  sizeof(g_pThinGBufferTiledIntelCS_8)  },
+                { g_pThinGBufferTiledIntelCS_16, sizeof(g_pThinGBufferTiledIntelCS_16) },
+                { g_pThinGBufferTiledIntelCS_24, sizeof(g_pThinGBufferTiledIntelCS_24) },
+                { g_pThinGBufferTiledIntelCS_32, sizeof(g_pThinGBufferTiledIntelCS_32) },
+            },
+        },
+        // Clustered?
+        {
+            // Depth
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // RT0_LIGHT_ACCUMULATION
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // RT1_NORMAL
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // RT1_GLOSSINESS
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // RT2_DIFFUSE_ALBEDO
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // RT2_SPEC_INTENSITY
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // LIGHT_DENSITY
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // FALSE_POSITIVE_RATE
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+            // FINAL
+            {
+                { g_pFillLightClusterCS_8_8, sizeof(g_pFillLightClusterCS_8_8) },
+                { g_pFillLightClusterCS_16_16, sizeof(g_pFillLightClusterCS_16_16) },
+                { g_pFillLightClusterCS_24_16, sizeof(g_pFillLightClusterCS_24_16) },
+                { g_pFillLightClusterCS_32_16, sizeof(g_pFillLightClusterCS_32_16) },
+                { g_pFillLightClusterCS_32_32, sizeof(g_pFillLightClusterCS_32_32) },
+                { g_pFillLightClusterCS_64_16, sizeof(g_pFillLightClusterCS_64_16) },
+                { g_pFillLightClusterCS_64_32, sizeof(g_pFillLightClusterCS_64_32) },
+            },
+        },
+    };
 #endif
 
     LightData m_LightOriginalData[MaxLights];
@@ -1881,7 +3193,7 @@ namespace Lighting
         L"Clustered",
     };
 
-    bool m_bUpdateLightsToggle = true;
+    bool m_bUpdateLightsToggle = false;
 
     void InitializeResources(void);
     void CreateRandomLights(const Vector3 minBound, const Vector3 maxBound);
@@ -1911,6 +3223,14 @@ void Lighting::InitializeResources( void )
     m_KillzoneLightRootSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 10, 4);
     m_KillzoneLightRootSig[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1);
     m_KillzoneLightRootSig.Finalize(L"KillzoneLightRS");
+#elif THIN_GBUFFER
+    m_ThinGBufferLightRootSig.Reset(4, 1);
+    m_ThinGBufferLightRootSig.InitStaticSampler(0, SamplerShadowDesc, D3D12_SHADER_VISIBILITY_ALL);
+    m_ThinGBufferLightRootSig[0].InitAsConstantBuffer(0);
+    m_ThinGBufferLightRootSig[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 10);
+    m_ThinGBufferLightRootSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 10, 4);
+    m_ThinGBufferLightRootSig[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1);
+    m_ThinGBufferLightRootSig.Finalize(L"ThinGBufferLightRS");
 #endif
 
     for (size_t lightTypeIndex = 0; lightTypeIndex < static_cast<size_t>(eLightType::COUNT); ++lightTypeIndex)
@@ -1949,9 +3269,15 @@ void Lighting::InitializeResources( void )
             size_t gridCount = bIsCluster ? static_cast<size_t>(eClusterType::COUNT) : 4;
             for (size_t gridIndex = 0; gridIndex < gridCount; ++gridIndex)
             {
+#if KILLZONE_GBUFFER
                 m_aKillzonePSOs[lightTypeIndex][gbufferTypeIndex][gridIndex].SetRootSignature(bIsComputeShaderShading ? m_KillzoneLightRootSig : (bIsCluster ? m_FillLightClusterSig : m_FillLightRootSig));
                 m_aKillzonePSOs[lightTypeIndex][gbufferTypeIndex][gridIndex].SetComputeShader(m_aKillzoneComputeShaders[lightTypeIndex][gbufferTypeIndex][gridIndex].first, m_aKillzoneComputeShaders[lightTypeIndex][gbufferTypeIndex][gridIndex].second);
                 m_aKillzonePSOs[lightTypeIndex][gbufferTypeIndex][gridIndex].Finalize();
+#elif THIN_GBUFFER
+                m_aThinGBufferPSOs[lightTypeIndex][gbufferTypeIndex][gridIndex].SetRootSignature(bIsComputeShaderShading ? m_ThinGBufferLightRootSig : (bIsCluster ? m_FillLightClusterSig : m_FillLightRootSig));
+                m_aThinGBufferPSOs[lightTypeIndex][gbufferTypeIndex][gridIndex].SetComputeShader(m_aThinGBufferComputeShaders[lightTypeIndex][gbufferTypeIndex][gridIndex].first, m_aThinGBufferComputeShaders[lightTypeIndex][gbufferTypeIndex][gridIndex].second);
+                m_aThinGBufferPSOs[lightTypeIndex][gbufferTypeIndex][gridIndex].Finalize();
+#endif
             }
         }
     }
@@ -2426,16 +3752,28 @@ void Lighting::FillAndShadeLightGrid(GraphicsContext& gfxContext, const Math::Ca
 
     ComputeContext& Context = gfxContext.GetComputeContext();
 
+#if KILLZONE_GBUFFER
     Context.SetRootSignature(m_KillzoneLightRootSig);
+#elif THIN_GBUFFER
+    Context.SetRootSignature(m_ThinGBufferLightRootSig);
+#endif
 
     bool bIsCluster = lightType == eLightType::CLUSTERED;
     if (bIsCluster)
     {
+#if KILLZONE_GBUFFER
         Context.SetPipelineState(Lighting::m_aKillzonePSOs[static_cast<size_t>(lightType)][static_cast<size_t>(gbufferType)][static_cast<size_t>(LightClusterType)]);
+#elif THIN_GBUFFER
+        Context.SetPipelineState(Lighting::m_aThinGBufferPSOs[static_cast<size_t>(lightType)][static_cast<size_t>(gbufferType)][static_cast<size_t>(LightClusterType)]);
+#endif
     }
     else
     {
+#if KILLZONE_GBUFFER
         Context.SetPipelineState(Lighting::m_aKillzonePSOs[static_cast<size_t>(lightType)][static_cast<size_t>(gbufferType)][(static_cast<int>(LightGridDim) / 8) - 1]);
+#elif THIN_GBUFFER
+        Context.SetPipelineState(Lighting::m_aThinGBufferPSOs[static_cast<size_t>(lightType)][static_cast<size_t>(gbufferType)][(static_cast<int>(LightGridDim) / 8) - 1]);
+#endif
     }
 
     float FarClipDist = camera.GetFarClip();
@@ -2503,401 +3841,3 @@ void Lighting::FillAndShadeLightGrid(GraphicsContext& gfxContext, const Math::Ca
     Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
     Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
-
-
-//void Lighting::KillzoneDiceLightGrid(GraphicsContext& gfxContext, const Camera& camera, const DescriptorHandle& gBufferHandle)
-//{
-//#if KILLZONE_GBUFFER
-//    ScopedTimer _prof(L"KillzoneDiceLightGrid", gfxContext);
-//
-//    ComputeContext& Context = gfxContext.GetComputeContext();
-//
-//    Context.SetRootSignature(m_KillzoneLightRootSig);
-//
-//    switch ((int)LightGridDim)
-//    {
-//    case  8: Context.SetPipelineState(m_KillzoneLightGridCS_8); break;
-//    case 16: Context.SetPipelineState(m_KillzoneLightGridCS_16); break;
-//    case 24: Context.SetPipelineState(m_KillzoneLightGridCS_24); break;
-//    case 32: Context.SetPipelineState(m_KillzoneLightGridCS_32); break;
-//    default: ASSERT(false); break;
-//    }
-//
-//    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
-//
-//    //g_aSceneGBuffers[static_cast<size_t>(eGBufferType::COUNT)]
-//    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-//    {
-//        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    }
-//    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    //Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-//
-//    //Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
-//    //gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, s_KillzoneTextureHeap.GetHeapPointer());
-//    //Context.SetDescriptorTable(1, resourcesHandle);
-//    //for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-//    //{
-//    //    Context.SetDynamicDescriptor(1, i, g_aSceneGBuffers[i].GetSRV());
-//    //}
-//    Context.SetDynamicDescriptor(1, 8, LinearDepth.GetSRV());
-//    Context.SetDynamicDescriptor(1, 4, m_LightBuffer.GetSRV());
-//    Context.SetDynamicDescriptor(1, 5, m_LightShadowArray.GetSRV());
-//    Context.SetDescriptorTable(2, gBufferHandle);
-//    //Context.SetDynamicDescriptor(1, static_cast<size_t>(eGBufferType::COUNT) + 2, m_LightShadowArray.GetSRV());
-//    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
-//    Context.SetDynamicDescriptor(3, 0, g_SceneColorBuffer.GetUAV());
-//
-//    // todo: assumes 1920x1080 resolution
-//    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
-//    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
-//
-//    float FarClipDist = camera.GetFarClip();
-//    float NearClipDist = camera.GetNearClip();
-//    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
-//
-//    struct CSConstants
-//    {
-//        uint32_t ViewportWidth, ViewportHeight;
-//        float InvTileDim;
-//        float RcpZMagic;
-//        uint32_t TileCount;
-//        Matrix4 ViewProjMatrix;
-//        Matrix4 InvViewProj;
-//        //Matrix4 InvProj;
-//        Vector3 ViewerPos;
-//    } csConstants;
-//    // todo: assumes 1920x1080 resolution
-//    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
-//    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
-//    csConstants.InvTileDim = 1.0f / LightGridDim;
-//    csConstants.RcpZMagic = RcpZMagic;
-//    csConstants.TileCount = tileCountX;
-//    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
-//    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
-//    csConstants.InvViewProj = Matrix4(
-//        Vector4(invViewProj.r[0]),
-//        Vector4(invViewProj.r[1]),
-//        Vector4(invViewProj.r[2]),
-//        Vector4(invViewProj.r[3])
-//    );
-//    csConstants.ViewerPos = camera.GetPosition();
-//    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
-//
-//    Context.Dispatch(tileCountX, tileCountY, 1);
-//
-//    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-//    {
-//        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//    }
-//    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
-//    //Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//    //Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//#else
-//    UNREFERENCED_PARAMETER(gfxContext);
-//    UNREFERENCED_PARAMETER(camera);
-//#endif
-//}
-//
-//void Lighting::KillzoneDiceLightCullingGrid(GraphicsContext& gfxContext, const Camera& camera, const DescriptorHandle& gBufferHandle)
-//{
-//#if KILLZONE_GBUFFER
-//    ScopedTimer _prof(L"KillzoneDiceLightCullingGrid", gfxContext);
-//
-//    ComputeContext& Context = gfxContext.GetComputeContext();
-//
-//    Context.SetRootSignature(m_KillzoneLightRootSig);
-//
-//    switch ((int)LightGridDim)
-//    {
-//    case  8: Context.SetPipelineState(m_KillzoneLightCullingGridCS_8); break;
-//    case 16: Context.SetPipelineState(m_KillzoneLightCullingGridCS_16); break;
-//    case 24: Context.SetPipelineState(m_KillzoneLightCullingGridCS_24); break;
-//    case 32: Context.SetPipelineState(m_KillzoneLightCullingGridCS_32); break;
-//    default: ASSERT(false); break;
-//    }
-//
-//    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
-//
-//    //g_aSceneGBuffers[static_cast<size_t>(eGBufferType::COUNT)]
-//    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-//    {
-//        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    }
-//    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    //Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-//
-//    //Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
-//    //gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, s_KillzoneTextureHeap.GetHeapPointer());
-//    //Context.SetDescriptorTable(1, resourcesHandle);
-//    //for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-//    //{
-//    //    Context.SetDynamicDescriptor(1, i, g_aSceneGBuffers[i].GetSRV());
-//    //}
-//    Context.SetDynamicDescriptor(1, 8, LinearDepth.GetSRV());
-//    Context.SetDynamicDescriptor(1, 4, m_LightBuffer.GetSRV());
-//    Context.SetDynamicDescriptor(1, 5, m_LightShadowArray.GetSRV());
-//    Context.SetDescriptorTable(2, gBufferHandle);
-//    //Context.SetDynamicDescriptor(1, static_cast<size_t>(eGBufferType::COUNT) + 2, m_LightShadowArray.GetSRV());
-//    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
-//    Context.SetDynamicDescriptor(3, 0, g_SceneColorBuffer.GetUAV());
-//
-//    // todo: assumes 1920x1080 resolution
-//    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
-//    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
-//
-//    float FarClipDist = camera.GetFarClip();
-//    float NearClipDist = camera.GetNearClip();
-//    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
-//
-//    struct CSConstants
-//    {
-//        uint32_t ViewportWidth, ViewportHeight;
-//        float InvTileDim;
-//        float RcpZMagic;
-//        uint32_t TileCount;
-//        Matrix4 ViewProjMatrix;
-//        Matrix4 InvViewProj;
-//        //Matrix4 InvProj;
-//        Vector3 ViewerPos;
-//    } csConstants;
-//    // todo: assumes 1920x1080 resolution
-//    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
-//    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
-//    csConstants.InvTileDim = 1.0f / LightGridDim;
-//    csConstants.RcpZMagic = RcpZMagic;
-//    csConstants.TileCount = tileCountX;
-//    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
-//    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
-//    csConstants.InvViewProj = Matrix4(
-//        Vector4(invViewProj.r[0]),
-//        Vector4(invViewProj.r[1]),
-//        Vector4(invViewProj.r[2]),
-//        Vector4(invViewProj.r[3])
-//    );
-//    csConstants.ViewerPos = camera.GetPosition();
-//    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
-//
-//    Context.Dispatch(tileCountX, tileCountY, 1);
-//
-//    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-//    {
-//        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//    }
-//    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
-//    //Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//    //Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//#else
-//    UNREFERENCED_PARAMETER(gfxContext);
-//    UNREFERENCED_PARAMETER(camera);
-//#endif
-//}
-//
-//void Lighting::KillzoneDiceLightAABBCullingGrid(GraphicsContext& gfxContext, const Camera& camera, const DescriptorHandle& gBufferHandle)
-//{
-//#if KILLZONE_GBUFFER
-//    ScopedTimer _prof(L"KillzoneDiceLightAABBCullingGrid", gfxContext);
-//
-//    ComputeContext& Context = gfxContext.GetComputeContext();
-//
-//    Context.SetRootSignature(m_KillzoneLightRootSig);
-//
-//    switch ((int)LightGridDim)
-//    {
-//    case  8: Context.SetPipelineState(m_KillzoneLightAABBCullingGridCS_8); break;
-//    case 16: Context.SetPipelineState(m_KillzoneLightAABBCullingGridCS_16); break;
-//    case 24: Context.SetPipelineState(m_KillzoneLightAABBCullingGridCS_24); break;
-//    case 32: Context.SetPipelineState(m_KillzoneLightAABBCullingGridCS_32); break;
-//    default: ASSERT(false); break;
-//    }
-//
-//    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
-//
-//    //g_aSceneGBuffers[static_cast<size_t>(eGBufferType::COUNT)]
-//    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-//    {
-//        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    }
-//    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    //Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-//
-//    //Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
-//    //gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, s_KillzoneTextureHeap.GetHeapPointer());
-//    //Context.SetDescriptorTable(1, resourcesHandle);
-//    //for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-//    //{
-//    //    Context.SetDynamicDescriptor(1, i, g_aSceneGBuffers[i].GetSRV());
-//    //}
-//    Context.SetDynamicDescriptor(1, 8, LinearDepth.GetSRV());
-//    Context.SetDynamicDescriptor(1, 4, m_LightBuffer.GetSRV());
-//    Context.SetDynamicDescriptor(1, 5, m_LightShadowArray.GetSRV());
-//    Context.SetDescriptorTable(2, gBufferHandle);
-//    //Context.SetDynamicDescriptor(1, static_cast<size_t>(eGBufferType::COUNT) + 2, m_LightShadowArray.GetSRV());
-//    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
-//    Context.SetDynamicDescriptor(3, 0, g_SceneColorBuffer.GetUAV());
-//
-//    // todo: assumes 1920x1080 resolution
-//    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
-//    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
-//
-//    float FarClipDist = camera.GetFarClip();
-//    float NearClipDist = camera.GetNearClip();
-//    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
-//
-//    struct CSConstants
-//    {
-//        uint32_t ViewportWidth, ViewportHeight;
-//        float InvTileDim;
-//        float RcpZMagic;
-//        uint32_t TileCount;
-//        Matrix4 ViewProjMatrix;
-//        Matrix4 InvViewProj;
-//        //Matrix4 InvProj;
-//        Vector3 ViewerPos;
-//    } csConstants;
-//    // todo: assumes 1920x1080 resolution
-//    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
-//    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
-//    csConstants.InvTileDim = 1.0f / LightGridDim;
-//    csConstants.RcpZMagic = RcpZMagic;
-//    csConstants.TileCount = tileCountX;
-//    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
-//    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
-//    csConstants.InvViewProj = Matrix4(
-//        Vector4(invViewProj.r[0]),
-//        Vector4(invViewProj.r[1]),
-//        Vector4(invViewProj.r[2]),
-//        Vector4(invViewProj.r[3])
-//    );
-//    csConstants.ViewerPos = camera.GetPosition();
-//    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
-//
-//    Context.Dispatch(tileCountX, tileCountY, 1);
-//
-//    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-//    {
-//        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//    }
-//    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
-//    //Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//    //Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//#else
-//    UNREFERENCED_PARAMETER(gfxContext);
-//    UNREFERENCED_PARAMETER(camera);
-//#endif
-//}
-//
-//
-//void Lighting::KillzoneIntelLightGrid(GraphicsContext& gfxContext, const Camera& camera, const DescriptorHandle& gBufferHandle)
-//{
-//#if KILLZONE_GBUFFER
-//    ScopedTimer _prof(L"KillzoneIntelLightGrid", gfxContext);
-//
-//    ComputeContext& Context = gfxContext.GetComputeContext();
-//
-//    Context.SetRootSignature(m_KillzoneLightRootSig);
-//
-//    switch ((int)LightGridDim)
-//    {
-//    case  8: Context.SetPipelineState(m_KillzoneIntelLightGridCS_8); break;
-//    case 16: Context.SetPipelineState(m_KillzoneIntelLightGridCS_16); break;
-//    case 24: Context.SetPipelineState(m_KillzoneIntelLightGridCS_24); break;
-//    case 32: Context.SetPipelineState(m_KillzoneIntelLightGridCS_32); break;
-//    default: ASSERT(false); break;
-//    }
-//
-//    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
-//
-//    //g_aSceneGBuffers[static_cast<size_t>(eGBufferType::COUNT)]
-//    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-//    {
-//        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    }
-//    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    //Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-//
-//    //Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
-//    //gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, s_KillzoneTextureHeap.GetHeapPointer());
-//    //Context.SetDescriptorTable(1, resourcesHandle);
-//    //for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-//    //{
-//    //    Context.SetDynamicDescriptor(1, i, g_aSceneGBuffers[i].GetSRV());
-//    //}
-//    Context.SetDynamicDescriptor(1, 8, LinearDepth.GetSRV());
-//    Context.SetDynamicDescriptor(1, 4, m_LightBuffer.GetSRV());
-//    Context.SetDynamicDescriptor(1, 5, m_LightShadowArray.GetSRV());
-//    Context.SetDescriptorTable(2, gBufferHandle);
-//    //Context.SetDynamicDescriptor(1, static_cast<size_t>(eGBufferType::COUNT) + 2, m_LightShadowArray.GetSRV());
-//    //Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
-//    Context.SetDynamicDescriptor(3, 0, g_SceneColorBuffer.GetUAV());
-//
-//    // todo: assumes 1920x1080 resolution
-//    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
-//    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
-//
-//    float FarClipDist = camera.GetFarClip();
-//    float NearClipDist = camera.GetNearClip();
-//    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
-//
-//    struct CSConstants
-//    {
-//        uint32_t ViewportWidth, ViewportHeight;
-//        float InvTileDim;
-//        float RcpZMagic;
-//        uint32_t TileCount;
-//        Matrix4 ViewProjMatrix;
-//        Matrix4 InvViewProj;
-//        //Matrix4 InvProj;
-//        Vector3 ViewerPos;
-//    } csConstants;
-//    // todo: assumes 1920x1080 resolution
-//    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
-//    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
-//    csConstants.InvTileDim = 1.0f / LightGridDim;
-//    csConstants.RcpZMagic = RcpZMagic;
-//    csConstants.TileCount = tileCountX;
-//    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
-//    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
-//    csConstants.InvViewProj = Matrix4(
-//        Vector4(invViewProj.r[0]),
-//        Vector4(invViewProj.r[1]),
-//        Vector4(invViewProj.r[2]),
-//        Vector4(invViewProj.r[3])
-//    );
-//    csConstants.ViewerPos = camera.GetPosition();
-//    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
-//
-//    Context.Dispatch(tileCountX, tileCountY, 1);
-//
-//    for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
-//    {
-//        Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//    }
-//    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
-//    //Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//    //Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-//#else
-//    UNREFERENCED_PARAMETER(gfxContext);
-//    UNREFERENCED_PARAMETER(camera);
-//#endif
-//}

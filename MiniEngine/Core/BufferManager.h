@@ -22,7 +22,8 @@
 namespace Graphics
 {
 #define SIMPLE_GBUFFER (0)
-#define KILLZONE_GBUFFER (1)
+#define KILLZONE_GBUFFER (0)
+#define THIN_GBUFFER (1)
 
     enum class eRenderType : UINT8
     {
@@ -69,6 +70,10 @@ namespace Graphics
         RT1,    // Normal.XY
         RT2,    // Motion Vectors + spec-intensity
         RT3,    // diffuse albedo + sun-occlusion
+#elif THIN_GBUFFER
+        RT0,    // Light accumulation
+        RT1,    // Normal X, Y, Z Sign, Glossiness
+        RT2,    // Diffuse Albedo, Specular Intensity
 #endif
         COUNT,
     };
@@ -91,9 +96,17 @@ namespace Graphics
         RT2_SPEC_INTENSITY,
         RT3_DIFFUSE_ALBEDO,
         RT3_SUN_OCCLUSION,
+#elif THIN_GBUFFER
+        DEPTH,
+        RT0_LIGHT_ACCUMULATION,
+        RT1_NORMAL,
+        RT1_GLOSSINESS,
+        //RT1_Z_SIGN,
+        RT2_DIFFUSE_ALBEDO,
+        RT2_SPEC_INTENSITY,
+#endif
         LIGHT_DENSITY,
         FALSE_POSITIVE_RATE,
-#endif
         COUNT,
     };
 
