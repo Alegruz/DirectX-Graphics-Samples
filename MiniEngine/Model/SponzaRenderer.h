@@ -39,6 +39,7 @@ namespace Sponza
     extern Graphics::eRenderType m_CurrentRenderType;
     extern Graphics::eForwardType m_CurrentForwardType;
     extern Graphics::eGBufferDataType m_CurrentGBufferType;
+    extern Graphics::eThinGBufferDataType m_CurrentThinGBufferType;
     extern Graphics::eLightType m_CurrentLightType;
 
     void Startup( Math::Camera& camera );

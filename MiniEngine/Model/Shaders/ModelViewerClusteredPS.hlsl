@@ -133,19 +133,10 @@ MRT main(VSOutput vsOutput)
 	
     float3 specularAlbedo = float3(0.56, 0.56, 0.56);
     float3 viewDir = normalize(vsOutput.viewDir);
-    //float3 diffuseColor = colorSum;
-    //float3 directionalColor = ApplyDirectionalLight(diffuseAlbedo, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection, SunColor, vsOutput.shadowCoord, texShadow);
     colorSum += ApplyDirectionalLight(diffuseAlbedo, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection, SunColor, vsOutput.shadowCoord, texShadow);
-    //colorSum += directionalColor;
-    //float3 lights = 0;
+
     
     float screenSpaceDepth = texDepth[pixelPos];
-    //float viewSpaceDepth = TransformScreenSpaceToViewSpace(float4(0.0f, 0.0f, screenSpaceDepth, 1.0f));
-    //ShadeLights(lights, pixelPos,
-    float4 clipSpacePosition = float4((vsOutput.position.x / ViewportSize.x) * 2.0f - 1.0f, (vsOutput.position.y / ViewportSize.y) * 2.0f - 1.0f, screenSpaceDepth, 1.0f);
-    clipSpacePosition.y *= -1.0f;
-    float4 viewDepth = mul(InvProj, clipSpacePosition);
-    viewDepth /= viewDepth.w;
     
     ShadeLights(colorSum, pixelPos,
     	diffuseAlbedo,

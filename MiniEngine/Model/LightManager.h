@@ -16,6 +16,13 @@
 
 #include <cstdint>
 
+#define NO_ENCODING (0)
+#define BASELINE (0)
+#define Z_RECONSTRUCTION (0)
+#define SPHERICAL_COORDNATES (0)
+#define SPHEREMAP_TRANSFORM (0)
+#define OCTAHEDRON_NORMAL (1)
+
 class StructuredBuffer;
 class ByteAddressBuffer;
 class ColorBuffer;
@@ -28,6 +35,7 @@ namespace Graphics
 {
     enum class eLightType : uint8_t;
     enum class eGBufferDataType : uint8_t;
+    enum class eThinGBufferDataType : uint8_t;
 }
 
 namespace Math
@@ -80,6 +88,7 @@ namespace Lighting
     void CreateRandomLights(const Math::Vector3 minBound, const Math::Vector3 maxBound);
     void FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, Graphics::eLightType lightType);
     void FillAndShadeLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle, Graphics::eLightType lightType, Graphics::eGBufferDataType gbufferType);
+    void FillAndShadeLightGridThinGBuffer(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle, Graphics::eLightType lightType, Graphics::eThinGBufferDataType gbufferType);
     //void KillzoneDiceLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
     //void KillzoneDiceLightCullingGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
     //void KillzoneDiceLightAABBCullingGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);

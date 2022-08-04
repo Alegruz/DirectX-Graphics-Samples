@@ -720,44 +720,9 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
     uint2 viewportSize
 	)
 {
-    //uint3 clusterPos = GetClusterPos(float3(pixelPos, depth), InvTileDim.xyz);
     uint zSlice = floor((log(-depth / nearZ) / log(farZ / nearZ)) * TileCount.z);
     uint3 tiles = uint3(pixelPos * InvTileDim.xy, zSlice);
     
-    //switch (zSlice % 8)
-    //{
-    //    case 0:
-    //        colorSum = 1.0;
-    //        break;
-    //    case 1:
-    //        colorSum = float3(1.0, 0.0, 0.0);
-    //        break;
-    //    case 2:
-    //        colorSum = float3(1.0, 0.6, 0.0);
-    //        break;
-    //    case 3:
-    //        colorSum = float3(1.0, 1.0, 0.0);
-    //        break;
-    //    case 4:
-    //        colorSum = float3(0.0, 1.0, 0.0);
-    //        break;
-    //    case 5:
-    //        colorSum = float3(0.0, 0.0, 1.0);
-    //        break;
-    //    case 6:
-    //        colorSum = float3(0.0, 0.0, 0.5);
-    //        break;
-    //    case 7:
-    //        colorSum = float3(0.5, 0.0, 0.5);
-    //        break;
-    //    default:
-    //        colorSum = 0;
-    //        break;
-    //};
-    //
-    //return;
-    
-    //uint clusterIndex = GetClusterIndex(clusterPos, TileCount.x);
     uint clusterIndex = tiles.x + tiles.y * TileCount.x + tiles.z * (TileCount.x * TileCount.y);
     uint clusterOffset = GetClusterOffset(clusterIndex);
 
@@ -877,7 +842,22 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
         //falsePositiveCount += (coneShadowedLightColor.r == 0 && coneShadowedLightColor.g == 0 && coneShadowedLightColor.b == 0);
         colorSum += coneShadowedLightColor;
 #else
-        colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
+        float3 lightDir = lightData.pos - worldPos.xyz;
+        float lightDistSq = dot(lightDir, lightDir);
+        float invLightDist = rsqrt(lightDistSq);
+        lightDir *= invLightDist;
+
+        // modify 1/d^2 * R^2 to fall off at a fixed radius
+        // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
+        float distanceFalloff = lightData.radiusSq * (invLightDist * invLightDist);
+        distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
+
+        float coneFalloff = dot(-lightDir, lightData.coneDir);
+        coneFalloff = saturate((coneFalloff - lightData.coneAngles.y) * lightData.coneAngles.x);
+        
+        float3 coneShadowedLightColor = ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
+        colorSum += coneShadowedLightColor;
+        //colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
 #endif
     }
     

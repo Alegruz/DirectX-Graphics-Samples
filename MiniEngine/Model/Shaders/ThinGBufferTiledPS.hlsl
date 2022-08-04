@@ -19,6 +19,9 @@ cbuffer StartVertex : register(b1)
     float4x4 ModelToProjection;
     float4x4 InvViewProj;
     float4x4 InvProj;
+#if Z_RECONSTRUCTION || SPHEREMAP_TRANSFORM
+    float4x4 InvView;
+#endif
     float4x4 modelToShadow;
     float4 ViewerPos;
 //    float NearZ;
@@ -75,8 +78,10 @@ float3 main(VSOutput vsOutput) : SV_Target
     
 #if NO_ENCODING || BASELINE
     float3 normal = (float3) BaseDecode(rt1Data);
-#elif Z_RECONSTRUCTION
-    float3 normal = (float3) BaseDecode(rt1Data.xyz);
+#elif Z_RECONSTRUCTION || SPHEREMAP_TRANSFORM
+    float3 normal = (float3) BaseDecode(rt1Data.xy, InvView);
+#elif SPHERICAL_COORDNATES || OCTAHEDRON_NORMAL
+    float3 normal = (float3) BaseDecode(rt1Data.xy);
 #endif
     
 #if NORMAL
@@ -93,8 +98,6 @@ float3 main(VSOutput vsOutput) : SV_Target
     clipSpacePosition.y *= -1.0f;
     float4 worldPos = mul(InvViewProj, clipSpacePosition);
     worldPos /= worldPos.w;
-    float4 viewPos = mul(InvProj, clipSpacePosition);
-    viewPos /= viewPos.w;
     
 #if SPEC_INTENSITY
     return specularMask;

@@ -45,8 +45,6 @@ struct MRT
 MRT main(VSOutput vsOutput)
 {
     MRT mrt;
-    
-    //mrt.Color = ((normalize(vsOutput.viewPos) + 1) * 0.5f).z;
 	
     uint2 pixelPos = uint2(vsOutput.position.xy);
 	
@@ -122,8 +120,6 @@ MRT main(VSOutput vsOutput)
     }
     
     mrt.Color = colorSum;
-    
-    //mrt.Color = vsOutput.viewPos.z;
     
     return mrt;
 }

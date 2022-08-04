@@ -232,6 +232,11 @@ void ModelViewer::Update( float deltaT )
         Sponza::SetRenderType(eRenderType::DEFERRED);
     }
 
+    if (GameInput::IsFirstPressed(GameInput::kKey_3))
+    {
+        Sponza::SetRenderType(eRenderType::DEFERRED_THIN);
+    }
+
     if (GameInput::IsFirstPressed(GameInput::kKey_slash))
     {
         Sponza::SetNextBufferOutput();
@@ -418,5 +423,6 @@ void ModelViewer::RenderScene( void )
 bool ModelViewer::IsDebugMode() const noexcept
 {
     return (Sponza::m_CurrentRenderType == eRenderType::FORWARD && Sponza::m_CurrentForwardType != eForwardType::COUNT) || 
-        (Sponza::m_CurrentRenderType == eRenderType::DEFERRED && (Sponza::m_CurrentGBufferType != eGBufferDataType::COUNT));
+        (Sponza::m_CurrentRenderType == eRenderType::DEFERRED && (Sponza::m_CurrentGBufferType != eGBufferDataType::COUNT)) ||
+        (Sponza::m_CurrentRenderType == eRenderType::DEFERRED_THIN && (Sponza::m_CurrentThinGBufferType != eThinGBufferDataType::COUNT)) ;
 }

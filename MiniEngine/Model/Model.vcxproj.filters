@@ -925,5 +925,8 @@
     <FxCompile Include="Shaders\ThinGBufferTiledSpecularIntensityPS.hlsl">
       <Filter>Shaders\Thin GBuffer\Tiled\Default</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\ThinGBufferVS.hlsl">
+      <Filter>Shaders\Thin GBuffer</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

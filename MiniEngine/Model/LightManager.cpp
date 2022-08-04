@@ -114,7 +114,8 @@
 #include "CompiledShaders/KillzoneIntelLightGridFPRCS_16.h"
 #include "CompiledShaders/KillzoneIntelLightGridFPRCS_24.h"
 #include "CompiledShaders/KillzoneIntelLightGridFPRCS_32.h"
-#elif THIN_GBUFFER
+#endif
+
 #include "CompiledShaders/ThinGBufferTiledDiceCS_8.h"
 #include "CompiledShaders/ThinGBufferTiledDiceCS_16.h"
 #include "CompiledShaders/ThinGBufferTiledDiceCS_24.h"
@@ -174,7 +175,6 @@
 #include "CompiledShaders/ThinGBufferTiledIntelFPRCS_16.h"
 #include "CompiledShaders/ThinGBufferTiledIntelFPRCS_24.h"
 #include "CompiledShaders/ThinGBufferTiledIntelFPRCS_32.h"
-#endif
 
 using namespace Math;
 using namespace Graphics;
@@ -221,9 +221,9 @@ namespace Lighting
     RootSignature m_FillLightClusterSig;
 #if KILLZONE_GBUFFER
     RootSignature m_KillzoneLightRootSig;
-#elif THIN_GBUFFER
-    RootSignature m_ThinGBufferLightRootSig;
 #endif
+
+    RootSignature m_ThinGBufferLightRootSig;
 
     ComputePSO m_aForwardPSOs[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eClusterType::COUNT)] =
     {
@@ -1064,7 +1064,8 @@ namespace Lighting
             },
         }
     };
-#elif THIN_GBUFFER
+#endif
+
     ComputePSO m_aThinGBufferPSOs[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eGBufferDataType::COUNT) + 1][static_cast<size_t>(eClusterType::COUNT)] =
     {
         // Default
@@ -1689,7 +1690,6 @@ namespace Lighting
             },
         }
     };
-#endif
 
     std::pair<const unsigned char* const, size_t> m_aForwardComputeShaders[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eClusterType::COUNT)] =
     {
@@ -2530,7 +2530,8 @@ namespace Lighting
             },
         },
     };
-#elif THIN_GBUFFER
+#endif
+
     std::pair<const unsigned char* const, size_t> m_aThinGBufferComputeShaders[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eGBufferDataType::COUNT) + 1][static_cast<size_t>(eClusterType::COUNT)] =
     {
         // Default
@@ -3155,7 +3156,6 @@ namespace Lighting
             },
         },
     };
-#endif
 
     LightData m_LightOriginalData[MaxLights];
     LightData m_LightData[MaxLights];
@@ -3223,7 +3223,8 @@ void Lighting::InitializeResources( void )
     m_KillzoneLightRootSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 10, 4);
     m_KillzoneLightRootSig[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1);
     m_KillzoneLightRootSig.Finalize(L"KillzoneLightRS");
-#elif THIN_GBUFFER
+#endif
+
     m_ThinGBufferLightRootSig.Reset(4, 1);
     m_ThinGBufferLightRootSig.InitStaticSampler(0, SamplerShadowDesc, D3D12_SHADER_VISIBILITY_ALL);
     m_ThinGBufferLightRootSig[0].InitAsConstantBuffer(0);
@@ -3231,7 +3232,6 @@ void Lighting::InitializeResources( void )
     m_ThinGBufferLightRootSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 10, 4);
     m_ThinGBufferLightRootSig[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1);
     m_ThinGBufferLightRootSig.Finalize(L"ThinGBufferLightRS");
-#endif
 
     for (size_t lightTypeIndex = 0; lightTypeIndex < static_cast<size_t>(eLightType::COUNT); ++lightTypeIndex)
     {
@@ -3273,11 +3273,23 @@ void Lighting::InitializeResources( void )
                 m_aKillzonePSOs[lightTypeIndex][gbufferTypeIndex][gridIndex].SetRootSignature(bIsComputeShaderShading ? m_KillzoneLightRootSig : (bIsCluster ? m_FillLightClusterSig : m_FillLightRootSig));
                 m_aKillzonePSOs[lightTypeIndex][gbufferTypeIndex][gridIndex].SetComputeShader(m_aKillzoneComputeShaders[lightTypeIndex][gbufferTypeIndex][gridIndex].first, m_aKillzoneComputeShaders[lightTypeIndex][gbufferTypeIndex][gridIndex].second);
                 m_aKillzonePSOs[lightTypeIndex][gbufferTypeIndex][gridIndex].Finalize();
-#elif THIN_GBUFFER
+#endif
+            }
+        }
+
+        for (size_t gbufferTypeIndex = 0; gbufferTypeIndex < static_cast<size_t>(eThinGBufferDataType::COUNT) + 1; ++gbufferTypeIndex)
+        {
+            bool bIsCluster = (static_cast<eLightType>(lightTypeIndex) == eLightType::CLUSTERED);
+            bool bIsComputeShaderShading = (static_cast<eLightType>(lightTypeIndex) == eLightType::TILED_DICE ||
+                static_cast<eLightType>(lightTypeIndex) == eLightType::TILED_DICE_2_5 ||
+                static_cast<eLightType>(lightTypeIndex) == eLightType::TILED_DICE_2_5_AABB ||
+                static_cast<eLightType>(lightTypeIndex) == eLightType::TILED_INTEL);
+            size_t gridCount = bIsCluster ? static_cast<size_t>(eClusterType::COUNT) : 4;
+            for (size_t gridIndex = 0; gridIndex < gridCount; ++gridIndex)
+            {
                 m_aThinGBufferPSOs[lightTypeIndex][gbufferTypeIndex][gridIndex].SetRootSignature(bIsComputeShaderShading ? m_ThinGBufferLightRootSig : (bIsCluster ? m_FillLightClusterSig : m_FillLightRootSig));
                 m_aThinGBufferPSOs[lightTypeIndex][gbufferTypeIndex][gridIndex].SetComputeShader(m_aThinGBufferComputeShaders[lightTypeIndex][gbufferTypeIndex][gridIndex].first, m_aThinGBufferComputeShaders[lightTypeIndex][gbufferTypeIndex][gridIndex].second);
                 m_aThinGBufferPSOs[lightTypeIndex][gbufferTypeIndex][gridIndex].Finalize();
-#endif
             }
         }
     }
@@ -3754,8 +3766,6 @@ void Lighting::FillAndShadeLightGrid(GraphicsContext& gfxContext, const Math::Ca
 
 #if KILLZONE_GBUFFER
     Context.SetRootSignature(m_KillzoneLightRootSig);
-#elif THIN_GBUFFER
-    Context.SetRootSignature(m_ThinGBufferLightRootSig);
 #endif
 
     bool bIsCluster = lightType == eLightType::CLUSTERED;
@@ -3763,16 +3773,12 @@ void Lighting::FillAndShadeLightGrid(GraphicsContext& gfxContext, const Math::Ca
     {
 #if KILLZONE_GBUFFER
         Context.SetPipelineState(Lighting::m_aKillzonePSOs[static_cast<size_t>(lightType)][static_cast<size_t>(gbufferType)][static_cast<size_t>(LightClusterType)]);
-#elif THIN_GBUFFER
-        Context.SetPipelineState(Lighting::m_aThinGBufferPSOs[static_cast<size_t>(lightType)][static_cast<size_t>(gbufferType)][static_cast<size_t>(LightClusterType)]);
 #endif
     }
     else
     {
 #if KILLZONE_GBUFFER
         Context.SetPipelineState(Lighting::m_aKillzonePSOs[static_cast<size_t>(lightType)][static_cast<size_t>(gbufferType)][(static_cast<int>(LightGridDim) / 8) - 1]);
-#elif THIN_GBUFFER
-        Context.SetPipelineState(Lighting::m_aThinGBufferPSOs[static_cast<size_t>(lightType)][static_cast<size_t>(gbufferType)][(static_cast<int>(LightGridDim) / 8) - 1]);
 #endif
     }
 
@@ -3828,6 +3834,7 @@ void Lighting::FillAndShadeLightGrid(GraphicsContext& gfxContext, const Math::Ca
         Vector4(invViewProj.r[2]),
         Vector4(invViewProj.r[3])
     );
+
     csConstants.ViewerPos = camera.GetPosition();
     Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
 
@@ -3836,6 +3843,103 @@ void Lighting::FillAndShadeLightGrid(GraphicsContext& gfxContext, const Math::Ca
     for (size_t i = 0; i < static_cast<size_t>(eGBufferType::COUNT); ++i)
     {
         Context.TransitionResource(g_aSceneGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    }
+    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+}
+
+void Lighting::FillAndShadeLightGridThinGBuffer(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle, Graphics::eLightType lightType, Graphics::eThinGBufferDataType gbufferType)
+{
+    ScopedTimer _prof(A_SZ_LIGHT_PROF_NAME[static_cast<size_t>(lightType)], gfxContext);
+
+    ASSERT(lightType == eLightType::TILED_DICE || lightType == eLightType::TILED_DICE_2_5 || lightType == eLightType::TILED_DICE_2_5_AABB || lightType == eLightType::TILED_INTEL);
+
+    ComputeContext& Context = gfxContext.GetComputeContext();
+
+    Context.SetRootSignature(m_ThinGBufferLightRootSig);
+
+    bool bIsCluster = lightType == eLightType::CLUSTERED;
+    if (bIsCluster)
+    {
+        Context.SetPipelineState(Lighting::m_aThinGBufferPSOs[static_cast<size_t>(lightType)][static_cast<size_t>(gbufferType)][static_cast<size_t>(LightClusterType)]);
+    }
+    else
+    {
+        Context.SetPipelineState(Lighting::m_aThinGBufferPSOs[static_cast<size_t>(lightType)][static_cast<size_t>(gbufferType)][(static_cast<int>(LightGridDim) / 8) - 1]);
+    }
+
+    float FarClipDist = camera.GetFarClip();
+    float NearClipDist = camera.GetNearClip();
+    const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
+
+    ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
+
+    Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+    Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+    for (size_t i = 0; i < static_cast<size_t>(eThinGBufferType::COUNT); ++i)
+    {
+        Context.TransitionResource(g_aSceneThinGBuffers[i], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+    }
+    Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+    Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+    Context.SetDynamicDescriptor(1, 8, LinearDepth.GetSRV());
+    Context.SetDynamicDescriptor(1, 4, m_LightBuffer.GetSRV());
+    Context.SetDynamicDescriptor(1, 5, m_LightShadowArray.GetSRV());
+    Context.SetDescriptorTable(2, gBufferHandle);
+    Context.SetDynamicDescriptor(3, 0, g_SceneColorBuffer.GetUAV());
+
+    // todo: assumes 1920x1080 resolution
+    uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
+    uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
+
+    struct CSConstants
+    {
+        uint32_t ViewportWidth, ViewportHeight;
+        float InvTileDim;
+        float RcpZMagic;
+        uint32_t TileCount;
+        Matrix4 ViewProjMatrix;
+        Matrix4 InvViewProj;
+#if (Z_RECONSTRUCTION || SPHEREMAP_TRANSFORM)
+        Matrix4 InvViewMatrix;
+#endif
+        //Matrix4 InvProj;
+        Vector3 ViewerPos;
+    } csConstants;
+    // todo: assumes 1920x1080 resolution
+    csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
+    csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
+    csConstants.InvTileDim = 1.0f / LightGridDim;
+    csConstants.RcpZMagic = RcpZMagic;
+    csConstants.TileCount = tileCountX;
+    csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
+    XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
+    csConstants.InvViewProj = Matrix4(
+        Vector4(invViewProj.r[0]),
+        Vector4(invViewProj.r[1]),
+        Vector4(invViewProj.r[2]),
+        Vector4(invViewProj.r[3])
+    );
+#if (Z_RECONSTRUCTION || SPHEREMAP_TRANSFORM)
+    XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewMatrix()), camera.GetViewMatrix());
+    csConstants.InvViewMatrix = Matrix4(
+        Vector4(invView.r[0]),
+        Vector4(invView.r[1]),
+        Vector4(invView.r[2]),
+        Vector4(invView.r[3])
+    );
+#endif
+    csConstants.ViewerPos = camera.GetPosition();
+    Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
+
+    Context.Dispatch(tileCountX, tileCountY, 1);
+
+    for (size_t i = 0; i < static_cast<size_t>(eThinGBufferType::COUNT); ++i)
+    {
+        Context.TransitionResource(g_aSceneThinGBuffers[i], D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     }
     Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);

@@ -135,11 +135,37 @@ float3 ConvertToRadarColor(float scale)
     }
 }
 
+#define KILLZONE_GBUFFER (0)
+#define THIN_GBUFFER (1)
+
 #define NO_ENCODING (0)
 #define BASELINE (0)
-#define Z_RECONSTRUCTION (1)
+#define Z_RECONSTRUCTION (0)
+#define SPHERICAL_COORDNATES (0)
+#define SPHEREMAP_TRANSFORM (0)
+#define OCTAHEDRON_NORMAL (1)
 
-half4 BaseEncode(half3 n)
+#if SPHEREMAP_TRANSFORM
+#define CRYENGINE3_SPHEREMAP_TRANSFORM (0)
+#define LAMBERT_AZIMUTHAL_EQUAL_AREA_PROJECTION (1)
+#endif
+
+#define PI_F (3.14159265)
+#define FLT_MIN         1.175494351e-38F        // min positive value
+
+#if OCTAHEDRON_NORMAL
+half2 WrapOctahedron(half2 v)
+{
+    return (1.0 - abs(v.yx)) * (v.xy >= 0.0 ? 1.0 : -1.0);
+}
+#endif
+
+#if SPHEREMAP_TRANSFORM || OCTAHEDRON_NORMAL
+half2
+#else
+half4 
+#endif
+BaseEncode(half3 n)
 {
 #if NO_ENCODING
     return half4(n, 0.0);
@@ -147,14 +173,32 @@ half4 BaseEncode(half3 n)
     return half4(n.xyz * 0.5 + 0.5, 0.0);
 #elif Z_RECONSTRUCTION
     return half4(n.xy * 0.5 + 0.5, 0.0, 0.0);
+#elif SPHERICAL_COORDNATES
+    return half4((half2(atan2(n.y, n.x) / PI_F, n.z) + 1.0) * 0.5, 0.0, 0.0);
+#elif SPHEREMAP_TRANSFORM    
+#if CRYENGINE3_SPHEREMAP_TRANSFORM
+    half2 enc = normalize(n.xy) * (sqrt(-n.z * 0.5 + 0.5));
+    enc = enc * 0.5 + 0.5;
+    return enc;
+#elif LAMBERT_AZIMUTHAL_EQUAL_AREA_PROJECTION
+    half f = sqrt(8.0 * n.z + 8.0);
+    return n.xy / f + 0.5;
+#endif
+#elif OCTAHEDRON_NORMAL
+    n /= (abs(n.x) + abs(n.y) + abs(n.z));
+    n.xy = n.z >= 0.0 ? n.xy : WrapOctahedron(n.xy);
+    n.xy = n.xy * 0.5 + 0.5;
+    return n.xy;
 #endif
 }
 
 half3 BaseDecode(
 #if NO_ENCODING || BASELINE
     half4 enc
-#elif Z_RECONSTRUCTION
-    half3 enc
+#elif Z_RECONSTRUCTION || SPHEREMAP_TRANSFORM
+    half2 enc, float4x4 invViewMatrix
+#elif SPHERICAL_COORDNATES || OCTAHEDRON_NORMAL
+    half2 enc
 #endif
 )
 {
@@ -165,8 +209,50 @@ half3 BaseDecode(
 #elif Z_RECONSTRUCTION
     half3 n;
     n.xy = enc.xy * 2.0 - 1.0;
-    n.z = sqrt(1.0 - dot(n.xy, n.xy)) * (2.0 * !!enc.z - 1.0);
+    n.z = sqrt(1.0 - dot(n.xy, n.xy));
+    n.z = n.z * !((asuint(n.z) & 0x7fffffff) > 0x7f800000) + FLT_MIN * ((asuint(n.z) & 0x7fffffff) > 0x7f800000);
+    //n.z = sqrt(1.0 - dot(n.xy, n.xy)) * (2.0 * !!enc.z - 1.0);
+    n = normalize(mul(invViewMatrix, float4(n, 0.0))).xyz;
     return n;
+#elif SPHERICAL_COORDNATES
+    half2 ang = enc * 2.0 - 1.0;
+    half2 scth;
+    sincos(ang.x * PI_F, scth.x, scth.y);
+    half2 scphi = half2(sqrt(1.0 - ang.y * ang.y), ang.y);
+    return half3(scth.y * scphi.x, scth.x * scphi.x, scphi.y);
+#elif SPHEREMAP_TRANSFORM
+#if CRYENGINE3_SPHEREMAP_TRANSFORM
+    half4 nn = half4(enc, 0.0, 0.0) * half4(2.0, 2.0, 0.0, 0.0) + half4(-1.0, -1.0, 1.0, -1.0);
+    half l = dot(nn.xyz, -nn.xyw);
+    l = l < 0.0f ? FLT_MIN : l;
+    nn.z = l;
+    nn.xy *= sqrt(l);
+    half3 n = nn.xyz * 2.0 + half3(0.0, 0.0, -1.0);
+    n = normalize(mul(invViewMatrix, float4(n, 0.0))).xyz;
+    return n;
+#elif LAMBERT_AZIMUTHAL_EQUAL_AREA_PROJECTION
+    half2 fenc = enc * 4.0 - 2.0;
+    half f = dot(fenc, fenc);
+    half g = 1.0 - f / 4.0;
+    if (g < 0.0)
+    {
+        return 0;
+    }
+    g = sqrt(g);
+    half3 n;
+    n.xy = fenc * g;
+    n.z = 1.0 - f / 2.0;
+    n = normalize(mul(invViewMatrix, float4(n, 0.0))).xyz;
+    return n;
+#endif
+#elif OCTAHEDRON_NORMAL
+    enc = enc * 2.0 - 1.0;
+    
+    // https://twitter.com/Stubbesaurus/status/937994790553227264
+    half3 n = half3(enc.xy, 1.0 - abs(enc.x) - abs(enc.y));
+    float t = saturate(-n.z);
+    n.xy += n.xy >= 0.0 ? -t : t;
+    return normalize(n);
 #endif
 }
 

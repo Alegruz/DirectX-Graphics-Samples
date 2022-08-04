@@ -13,6 +13,24 @@
 #include "Common.hlsli"
 #include "Lighting.hlsli"
 
+cbuffer StartVertex : register(b1)
+{
+    uint materialIdx;
+    float4x4 ModelToProjection;
+    float4x4 InvViewProj;
+    float4x4 InvProj;
+#if Z_RECONSTRUCTION || SPHEREMAP_TRANSFORM
+    float4x4 ModelToView;
+    float4x4 InvView;
+#endif
+    float4x4 modelToShadow;
+    float4 ViewerPos;
+//    float NearZ;
+//    float FarZ;
+//    uint2 ViewportSize;
+//    float CameraForward;
+};
+
 Texture2D<float3> texDiffuse		: register(t0);
 Texture2D<float3> texSpecular		: register(t1);
 //Texture2D<float4> texEmissive		: register(t2);
@@ -68,21 +86,32 @@ MRT main(VSOutput vsOutput)
         normal = normalize(mul(normal, tbn));
     }
     
+#if Z_RECONSTRUCTION || SPHEREMAP_TRANSFORM
+    float3 viewSpaceNormal = normalize(mul(ModelToView, float4(normal, 0.0)).xyz);
+#endif
+    
     float4 rt1Data = float4(
-#if NO_ENCODING || BASELINE
+#if NO_ENCODING || BASELINE || SPHERICAL_COORDNATES
         BaseEncode(half3(
             normal.x * !((asuint(normal.x) & 0x7fffffff) > 0x7f800000),
             normal.y * !((asuint(normal.y) & 0x7fffffff) > 0x7f800000),
             normal.z * !((asuint(normal.z) & 0x7fffffff) > 0x7f800000)
         )).xyz,
-#elif Z_RECONSTRUCTION
+#elif Z_RECONSTRUCTION || SPHEREMAP_TRANSFORM
+        BaseEncode(half3(
+            viewSpaceNormal.x * !((asuint(viewSpaceNormal.x) & 0x7fffffff) > 0x7f800000),
+            viewSpaceNormal.y * !((asuint(viewSpaceNormal.y) & 0x7fffffff) > 0x7f800000),
+            viewSpaceNormal.z * !((asuint(viewSpaceNormal.z) & 0x7fffffff) > 0x7f800000)
+        )).xy, 
+        0.0f,
+#elif OCTAHEDRON_NORMAL
         BaseEncode(half3(
             normal.x * !((asuint(normal.x) & 0x7fffffff) > 0x7f800000),
             normal.y * !((asuint(normal.y) & 0x7fffffff) > 0x7f800000),
             normal.z * !((asuint(normal.z) & 0x7fffffff) > 0x7f800000)
         )).xy,
+        0.0,
 #endif
-        normal.z < 0.0f,
         gloss / 256.0
     );
         

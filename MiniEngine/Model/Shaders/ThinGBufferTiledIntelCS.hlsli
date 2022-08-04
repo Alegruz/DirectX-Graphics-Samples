@@ -30,6 +30,9 @@ cbuffer CSConstants : register(b0)
     uint TileCountX;
     float4x4 ViewProjMatrix;
     float4x4 InvViewProj;
+#if Z_RECONSTRUCTION || SPHEREMAP_TRANSFORM
+    float4x4 InvView;
+#endif
     float3 ViewerPos;
     //float4x4 InvProj;
 };
@@ -360,8 +363,10 @@ void main(
     
 #if NO_ENCODING || BASELINE
     float3 normal = (float3) BaseDecode(rt1Data);
-#elif Z_RECONSTRUCTION
-    float3 normal = (float3) BaseDecode(rt1Data.xyz);
+#elif Z_RECONSTRUCTION || SPHEREMAP_TRANSFORM
+    float3 normal = (float3) BaseDecode(rt1Data.xy, InvView);
+#elif SPHERICAL_COORDNATES || OCTAHEDRON_NORMAL
+    float3 normal = (float3) BaseDecode(rt1Data.xy);
 #endif
     
     float4 rt2Data = gRt2[DTid.xy];

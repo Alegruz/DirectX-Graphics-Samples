@@ -19,6 +19,9 @@ cbuffer StartVertex : register(b1)
     float4x4 ModelToProjection;
     float4x4 InvViewProj;
     float4x4 InvProj;
+#if Z_RECONSTRUCTION || SPHEREMAP_TRANSFORM
+    float4x4 InvView;
+#endif
     float4x4 modelToShadow;
     float4 ViewerPos;
     uint2 ViewportSize;
@@ -103,8 +106,10 @@ float3 main(VSOutput vsOutput) : SV_Target
     
 #if NO_ENCODING || BASELINE
     float3 normal = (float3) BaseDecode(rt1Data);
-#elif Z_RECONSTRUCTION
-    float3 normal = (float3) BaseDecode(rt1Data.xyz);
+#elif Z_RECONSTRUCTION || SPHEREMAP_TRANSFORM
+    float3 normal = (float3) BaseDecode(rt1Data.xy, InvView);
+#elif SPHERICAL_COORDNATES || OCTAHEDRON_NORMAL
+    float3 normal = (float3) BaseDecode(rt1Data.xy);
 #endif
     
 #if NORMAL
@@ -114,14 +119,10 @@ float3 main(VSOutput vsOutput) : SV_Target
     float4 rt2Data = texRt2[pixelPos];
     float specularMask = rt2Data.a;
     
-    float4 clipSpacePosition = float4((vsOutput.projPos.x / ViewportSize.x) * 2.0f - 1.0f, (vsOutput.projPos.y / ViewportSize.y) * 2.0f - 1.0f, depth, 1.0f);
-    clipSpacePosition.y *= -1.0f;
+    float4 clipSpacePosition = float4((vsOutput.projPos.x / (float) ViewportSize.x) * 2.0f - 1.0f, -((vsOutput.projPos.y / (float) ViewportSize.y) * 2.0f - 1.0f), depth, 1.0f);
     float4 worldPos = mul(InvViewProj, clipSpacePosition);
     worldPos /= worldPos.w;
     
-#if MOTION_VECTOR
-    return normalize(worldPos.xyz);
-#endif
 #if SPEC_INTENSITY
     return specularMask;
 #endif
@@ -137,14 +138,11 @@ float3 main(VSOutput vsOutput) : SV_Target
 #if DIFFUSE_ALBEDO
     return diffuseAlbedo;
 #endif
-#if SUN_OCCLUSION
-    return rt3Data.a;
-#endif
   
     float3 specularAlbedo = float3( 0.56, 0.56, 0.56 );
     //float3 viewDir = normalize(float3(vsOutput.projPos.xy, depth) - ViewerPos);
     float3 viewDir = normalize(worldPos.xyz - ViewerPos.xyz);
-    float3 shadowCoord = mul(modelToShadow, float4(worldPos.xyz, 1.0)).xyz;
+    float3 shadowCoord = mul(modelToShadow, float4(worldPos.xyz, 1.0f)).xyz;
     
     //float viewSpaceDepth = TransformScreenSpaceToViewSpace(float4(0.0f, 0.0f, depth, 1.0f));
     float4 viewDepth = mul(InvProj, clipSpacePosition);
@@ -172,6 +170,5 @@ float3 main(VSOutput vsOutput) : SV_Target
         discard;
     }
     
-    //return viewPos.z;
     return color;
 }

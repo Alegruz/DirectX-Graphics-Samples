@@ -364,7 +364,7 @@ void main(
     //float4 rt1Data = gRt1[DTid.xy];
     half4 rt1Data = gRt1[DTid.xy];
     //float3 normal = rt1Data.xyz;
-    float3 normal = (float3) BaseDecode(rt1Data);
+    float3 normal = (float3) rt1Data.xyz;
     float4 rt2Data = gRt2[DTid.xy];
     float specularMask = rt2Data.a;
     float4 rt3Data = gRt3[DTid.xy];

@@ -463,7 +463,7 @@ void main(
     color = gRt0[DTid.xy];
     //float gloss = rt0Data.a * 256.0;
     half4 rt1Data = gRt1[DTid.xy];
-    float3 normal = (float3) BaseDecode(rt1Data);
+    float3 normal = (float3) rt1Data.xyz;
     float4 rt2Data = gRt2[DTid.xy];
     float specularMask = rt2Data.a;
     float4 rt3Data = gRt3[DTid.xy];

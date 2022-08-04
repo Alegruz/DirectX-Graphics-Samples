@@ -77,20 +77,13 @@ MRT main(VSOutput vsOutput)
     //        normal.y * !((asuint(normal.y) & 0x7fffffff) > 0x7f800000),
     //        normal.z * !((asuint(normal.z) & 0x7fffffff) > 0x7f800000)
     //    ) + 1.0f);
-    //float4 rt1Data = float4(
-    //    0.5f * (float3(
-    //        normal.x * !((asuint(normal.x) & 0x7fffffff) > 0x7f800000),
-    //        normal.y * !((asuint(normal.y) & 0x7fffffff) > 0x7f800000),
-    //        normal.z * !((asuint(normal.z) & 0x7fffffff) > 0x7f800000)
-    //    ) + 1.0f), 
-    //    1
-    //);
-    half4 rt1Data = BaseEncode(
-        half3(
+    float4 rt1Data = float4(
+        float3(
             normal.x * !((asuint(normal.x) & 0x7fffffff) > 0x7f800000),
             normal.y * !((asuint(normal.y) & 0x7fffffff) > 0x7f800000),
             normal.z * !((asuint(normal.z) & 0x7fffffff) > 0x7f800000)
-        )
+        ), 
+        1
     );
         
     mrt.RT1 = rt1Data;
