@@ -18,6 +18,8 @@
 namespace GameCore
 {
     extern bool gIsSupending;
+    extern uint32_t gFrameCount;
+    extern bool gStopGame;
 
     class IGameApp
     {

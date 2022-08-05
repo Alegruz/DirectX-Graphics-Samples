@@ -21,7 +21,8 @@
 #define Z_RECONSTRUCTION (0)
 #define SPHERICAL_COORDNATES (0)
 #define SPHEREMAP_TRANSFORM (0)
-#define OCTAHEDRON_NORMAL (1)
+#define OCTAHEDRON_NORMAL (0)
+#define OCT24 (1)
 
 class StructuredBuffer;
 class ByteAddressBuffer;

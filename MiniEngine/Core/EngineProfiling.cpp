@@ -195,7 +195,7 @@ class NestedTimingTree
 {
 public:
     NestedTimingTree( const wstring& name, NestedTimingTree* parent = nullptr )
-        : m_Name(name), m_Parent(parent), m_IsExpanded(false), m_IsGraphed(false), m_GraphHandle(PERF_GRAPH_ERROR) {}
+        : m_Name(name), m_Parent(parent), m_IsExpanded(false), m_IsGraphed(false), m_GraphHandle(PERF_GRAPH_ERROR), m_uLastCpuHistoryIndex(0), m_uLastGpuHistoryIndex(0) {}
 
     NestedTimingTree* GetChild( const wstring& name )
     {
@@ -406,6 +406,8 @@ private:
     GpuTimer m_GpuTimer;
     bool m_IsGraphed;
     GraphHandle m_GraphHandle;
+    uint32_t m_uLastCpuHistoryIndex;
+    uint32_t m_uLastGpuHistoryIndex;
     static StatHistory s_TotalCpuTime;
     static StatHistory s_TotalGpuTime;
     static StatHistory s_FrameDelta;
@@ -581,61 +583,78 @@ void NestedTimingTree::PrintNodeHistory()
     else
     {
         if (m_Name == L"Scene Render" ||
-            m_Name == L"Clustered" ||
-            m_Name == L"Tiled" ||
-            m_Name == L"Tiled 2.5D" ||
-            m_Name == L"Tiled 2.5D AABB" ||
-            m_Name == L"Tiled (D)" ||
-            m_Name == L"Tiled 2.5D (D)" ||
-            m_Name == L"Tiled 2.5D AABB (D)" ||
-            m_Name == L"Tiled (I)" ||
-            m_Name == L"F Clustered Color" ||
-            m_Name == L"F Color" ||
-            m_Name == L"F+ Color" ||
-            m_Name == L"F+ 2.5D Color" ||
-            m_Name == L"F+ 2.5D AABB Color" ||
-            m_Name == L"D C Color" ||
-            m_Name == L"D Color" ||
-            m_Name == L"D T Color" ||
-            m_Name == L"D T 2.5D Color" ||
-            m_Name == L"D T 2.5D AABB Color" ||
-            m_Name == L"D T (D) Color" ||
-            m_Name == L"D T 2.5D (D) Color" ||
-            m_Name == L"D T 2.5D AABB (D) Color" ||
-            m_Name == L"D T (I) Color" ||
+            //m_Name == L"Clustered" ||
+            //m_Name == L"Tiled" ||
+            //m_Name == L"Tiled 2.5D" ||
+            //m_Name == L"Tiled 2.5D AABB" ||
+            //m_Name == L"Tiled (D)" ||
+            //m_Name == L"Tiled 2.5D (D)" ||
+            //m_Name == L"Tiled 2.5D AABB (D)" ||
+            //m_Name == L"Tiled (I)" ||
+            //m_Name == L"F Clustered Color" ||
+            //m_Name == L"F Color" ||
+            //m_Name == L"F+ Color" ||
+            //m_Name == L"F+ 2.5D Color" ||
+            //m_Name == L"F+ 2.5D AABB Color" ||
+            //m_Name == L"D C Color" ||
+            //m_Name == L"D Color" ||
+            //m_Name == L"D T Color" ||
+            //m_Name == L"D T 2.5D Color" ||
+            //m_Name == L"D T 2.5D AABB Color" ||
+            //m_Name == L"D T (D) Color" ||
+            //m_Name == L"D T (D) 2.5D Color" ||
+            //m_Name == L"D T (D) 2.5D AABB Color" ||
+            //m_Name == L"D T (I) Color" ||
+            //m_Name == L"TG C Color" ||
+            //m_Name == L"TG Color" ||
+            //m_Name == L"TG T Color" ||
+            //m_Name == L"TG T 2.5D Color" ||
+            //m_Name == L"TG T 2.5D AABB Color" ||
+            //m_Name == L"TG T (D) Color" ||
+            //m_Name == L"TG T 2.5D (D) Color" ||
+            //m_Name == L"TG T 2.5D AABB (D) Color" ||
+            //m_Name == L"TG T (I) Color" ||
+            m_Name == L"OPAQUE" ||
             m_Name == L"Geometry Phase" ||
             m_Name == L"Lighting Phase" ||
-            m_Name == L"Forward Opaque" ||
-            m_Name == L"Non-opaque Render")
+            m_Name == L"Forward Opaque"
+            //m_Name == L"Non-opaque Render"
+            )
         {
-            OutputDebugString(m_Name.c_str());
-            OutputDebugString(L":\n\tCPU TIME:\t");
-
             const float* pCpuTimeHistory = m_CpuTime.GetHistory();
             uint32_t uCpuTimeHistoryLength = m_CpuTime.GetHistoryLength();
             float avgCpuTime = 0.0f;
+            //for (uint32_t cpuHistoryIdx = m_uLastCpuHistoryIndex; cpuHistoryIdx < uCpuTimeHistoryLength; ++cpuHistoryIdx)
             for (uint32_t cpuHistoryIdx = 0; cpuHistoryIdx < uCpuTimeHistoryLength; ++cpuHistoryIdx)
             {
                 avgCpuTime += pCpuTimeHistory[cpuHistoryIdx];
             }
             avgCpuTime /= uCpuTimeHistoryLength;
-
-            WCHAR szDebugMsg[32];
-            swprintf_s(szDebugMsg, L"%6.6f\n", avgCpuTime);
-            OutputDebugString(szDebugMsg);
-            OutputDebugString(L"\tGPU TIME:\t");
+            //m_uLastCpuHistoryIndex = uCpuTimeHistoryLength;
 
             const float* pGpuTimeHistory = m_GpuTime.GetHistory();
             uint32_t uGpuTimeHistoryLength = m_GpuTime.GetHistoryLength();
             float avgGpuTime = 0.0f;
+            //for (uint32_t gpuHistoryIdx = m_uLastGpuHistoryIndex; gpuHistoryIdx < uGpuTimeHistoryLength; ++gpuHistoryIdx)
             for (uint32_t gpuHistoryIdx = 0; gpuHistoryIdx < uGpuTimeHistoryLength; ++gpuHistoryIdx)
             {
                 avgGpuTime += pGpuTimeHistory[gpuHistoryIdx];
             }
             avgGpuTime /= uGpuTimeHistoryLength;
 
-            swprintf_s(szDebugMsg, L"%6.6f\n", avgGpuTime);
-            OutputDebugString(szDebugMsg);
+            if (avgCpuTime != 0.0f && avgGpuTime != 0.0f)
+            {
+                OutputDebugString(m_Name.c_str());
+                OutputDebugString(L":\n\tCPU TIME:\t");
+                WCHAR szDebugMsg[32];
+                swprintf_s(szDebugMsg, L"%6.6f\n", avgCpuTime);
+                OutputDebugString(szDebugMsg);
+
+                OutputDebugString(L"\tGPU TIME:\t");
+                swprintf_s(szDebugMsg, L"%6.6f\n", avgGpuTime);
+                OutputDebugString(szDebugMsg);
+            }
+            //m_uLastGpuHistoryIndex = uGpuTimeHistoryLength;
         }
     }
 

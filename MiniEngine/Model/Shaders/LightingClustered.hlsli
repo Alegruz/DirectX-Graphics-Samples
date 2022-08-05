@@ -28,8 +28,8 @@ cbuffer PSConstants : register(b0)
     uint4 FirstLightIndex;
 
     uint FrameIndexMod2;
-    float3 Scale;
-    float3 Bias;
+    //float3 Scale;
+    //float3 Bias;
 }
 
 StructuredBuffer<LightData> lightBuffer : register(t14);

@@ -367,6 +367,8 @@ void main(
     float3 normal = (float3) BaseDecode(rt1Data.xy, InvView);
 #elif SPHERICAL_COORDNATES || OCTAHEDRON_NORMAL
     float3 normal = (float3) BaseDecode(rt1Data.xy);
+#elif OCT24
+    float3 normal = (float3) BaseDecode(rt1Data.xyz);
 #endif
     
     float4 rt2Data = gRt2[DTid.xy];

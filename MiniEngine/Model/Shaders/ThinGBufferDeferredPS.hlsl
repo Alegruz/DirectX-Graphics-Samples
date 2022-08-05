@@ -91,7 +91,7 @@ MRT main(VSOutput vsOutput)
 #endif
     
     float4 rt1Data = float4(
-#if NO_ENCODING || BASELINE || SPHERICAL_COORDNATES
+#if NO_ENCODING || BASELINE || SPHERICAL_COORDNATES || OCT24
         BaseEncode(half3(
             normal.x * !((asuint(normal.x) & 0x7fffffff) > 0x7f800000),
             normal.y * !((asuint(normal.y) & 0x7fffffff) > 0x7f800000),

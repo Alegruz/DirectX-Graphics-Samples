@@ -110,6 +110,8 @@ float3 main(VSOutput vsOutput) : SV_Target
     float3 normal = (float3) BaseDecode(rt1Data.xy, InvView);
 #elif SPHERICAL_COORDNATES || OCTAHEDRON_NORMAL
     float3 normal = (float3) BaseDecode(rt1Data.xy);
+#elif OCT24
+    float3 normal = (float3) BaseDecode(rt1Data.xyz);
 #endif
     
 #if NORMAL

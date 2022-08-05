@@ -49,8 +49,10 @@ RWTexture2D<float4> gOutputTexture : register(u0);
 
 SamplerComparisonState gShadowSampler : register(s0);
 
+#if LIGHT_CULLING_2_5
 // Harada, T., “A 2.5D culling for Forward+,” in SIGGRAPH Asia 2012 Technical Briefs, ACM, pp. 18:1–18:4, Dec. 2012
 groupshared uint gSharedDepthMask;
+#endif
 
 groupshared uint gSharedMinDepthUInt;
 groupshared uint gSharedMaxDepthUInt;
@@ -258,7 +260,9 @@ void main(
         //tileLightBitMask = 0;
         gSharedMinDepthUInt = 0xffffffff;
         gSharedMaxDepthUInt = 0;
+#if LIGHT_CULLING_2_5
         gSharedDepthMask = 0;
+#endif
     }
     GroupMemoryBarrierWithGroupSync();
 
@@ -279,6 +283,7 @@ void main(
     float invTileDepthRange = rcp(tileDepthRange);
     // TODO: near/far clipping planes seem to be falling apart at or near the max depth with infinite projections
     
+#if AABB_BASED_CULLING
     // https://wickedengine.net/2018/01/10/optimizing-tile-based-light-culling/
     // AABB based culling
     
@@ -307,11 +312,43 @@ void main(
     
     float4 centerAABB = (aabbMinPoint + aabbMaxPoint) / 2.0f;
     float4 extentAABB = abs(aabbMaxPoint - centerAABB);
+#else
+    // construct transform from world space to tile space (projection space constrained to tile area)
+    float2 invTileSize2X = float2(ViewportWidth, ViewportHeight) * InvTileDim;
+    // D3D-specific [0, 1] depth range ortho projection
+    // (but without negation of Z, since we already have that from the projection matrix)
+    float3 tileBias = float3(
+        -2.0 * float(Gid.x) + invTileSize2X.x - 1.0,
+        -2.0 * float(Gid.y) + invTileSize2X.y - 1.0,
+        -tileMinDepth * invTileDepthRange);
+    float4x4 projToTile = float4x4(
+        invTileSize2X.x, 0, 0, tileBias.x,
+        0, -invTileSize2X.y, 0, tileBias.y,
+        0, 0, invTileDepthRange, tileBias.z,
+        0, 0, 0, 1
+        );
+    float4x4 tileMVP = mul(projToTile, ViewProjMatrix);
     
+    // extract frustum planes (these will be in world space)
+    float4 frustumPlanes[6];
+    frustumPlanes[0] = tileMVP[3] + tileMVP[0];
+    frustumPlanes[1] = tileMVP[3] - tileMVP[0];
+    frustumPlanes[2] = tileMVP[3] + tileMVP[1];
+    frustumPlanes[3] = tileMVP[3] - tileMVP[1];
+    frustumPlanes[4] = tileMVP[3] + tileMVP[2];
+    frustumPlanes[5] = tileMVP[3] - tileMVP[2];
+    for (int n = 0; n < 6; n++)
+    {
+        frustumPlanes[n] *= rsqrt(dot(frustumPlanes[n].xyz, frustumPlanes[n].xyz));
+    }
+#endif
+    
+#if LIGHT_CULLING_2_5
     const float depthRangeRecip = 32.f * invTileDepthRange;
     const uint depthMaskCellIndex = max(0, min(32, floor(depth - tileMinDepth) * depthRangeRecip));
     InterlockedOr(gSharedDepthMask, 1 << depthMaskCellIndex);   // depthMaskT ← atomOr(1 << getCellIndex(z))
     GroupMemoryBarrierWithGroupSync();
+#endif
     
     // Cull lights
     uint threadCount = WORK_GROUP_SIZE_X * WORK_GROUP_SIZE_Y;
@@ -331,12 +368,29 @@ void main(
         float3 lightWorldPos = lightData.pos;
         float lightCullRadius = sqrt(lightData.radiusSq);
         
+#if AABB_BASED_CULLING
         // Arvo Intersection Test
         float3 vDelta = max(0, abs(centerAABB.xyz - lightWorldPos) - extentAABB.xyz);
         float fDistSq = dot(vDelta, vDelta);
         
         if (fDistSq > lightData.radiusSq)
             continue;
+#else
+        bool overlapping = true;
+        for (int p = 0; p < 6; p++)
+        {
+            float d = dot(lightWorldPos, frustumPlanes[p].xyz) + frustumPlanes[p].w;
+            if (d < -lightCullRadius)
+            {
+                overlapping = false;
+            }
+        }
+        
+        if (!overlapping)
+            continue;
+#endif
+        
+#if LIGHT_CULLING_2_5
         // depthMaskL ← Compute mask using light extent
         uint localDepthMask = 0;
         const float fLightMin = (lightWorldPos.z + lightCullRadius) * ViewProjMatrix._33 + ViewProjMatrix._43;
@@ -351,6 +405,7 @@ void main(
         }
         
         if (gSharedDepthMask & localDepthMask)  // overlapping ← depthMaskT ∧ depthMaskL
+#endif
         {
             // Fill in the light indices to the local shared indices array
             uint offset = 0;
@@ -399,6 +454,8 @@ void main(
     float3 normal = (float3) BaseDecode(rt1Data.xy, InvView);
 #elif SPHERICAL_COORDNATES || OCTAHEDRON_NORMAL
     float3 normal = (float3) BaseDecode(rt1Data.xy);
+#elif OCT24
+    float3 normal = (float3) BaseDecode(rt1Data.xyz);
 #endif
     
     float4 rt2Data = gRt2[DTid.xy];

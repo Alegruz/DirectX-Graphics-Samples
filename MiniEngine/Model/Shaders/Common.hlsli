@@ -143,11 +143,12 @@ float3 ConvertToRadarColor(float scale)
 #define Z_RECONSTRUCTION (0)
 #define SPHERICAL_COORDNATES (0)
 #define SPHEREMAP_TRANSFORM (0)
-#define OCTAHEDRON_NORMAL (1)
+#define OCTAHEDRON_NORMAL (0)
+#define OCT24 (1)
 
 #if SPHEREMAP_TRANSFORM
-#define CRYENGINE3_SPHEREMAP_TRANSFORM (0)
-#define LAMBERT_AZIMUTHAL_EQUAL_AREA_PROJECTION (1)
+#define CRYENGINE3_SPHEREMAP_TRANSFORM (1)
+#define LAMBERT_AZIMUTHAL_EQUAL_AREA_PROJECTION (0)
 #endif
 
 #define PI_F (3.14159265)
@@ -160,8 +161,92 @@ half2 WrapOctahedron(half2 v)
 }
 #endif
 
+#if OCT24
+float signNotZero(float k)
+{
+    return k >= 0.0 ? 1.0 : -1.0;
+}
+
+float2 signNotZero(float2 v)
+{
+    return float2(signNotZero(v.x), signNotZero(v.y));
+}
+
+float packSnorm12Float(float f)
+{
+    return round(clamp(f + 1.0, 0.0, 2.0) * float(2047));
+}
+
+float2 packSnorm12Float(float2 v)
+{
+    return float2(packSnorm12Float(v.x), packSnorm12Float(v.y));
+}
+
+float unpackSnorm12(float f)
+{
+    return clamp((float(f) / float(2047)) - 1.0, -1.0, 1.0);
+}
+
+float3 twoNorm12sEncodedAs3Unorm8sInFloat3Format(float2 s)
+{
+    float3 u;
+    u.x = s.x * (1.0 / 16.0);
+    float t = floor(s.y * (1.0 / 256.0));
+    u.y = (frac(u.x) * 256.0) + t;
+    u.z = s.y - (t * 256.0);
+    
+    return floor(u) * (1.0 / 255.0);
+}
+
+float3 float2To2Snorm12sEncodedAs3Unorm8sInFloat3Format(float2 v)
+{
+    float2 s = float2(packSnorm12Float(v.x), packSnorm12Float(v.y));
+    
+    return twoNorm12sEncodedAs3Unorm8sInFloat3Format(s);
+}
+
+float2 octEncode(float3 v)
+{
+    float l1norm = abs(v.x) + abs(v.y) + abs(v.z);
+    float2 result = v.xy * (1.0 / l1norm);
+    if (v.z < 0.0)
+    {
+        result = (1.0 - abs(result.yx)) * signNotZero(result.xy);
+    }
+    return result;
+}
+
+float2 twoNorm12sEncodedAsUFloat3InFloat3FormatToPackedFloat2(float3 v)
+{
+    float2 s;
+    float temp = v.y * (255.0 / 16.0);
+    s.x = v.x * (255.0 * 16.0) + floor(temp);
+    s.y = frac(temp) * (16.0 * 256.0) + (v.z * 255.0);
+    return s;
+}
+
+float2 twoSnorm12sEncodedAsUFloat3InFloat3FormatToFloat2(float3 v)
+{
+    float2 s = twoNorm12sEncodedAsUFloat3InFloat3FormatToPackedFloat2(v);
+    return float2(unpackSnorm12(s.x), unpackSnorm12(s.y));
+}
+
+float3 finalDecode(float x, float y)
+{
+    float3 v = float3(x, y, 1.0 - abs(x) - abs(y));
+    if (v.z < 0.0)
+    {
+        v.xy = (1.0 - abs(v.yx)) * signNotZero(v.xy);
+    }
+    
+    return normalize(v);
+}
+#endif
+
 #if SPHEREMAP_TRANSFORM || OCTAHEDRON_NORMAL
 half2
+#elif OCT24
+half3
 #else
 half4 
 #endif
@@ -189,6 +274,8 @@ BaseEncode(half3 n)
     n.xy = n.z >= 0.0 ? n.xy : WrapOctahedron(n.xy);
     n.xy = n.xy * 0.5 + 0.5;
     return n.xy;
+#elif OCT24
+    return float2To2Snorm12sEncodedAs3Unorm8sInFloat3Format(octEncode(n));
 #endif
 }
 
@@ -199,6 +286,8 @@ half3 BaseDecode(
     half2 enc, float4x4 invViewMatrix
 #elif SPHERICAL_COORDNATES || OCTAHEDRON_NORMAL
     half2 enc
+#elif OCT24
+    half3 enc
 #endif
 )
 {
@@ -253,6 +342,10 @@ half3 BaseDecode(
     float t = saturate(-n.z);
     n.xy += n.xy >= 0.0 ? -t : t;
     return normalize(n);
+#elif OCT24
+    float2 v = twoSnorm12sEncodedAsUFloat3InFloat3FormatToFloat2(enc);
+    
+    return finalDecode(v.x, v.y);
 #endif
 }
 
