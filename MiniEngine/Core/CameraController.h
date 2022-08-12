@@ -80,6 +80,8 @@ private:
     float m_LastForward;
     float m_LastStrafe;
     float m_LastAscent;
+
+    uint32_t m_FrameCount = 0;
 };
 
 class OrbitCamera : public CameraController

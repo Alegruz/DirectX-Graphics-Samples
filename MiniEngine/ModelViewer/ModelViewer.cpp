@@ -148,7 +148,7 @@ void LoadIBLTextures()
 
 void ModelViewer::Startup( void )
 {
-    GameCore::gFrameCount = 480;
+    GameCore::gFrameCount = 512;
     MotionBlur::Enable = true;
     TemporalEffects::EnableTAA = true;
     FXAA::Enable = false;
@@ -223,30 +223,30 @@ void ModelViewer::Update( float deltaT )
     else if (GameInput::IsFirstPressed(GameInput::kRShoulder))
         DebugZoom.Increment();
 
-    if (!GameCore::gFrameCount)
-    {
-        GameCore::gFrameCount = 480;
-        if (Sponza::m_CurrentLightType == eLightType::CLUSTERED)
-        {
-            switch (Sponza::m_CurrentRenderType)
-            {
-            case eRenderType::FORWARD:
-                Sponza::SetRenderType(eRenderType::DEFERRED);
-                break;
-            case eRenderType::DEFERRED:
-                Sponza::SetRenderType(eRenderType::DEFERRED_THIN);
-                break;
-            case eRenderType::DEFERRED_THIN:
-                GameCore::gFrameCount = 1;
-                GameCore::gStopGame = true;
-                break;
-            default:
-                break;
-            }
-        }
-
-        Sponza::SetNextLightType();
-    }
+    //if (!GameCore::gFrameCount)
+    //{
+    //    GameCore::gFrameCount = 512;
+    //    if (Sponza::m_CurrentLightType == eLightType::CLUSTERED)
+    //    {
+    //        switch (Sponza::m_CurrentRenderType)
+    //        {
+    //        case eRenderType::FORWARD:
+    //            Sponza::SetRenderType(eRenderType::DEFERRED);
+    //            break;
+    //        case eRenderType::DEFERRED:
+    //            Sponza::SetRenderType(eRenderType::DEFERRED_THIN);
+    //            break;
+    //        case eRenderType::DEFERRED_THIN:
+    //            GameCore::gFrameCount = 1;
+    //            GameCore::gStopGame = true;
+    //            break;
+    //        default:
+    //            break;
+    //        }
+    //    }
+    //
+    //    Sponza::SetNextLightType();
+    //}
 
     if (GameInput::IsFirstPressed(GameInput::kKey_1))
     {

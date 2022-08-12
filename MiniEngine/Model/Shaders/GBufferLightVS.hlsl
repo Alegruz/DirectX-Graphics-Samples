@@ -31,11 +31,11 @@ cbuffer StartVertex : register(b1)
     float3 ViewerPos;
 };
 
-//struct VSInput
-//{
-//    float3 position : POSITION;
-//    float2 texcoord0 : TEXCOORD;
-//};
+struct VSInput
+{
+    float3 position : POSITION;
+    float2 texcoord0 : TEXCOORD;
+};
 
 struct VSOutput
 {
@@ -51,14 +51,14 @@ struct VSOutput
 
 [RootSignature(Renderer_RootSig)]
 //VSOutput main(VSInput vsInput, uint vertexID : SV_VertexID)
-
 VSOutput main(uint vertexID : SV_VertexID)
 {
     VSOutput vsOutput;
     
     //vsOutput.position = float4(vsInput.position, 1.0f);
+    //float2 uv = float2((vertexID << 1) & 2, vertexID & 2);
     float2 uv = float2(((2 - vertexID) << 1) & 2, (2 - vertexID) & 2);
-    vsOutput.position = float4(uv * float2(2, -2) + float2(-1, 1), 0, 1);
+    vsOutput.position = float4(uv * float2(2, -2) + float2(-1, 1), 1, 1);
 
 #if ENABLE_TRIANGLE_ID
     vsOutput.vertexID = materialIdx << 24 | (vertexID & 0xFFFF);

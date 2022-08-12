@@ -30,7 +30,7 @@ namespace GameCore
     using namespace Graphics;
 
     bool gIsSupending = false;
-    uint32_t gFrameCount = 480;
+    uint32_t gFrameCount = 512;
     bool gStopGame = false;
 
     void InitializeApplication( IGameApp& game )
@@ -89,17 +89,27 @@ namespace GameCore
 
         Display::Present();
 
+        //if (gFrameCount == 256)
+        //{
+        //    Display::Resize(1600, 900);
+        //}
+        //if (gFrameCount == 128)
+        //{
+        //    Display::Resize(1280, 720);
+        //}
         --gFrameCount;
         
         if (!gFrameCount)
         {
-            if (gStopGame)
-            {
-                return false;
-            }
-
+            //if (gStopGame)
+            //{
+            //    return false;
+            //}
+        
             OutputDebugString(L"//=====================================//\n");
             EngineProfiling::PrintHistory();
+            //Display::Resize(1920, 1080);
+            return false;
         }
 
         return !game.IsDone();

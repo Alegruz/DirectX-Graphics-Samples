@@ -2654,6 +2654,7 @@ void Sponza::RenderDeferredObjectsThinGBuffer(GraphicsContext& gfxContext, const
     gfxContext.SetDynamicConstantBufferView(Renderer::kCommonCBV, sizeof(CommonConstants), &commonConstants);
 
     gfxContext.SetDescriptorTable(Renderer::kGBufferSRVs, m_ThinGBufferSRVs);
+    //gfxContext.DrawIndexed(NUM_GBUFFER_INDICES, 0, 0);
     gfxContext.DrawIndexed(3, 0, 0);
 }
 

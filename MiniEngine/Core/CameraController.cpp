@@ -53,7 +53,9 @@ namespace Graphics
     extern EnumVar DebugZoom;
 }
 
-void FlyingFPSCamera::Update( float deltaTime )
+#define PROFILE_MODE (1)
+
+void FlyingFPSCamera::Update(float deltaTime)
 {
     (deltaTime);
 
@@ -67,24 +69,34 @@ void FlyingFPSCamera::Update( float deltaTime )
 
     float speedScale = (m_FineMovement ? 0.1f : 1.0f) * timeScale;
     float panScale = (m_FineRotation ? 0.5f : 1.0f) * timeScale;
-
-    float yaw = GameInput::GetTimeCorrectedAnalogInput( GameInput::kAnalogRightStickX ) * m_HorizontalLookSensitivity * panScale;
-    float pitch = GameInput::GetTimeCorrectedAnalogInput( GameInput::kAnalogRightStickY ) * m_VerticalLookSensitivity * panScale;
-    float forward =	m_MoveSpeed * speedScale * (
-        GameInput::GetTimeCorrectedAnalogInput( GameInput::kAnalogLeftStickY ) +
-        (GameInput::IsPressed( GameInput::kKey_w ) ? deltaTime : 0.0f) +
-        (GameInput::IsPressed( GameInput::kKey_s ) ? -deltaTime : 0.0f)
+    float yaw = GameInput::GetTimeCorrectedAnalogInput(GameInput::kAnalogRightStickX) * m_HorizontalLookSensitivity * panScale;
+    float pitch = GameInput::GetTimeCorrectedAnalogInput(GameInput::kAnalogRightStickY) * m_VerticalLookSensitivity * panScale;
+    float forward = m_MoveSpeed * speedScale * (
+        GameInput::GetTimeCorrectedAnalogInput(GameInput::kAnalogLeftStickY) +
+#if PROFILE_MODE
+        (GameInput::IsPressed(GameInput::kKey_w) || (1 <= (m_FrameCount / 32) % 12 && (m_FrameCount / 32) % 12 <= 4) ? deltaTime : 0.0f) +
+        (GameInput::IsPressed(GameInput::kKey_s) || (7 <= (m_FrameCount / 32) % 12 && (m_FrameCount / 32) % 12 <= 10) ? -deltaTime : 0.0f)
+#else
+        (GameInput::IsPressed(GameInput::kKey_w) ? deltaTime : 0.0f) +
+        (GameInput::IsPressed(GameInput::kKey_s) ? -deltaTime : 0.0f)
+#endif
         );
+
     float strafe = m_StrafeSpeed * speedScale * (
-        GameInput::GetTimeCorrectedAnalogInput( GameInput::kAnalogLeftStickX  ) +
-        (GameInput::IsPressed( GameInput::kKey_d ) ? deltaTime : 0.0f) +
-        (GameInput::IsPressed( GameInput::kKey_a ) ? -deltaTime : 0.0f)
+        GameInput::GetTimeCorrectedAnalogInput(GameInput::kAnalogLeftStickX) +
+#if PROFILE_MODE
+        (GameInput::IsPressed(GameInput::kKey_d) || (0 == (m_FrameCount / 32) % 12 || 11 == (m_FrameCount / 32) % 12) ? deltaTime : 0.0f) +
+        (GameInput::IsPressed(GameInput::kKey_a) || (5 <= (m_FrameCount / 32) % 12 && (m_FrameCount / 32) % 12 <= 6) ? -deltaTime : 0.0f)
+#else
+        (GameInput::IsPressed(GameInput::kKey_d) ? deltaTime : 0.0f) +
+        (GameInput::IsPressed(GameInput::kKey_a) ? -deltaTime : 0.0f)
+#endif
         );
     float ascent = m_StrafeSpeed * speedScale * (
-        GameInput::GetTimeCorrectedAnalogInput( GameInput::kAnalogRightTrigger ) -
-        GameInput::GetTimeCorrectedAnalogInput( GameInput::kAnalogLeftTrigger ) +
-        (GameInput::IsPressed( GameInput::kKey_e ) ? deltaTime : 0.0f) +
-        (GameInput::IsPressed( GameInput::kKey_q ) ? -deltaTime : 0.0f)
+        GameInput::GetTimeCorrectedAnalogInput(GameInput::kAnalogRightTrigger) -
+        GameInput::GetTimeCorrectedAnalogInput(GameInput::kAnalogLeftTrigger) +
+        (GameInput::IsPressed(GameInput::kKey_e) ? deltaTime : 0.0f) +
+        (GameInput::IsPressed(GameInput::kKey_q) ? -deltaTime : 0.0f)
         );
 
     if (m_Momentum)
@@ -95,10 +107,35 @@ void FlyingFPSCamera::Update( float deltaTime )
         ApplyMomentum(m_LastStrafe, strafe, deltaTime);
         ApplyMomentum(m_LastAscent, ascent, deltaTime);
     }
-
+    ++m_FrameCount;
     // don't apply momentum to mouse inputs
+#if PROFILE_MODE
+    static constexpr const std::pair<float, float> A_TARGETS[] =
+    {
+        { 0.0f, 0.015f },
+        { 0.0f, 0.0f },
+    };
+    static float curX = 0.0f;
+    static float curY = 0.0f;
+    static uint32_t targetIndex = 0;
+    float alpha = static_cast<float>(m_FrameCount % 32) / 32.0f;
+    if (!(m_FrameCount % 32))
+    {
+        //targetIndex = (m_FrameCount / 32) % ARRAYSIZE(A_TARGETS);
+        targetIndex = ARRAYSIZE(A_TARGETS) - 1;
+    }
+    curX = alpha * A_TARGETS[targetIndex].first + (1 - alpha) * curX;
+    curY = alpha * A_TARGETS[targetIndex].second + (1 - alpha) * curY;
+    //
+    //WCHAR szDebugMsg[128];
+    //swprintf_s(szDebugMsg, L"target: (%f, %f), alpha: %f, cur: (%f, %f)\n", A_TARGETS[targetIndex].first, A_TARGETS[targetIndex].second, alpha, curX, curY);
+    //OutputDebugString(szDebugMsg);
+    yaw += (GameInput::GetAnalogInput(GameInput::kAnalogMouseX) + curX) * m_MouseSensitivityX;
+    pitch += (GameInput::GetAnalogInput(GameInput::kAnalogMouseY) + curY) * m_MouseSensitivityY;
+#else
     yaw += GameInput::GetAnalogInput(GameInput::kAnalogMouseX) * m_MouseSensitivityX;
     pitch += GameInput::GetAnalogInput(GameInput::kAnalogMouseY) * m_MouseSensitivityY;
+#endif
 
     m_CurrentPitch += pitch;
     m_CurrentPitch = XMMin( XM_PIDIV2, m_CurrentPitch);

@@ -86,7 +86,7 @@ public:
 
 private:
     static const uint32_t kHistorySize = 64;
-    static const uint32_t kExtendedHistorySize = 256;
+    static const uint32_t kExtendedHistorySize = 512;
     float m_RecentHistory[kHistorySize];
     float m_ExtendedHistory[kExtendedHistorySize];
     float m_Recent;
@@ -583,14 +583,14 @@ void NestedTimingTree::PrintNodeHistory()
     else
     {
         if (m_Name == L"Scene Render" ||
-            //m_Name == L"Clustered" ||
-            //m_Name == L"Tiled" ||
-            //m_Name == L"Tiled 2.5D" ||
-            //m_Name == L"Tiled 2.5D AABB" ||
-            //m_Name == L"Tiled (D)" ||
-            //m_Name == L"Tiled 2.5D (D)" ||
-            //m_Name == L"Tiled 2.5D AABB (D)" ||
-            //m_Name == L"Tiled (I)" ||
+            m_Name == L"Clustered" ||
+            m_Name == L"Tiled" ||
+            m_Name == L"Tiled 2.5D" ||
+            m_Name == L"Tiled 2.5D AABB" ||
+            m_Name == L"Tiled (D)" ||
+            m_Name == L"Tiled 2.5D (D)" ||
+            m_Name == L"Tiled 2.5D AABB (D)" ||
+            m_Name == L"Tiled (I)" ||
             //m_Name == L"F Clustered Color" ||
             //m_Name == L"F Color" ||
             //m_Name == L"F+ Color" ||
@@ -617,41 +617,56 @@ void NestedTimingTree::PrintNodeHistory()
             m_Name == L"OPAQUE" ||
             m_Name == L"Geometry Phase" ||
             m_Name == L"Lighting Phase" ||
-            m_Name == L"Forward Opaque"
+            m_Name == L"Forward Opaque" ||
+            m_Name == L"RenderObjectsThinGBuffer"
             //m_Name == L"Non-opaque Render"
             )
         {
+            WCHAR szDebugMsg[32];
+            swprintf_s(szDebugMsg, L"%s_cpu = [\n", m_Name.c_str());
+            OutputDebugString(szDebugMsg);
             const float* pCpuTimeHistory = m_CpuTime.GetHistory();
             uint32_t uCpuTimeHistoryLength = m_CpuTime.GetHistoryLength();
             float avgCpuTime = 0.0f;
             //for (uint32_t cpuHistoryIdx = m_uLastCpuHistoryIndex; cpuHistoryIdx < uCpuTimeHistoryLength; ++cpuHistoryIdx)
             for (uint32_t cpuHistoryIdx = 0; cpuHistoryIdx < uCpuTimeHistoryLength; ++cpuHistoryIdx)
             {
+                swprintf_s(szDebugMsg, L"\t%f,\n", pCpuTimeHistory[cpuHistoryIdx]);
+                OutputDebugString(szDebugMsg);
                 avgCpuTime += pCpuTimeHistory[cpuHistoryIdx];
             }
             avgCpuTime /= uCpuTimeHistoryLength;
+            OutputDebugString(L"\t]\n");
             //m_uLastCpuHistoryIndex = uCpuTimeHistoryLength;
 
+            swprintf_s(szDebugMsg, L"%s_gpu = [\n", m_Name.c_str());
+            OutputDebugString(szDebugMsg);
             const float* pGpuTimeHistory = m_GpuTime.GetHistory();
             uint32_t uGpuTimeHistoryLength = m_GpuTime.GetHistoryLength();
             float avgGpuTime = 0.0f;
             //for (uint32_t gpuHistoryIdx = m_uLastGpuHistoryIndex; gpuHistoryIdx < uGpuTimeHistoryLength; ++gpuHistoryIdx)
             for (uint32_t gpuHistoryIdx = 0; gpuHistoryIdx < uGpuTimeHistoryLength; ++gpuHistoryIdx)
             {
+                //swprintf_s(szDebugMsg, L"\tGPU [%u]: %f\n", gpuHistoryIdx, pGpuTimeHistory[gpuHistoryIdx]);
+                //OutputDebugString(szDebugMsg);
+                swprintf_s(szDebugMsg, L"\t%f,\n", pGpuTimeHistory[gpuHistoryIdx]);
+                OutputDebugString(szDebugMsg);
                 avgGpuTime += pGpuTimeHistory[gpuHistoryIdx];
             }
             avgGpuTime /= uGpuTimeHistoryLength;
+            OutputDebugString(L"\t]\n");
 
             if (avgCpuTime != 0.0f && avgGpuTime != 0.0f)
             {
+                //WCHAR szDebugMsg[32];
+                OutputDebugString(L"# ");
                 OutputDebugString(m_Name.c_str());
-                OutputDebugString(L":\n\tCPU TIME:\t");
-                WCHAR szDebugMsg[32];
-                swprintf_s(szDebugMsg, L"%6.6f\n", avgCpuTime);
+                OutputDebugString(L":\n#\tCPU TIME:\t");
+                swprintf_s(szDebugMsg, L"%6.6f, %u\n", avgCpuTime, uCpuTimeHistoryLength);
                 OutputDebugString(szDebugMsg);
 
-                OutputDebugString(L"\tGPU TIME:\t");
-                swprintf_s(szDebugMsg, L"%6.6f\n", avgGpuTime);
+                OutputDebugString(L"#\tGPU TIME:\t");
+                swprintf_s(szDebugMsg, L"%6.6f, %u\n", avgGpuTime, uGpuTimeHistoryLength);
                 OutputDebugString(szDebugMsg);
             }
             //m_uLastGpuHistoryIndex = uGpuTimeHistoryLength;
