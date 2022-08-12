@@ -24,20 +24,9 @@ cbuffer StartVertex : register(b1)
 #endif
     float4x4 modelToShadow;
     float4 ViewerPos;
-//    float NearZ;
-//    float FarZ;
     uint2 ViewportSize;
-//    float CameraForward;
 };
 
-//Texture2D<float3> texDiffuse : register(t0);
-//Texture2D<float3> texSpecular : register(t1);
-//Texture2D<float4> texEmissive		: register(t2);
-//Texture2D<float3> texNormal : register(t3);
-//Texture2D<float4> texLightmap		: register(t4);
-//Texture2D<float4> texReflection	: register(t5);
-//Texture2D<float> texSSAO : register(t12);
-//Texture2D<float> texShadow : register(t13);
 Texture2D<float> texDepth : register(t18);
 
 // GBuffers
@@ -48,18 +37,17 @@ Texture2D<float4> texRt2	: register(t23);
 struct VSOutput
 {
 	sample float4 projPos : SV_Position;
-	sample float3 worldPos : WorldPos;
-    sample float2 uv : TexCoord0;
 };
 
 [RootSignature(Renderer_RootSig)]
 float3 main(VSOutput vsOutput) : SV_Target
 {
-    float3 color = 0.0;
-    
 	uint2 pixelPos = uint2(vsOutput.projPos.xy);
 	
     float depth = texDepth[pixelPos];
+    float3 color = texRt0[pixelPos];
+    half4 rt1Data = texRt1[pixelPos];
+    float4 rt2Data = texRt2[pixelPos];
     if (depth <= 0.0)
     {
         color = 0.0;
@@ -69,13 +57,9 @@ float3 main(VSOutput vsOutput) : SV_Target
     return sqrt(depth);
 #endif
     
-    color = texRt0[pixelPos];
-    
 #if LIGHT_ACCUMULATION
     return color;
 #endif
-    
-    half4 rt1Data = texRt1[pixelPos];
     
 #if NO_ENCODING || BASELINE
     float3 normal = (float3) BaseDecode(rt1Data);
@@ -86,11 +70,10 @@ float3 main(VSOutput vsOutput) : SV_Target
 #elif OCT24
     float3 normal = (float3) BaseDecode(rt1Data.xyz);
 #endif
+    
 #if NORMAL
     return normal;
 #endif
-    
-    float4 rt2Data = texRt2[pixelPos];
     float specularMask = rt2Data.a;
     
     // Deferred Shading, Shawn Hargreaves, GDC 2004.
@@ -105,10 +88,7 @@ float3 main(VSOutput vsOutput) : SV_Target
     return specularMask;
 #endif
     float3 diffuseAlbedo = rt2Data.rgb;
-    if (dot(normal, 1.0) == 0.0 && dot(diffuseAlbedo, 1.0) == 0.0)
-    {
-        discard;
-    }
+    
     float gloss = rt1Data.a * 256.0;
 #if GLOSS
     return gloss / 256.0;
@@ -118,7 +98,6 @@ float3 main(VSOutput vsOutput) : SV_Target
 #endif
   
     float3 specularAlbedo = float3( 0.56, 0.56, 0.56 );
-    //float3 viewDir = normalize(float3(vsOutput.projPos.xy, depth) - ViewerPos);
     float3 viewDir = normalize(worldPos.xyz - ViewerPos.xyz);
     float3 shadowCoord = mul(modelToShadow, float4(worldPos.xyz, 1.0)).xyz;
     

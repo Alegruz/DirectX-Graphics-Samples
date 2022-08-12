@@ -42,8 +42,8 @@ Texture2D<float4> texSpecular : register(t24);
 struct VSOutput
 {
 	sample float4 projPos : SV_Position;
-	sample float3 worldPos : WorldPos;
-    sample float2 uv : TexCoord0;
+	//sample float3 worldPos : WorldPos;
+    //sample float2 uv : TexCoord0;
 };
 
 [RootSignature(Renderer_RootSig)]

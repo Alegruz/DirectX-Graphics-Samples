@@ -15,10 +15,7 @@
 
 Texture2D<float3> texDiffuse		: register(t0);
 Texture2D<float3> texSpecular		: register(t1);
-//Texture2D<float4> texEmissive		: register(t2);
 Texture2D<float3> texNormal			: register(t3);
-//Texture2D<float4> texLightmap		: register(t4);
-//Texture2D<float4> texReflection	: register(t5);
 Texture2D<float> texSSAO			: register(t12);
 Texture2D<float> texShadow : register(t13);
 
@@ -38,9 +35,6 @@ struct VSOutput
 struct MRT
 {
     float3 RT0 : SV_Target0;
-	//float4 RT0 : SV_Target0;
-    //float2 RT1 : SV_Target1;
-    //float3 RT1 : SV_Target1;
     half4 RT1 : SV_Target1;
     float4 RT2 : SV_Target2;
     float4 RT3 : SV_Target3;
@@ -72,11 +66,6 @@ MRT main(VSOutput vsOutput)
         normal = normalize(mul(normal, tbn));
     }
     
-    //float3 rt1Data = 0.5f * (float3(
-    //        normal.x * !((asuint(normal.x) & 0x7fffffff) > 0x7f800000),
-    //        normal.y * !((asuint(normal.y) & 0x7fffffff) > 0x7f800000),
-    //        normal.z * !((asuint(normal.z) & 0x7fffffff) > 0x7f800000)
-    //    ) + 1.0f);
     float4 rt1Data = float4(
         float3(
             normal.x * !((asuint(normal.x) & 0x7fffffff) > 0x7f800000),
@@ -86,9 +75,6 @@ MRT main(VSOutput vsOutput)
         1
     );
         
-    mrt.RT1 = rt1Data;
-    //mrt.RT1 = float4(normal, 0);
-	
     float3 specularAlbedo = float3(0.56, 0.56, 0.56);
     float specularMask = SAMPLE_TEX(texSpecular).g;
 
@@ -103,10 +89,9 @@ MRT main(VSOutput vsOutput)
         colorSum += ApplyDirectionalLight(diffuseAlbedo, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection, SunColor, vsOutput.shadowCoord, texShadow);
     }
     
-    //mrt.RT0 = float4(colorSum, gloss / 256.0);
     mrt.RT0 = float3(colorSum);
+    mrt.RT1 = rt1Data;
     mrt.RT2 = float4(vsOutput.worldPos, specularMask);
-    //mrt.RT3 = float4(diffuseAlbedo, 1);
     mrt.RT3 = float4(diffuseAlbedo, gloss / 256.0);
     
 	return mrt;

@@ -40,6 +40,7 @@ cbuffer CSConstants : register(b0)
 StructuredBuffer<LightData> gLightBuffer : register(t4);
 Texture2DArray<float> gLightShadowArrayTex : register(t5);
 Texture2D<float> gDepthTex : register(t8);
+Texture2D<uint2> gStencilTex : register(t9);
 
 Texture2D<float3> gRt0 : register(t10);
 Texture2D<float4> gRt1 : register(t11);
@@ -268,8 +269,11 @@ void main(
 
     // Find the max / min depth value of the tile
     uint depthUInt = asuint(gDepthTex[DTid.xy]);
-    InterlockedMin(gSharedMinDepthUInt, depthUInt);
-    InterlockedMax(gSharedMaxDepthUInt, depthUInt);
+    if (depthUInt != 0)
+    {
+        InterlockedMin(gSharedMinDepthUInt, depthUInt);
+        InterlockedMax(gSharedMaxDepthUInt, depthUInt);
+    }
 
     GroupMemoryBarrierWithGroupSync();
     
@@ -430,6 +434,12 @@ void main(
         }
     }
     GroupMemoryBarrierWithGroupSync();
+    
+    uint stencil = gStencilTex[DTid.xy].g;
+    if (!stencil)
+    {
+        return;
+    }
     
     if (depth <= 0.0f)
     {

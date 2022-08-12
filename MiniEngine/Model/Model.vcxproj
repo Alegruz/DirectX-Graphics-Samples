@@ -104,6 +104,7 @@
     <None Include="Shaders\LightingDefault.hlsli" />
     <None Include="Shaders\ThinGBufferTiledDiceCS.hlsli" />
     <None Include="Shaders\ThinGBufferTiledIntelCS.hlsli" />
+    <None Include="Shaders\ZBoundsCS.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\CutoutDepthPS.hlsl">
@@ -1075,6 +1076,18 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\ZBoundsCS_16.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
+    </FxCompile>
+    <FxCompile Include="Shaders\ZBoundsCS_24.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
+    </FxCompile>
+    <FxCompile Include="Shaders\ZBoundsCS_32.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
+    </FxCompile>
+    <FxCompile Include="Shaders\ZBoundsCS_8.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

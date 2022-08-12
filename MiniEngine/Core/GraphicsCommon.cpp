@@ -83,6 +83,9 @@ namespace Graphics
     D3D12_DEPTH_STENCIL_DESC DepthStateReadOnly;
     D3D12_DEPTH_STENCIL_DESC DepthStateReadOnlyReversed;
     D3D12_DEPTH_STENCIL_DESC DepthStateTestEqual;
+    D3D12_DEPTH_STENCIL_DESC DepthStateReadWriteStencilWrite;
+    D3D12_DEPTH_STENCIL_DESC DepthStateReadWriteStencilWriteCutoff;
+    D3D12_DEPTH_STENCIL_DESC DepthStateReadOnlyStencilMask;
 
     CommandSignature DispatchIndirectCommandSignature(1);
     CommandSignature DrawIndirectCommandSignature(1);
@@ -230,6 +233,38 @@ void Graphics::InitializeCommonState(void)
 
     DepthStateTestEqual = DepthStateReadOnly;
     DepthStateTestEqual.DepthFunc = D3D12_COMPARISON_FUNC_EQUAL;
+
+    DepthStateReadWriteStencilWrite = DepthStateReadWrite;
+    DepthStateReadWriteStencilWrite.StencilEnable = TRUE;
+    DepthStateReadWriteStencilWrite.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    DepthStateReadWriteStencilWrite.FrontFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
+    DepthStateReadWriteStencilWrite.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+    DepthStateReadWriteStencilWrite.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+    //DepthStateReadWriteStencilWrite.FrontFace.StencilPassOp = D3D12_STENCIL_OP_INCR_SAT;
+    // We are not rendering backfacing polygons, so these settings do not matter.
+    DepthStateReadWriteStencilWrite.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+    DepthStateReadWriteStencilWrite.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+    DepthStateReadWriteStencilWrite.BackFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
+    DepthStateReadWriteStencilWrite.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+
+    DepthStateReadWriteStencilWriteCutoff = DepthStateReadWriteStencilWrite;
+    DepthStateReadWriteStencilWrite.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    DepthStateReadWriteStencilWrite.FrontFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
+    DepthStateReadWriteStencilWrite.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+    DepthStateReadWriteStencilWrite.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+
+    DepthStateReadOnlyStencilMask = DepthStateReadOnly;
+    DepthStateReadOnlyStencilMask.StencilEnable = TRUE;
+    DepthStateReadOnlyStencilMask.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
+    DepthStateReadOnlyStencilMask.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+    DepthStateReadOnlyStencilMask.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+    DepthStateReadOnlyStencilMask.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+
+    // We are not rendering backfacing polygons, so these settings do not matter.
+    DepthStateReadOnlyStencilMask.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+    DepthStateReadOnlyStencilMask.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+    DepthStateReadOnlyStencilMask.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+    DepthStateReadOnlyStencilMask.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
 
     D3D12_BLEND_DESC alphaBlend = {};
     alphaBlend.IndependentBlendEnable = FALSE;

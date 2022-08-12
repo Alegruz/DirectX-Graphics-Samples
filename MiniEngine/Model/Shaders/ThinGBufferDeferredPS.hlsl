@@ -25,18 +25,11 @@ cbuffer StartVertex : register(b1)
 #endif
     float4x4 modelToShadow;
     float4 ViewerPos;
-//    float NearZ;
-//    float FarZ;
-//    uint2 ViewportSize;
-//    float CameraForward;
 };
 
 Texture2D<float3> texDiffuse		: register(t0);
 Texture2D<float3> texSpecular		: register(t1);
-//Texture2D<float4> texEmissive		: register(t2);
 Texture2D<float3> texNormal			: register(t3);
-//Texture2D<float4> texLightmap		: register(t4);
-//Texture2D<float4> texReflection	: register(t5);
 Texture2D<float> texSSAO			: register(t12);
 Texture2D<float> texShadow : register(t13);
 
@@ -114,9 +107,7 @@ MRT main(VSOutput vsOutput)
 #endif
         gloss / 256.0
     );
-        
-    mrt.RT1 = rt1Data;
-	
+    
     float3 specularAlbedo = float3(0.56, 0.56, 0.56);
     float specularMask = SAMPLE_TEX(texSpecular).g;
 
@@ -131,8 +122,8 @@ MRT main(VSOutput vsOutput)
         colorSum += ApplyDirectionalLight(diffuseAlbedo, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection, SunColor, vsOutput.shadowCoord, texShadow);
     }
     
-    //mrt.RT0 = float4(colorSum, gloss / 256.0);
     mrt.RT0 = float3(colorSum);
+    mrt.RT1 = rt1Data;
     mrt.RT2 = float4(diffuseAlbedo, specularMask);
     
 	return mrt;

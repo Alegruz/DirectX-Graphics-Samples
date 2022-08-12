@@ -33,6 +33,7 @@ cbuffer CSConstants : register(b0)
 
 StructuredBuffer<LightData> lightBuffer : register(t0);
 Texture2D<float> depthTex : register(t1);
+Texture2D<float2> depthBoundsTex : register(t2);
 RWByteAddressBuffer lightGrid : register(u0);
 RWByteAddressBuffer lightGridBitMask : register(u1);
 
@@ -57,7 +58,7 @@ groupshared uint4 tileLightBitMask;
 #define _RootSig \
     "RootFlags(0), " \
     "CBV(b0), " \
-    "DescriptorTable(SRV(t0, numDescriptors = 2))," \
+    "DescriptorTable(SRV(t0, numDescriptors = 3))," \
     "DescriptorTable(UAV(u0, numDescriptors = 2))"
 
 [RootSignature(_RootSig)]
@@ -84,15 +85,16 @@ void main(
     GroupMemoryBarrierWithGroupSync();
     
     // Read all depth values for this tile and compute the tile min and max values
-    uint dx;
-    uint dy;
-    for (dx = GTid.x; dx < WORK_GROUP_SIZE_X; dx += 8)
-    {
-        for (dy = GTid.y; dy < WORK_GROUP_SIZE_Y; dy += 8)
-        {
+    uint dx = GTid.x;
+    uint dy = GTid.y;
+    
+    //for (dx = GTid.x; dx < WORK_GROUP_SIZE_X; dx += 8)
+    //{
+    //    for (dy = GTid.y; dy < WORK_GROUP_SIZE_Y; dy += 8)
+    //    {
             uint2 DTid = Gid * uint2(WORK_GROUP_SIZE_X, WORK_GROUP_SIZE_Y) + uint2(dx, dy);
-
-            // If pixel coordinates are in bounds...
+    //
+    //        // If pixel coordinates are in bounds...
             if (DTid.x < ViewportWidth && DTid.y < ViewportHeight)
             {
                 // Load and compare depth
@@ -100,13 +102,21 @@ void main(
                 InterlockedMin(minDepthUInt, depthUInt);
                 InterlockedMax(maxDepthUInt, depthUInt);
             }
-        }
-    }
+    //    }
+    //}
     GroupMemoryBarrierWithGroupSync();
     //float tileMinDepth = asfloat(minDepthUInt);
     //float tileMaxDepth = asfloat(maxDepthUInt);
-    float tileMinDepth = (rcp(asfloat(maxDepthUInt)) - 1.0) * RcpZMagic;
-    float tileMaxDepth = (rcp(asfloat(minDepthUInt)) - 1.0) * RcpZMagic;
+    //float tileMinDepth = (rcp(asfloat(maxDepthUInt)) - 1.0) * RcpZMagic;
+    //float tileMaxDepth = (rcp(asfloat(minDepthUInt)) - 1.0) * RcpZMagic;
+    //float recordedMinDepth = (rcp(depthBoundsTex[Gid.xy].x) - 1.0) * RcpZMagic;
+    //float recordedMaxDepth = (rcp(depthBoundsTex[Gid.xy].y) - 1.0) * RcpZMagic;
+    //tileMinDepth = recordedMinDepth;
+    //tileMaxDepth = recordedMaxDepth;
+    //float tileMinDepth = (rcp(depthBoundsTex[Gid.xy].x) - 1.0) * RcpZMagic;
+    //float tileMaxDepth = (rcp(depthBoundsTex[Gid.xy].y) - 1.0) * RcpZMagic;
+    float tileMinDepth = depthBoundsTex[Gid.xy].x;
+    float tileMaxDepth = depthBoundsTex[Gid.xy].y;
     float tileDepthRange = tileMaxDepth - tileMinDepth;
     tileDepthRange = max(tileDepthRange, FLT_MIN); // don't allow a depth range of 0
     float invTileDepthRange = rcp(tileDepthRange);

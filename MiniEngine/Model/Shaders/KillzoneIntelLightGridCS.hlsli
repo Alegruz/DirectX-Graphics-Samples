@@ -258,6 +258,11 @@ void main(
     GroupMemoryBarrierWithGroupSync();
 
     uint depthUInt = asuint(gDepthTex[DTid.xy]);
+    if (depthUInt == 0)
+    {
+        return;
+    }
+    
     InterlockedMin(gSharedMinDepthUInt, depthUInt);
     InterlockedMax(gSharedMaxDepthUInt, depthUInt);
 
@@ -343,11 +348,11 @@ void main(
     GroupMemoryBarrierWithGroupSync();
     
 
-    if (depth <= 0.0f)
-    {
-        //gOutputTexture[DTid.xy] += 0;
-        return;
-    }
+    //if (depth <= 0.0f)
+    //{
+    //    //gOutputTexture[DTid.xy] += 0;
+    //    return;
+    //}
     
 #if LIGHT_DENSITY
     float density = (float) (gSharedVisibleLightCountSphere + gSharedVisibleLightCountCone + gSharedVisibleLightCountConeShadowed) / (float) MAX_LIGHTS;

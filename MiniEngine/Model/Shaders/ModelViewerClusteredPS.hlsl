@@ -15,10 +15,7 @@
 
 Texture2D<float3> texDiffuse : register(t0);
 Texture2D<float3> texSpecular : register(t1);
-//Texture2D<float4> texEmissive		: register(t2);
 Texture2D<float3> texNormal : register(t3);
-//Texture2D<float4> texLightmap		: register(t4);
-//Texture2D<float4> texReflection	: register(t5);
 Texture2D<float> texSSAO : register(t12);
 Texture2D<float> texShadow : register(t13);
 Texture2D<float> texDepth : register(t18);
@@ -34,7 +31,6 @@ cbuffer StartVertex : register(b1)
     uint2 ViewportSize;
     float NearZ;
     float FarZ;
-//    float CameraForward;
 };
 
 struct VSOutput
@@ -55,31 +51,6 @@ struct MRT
     float3 Color : SV_Target0;
     float4 Normal : SV_Target1;
 };
-
-float4 TransformScreenSpaceToViewSpace(float4 vec);
-float4 TransformClipSpaceToViewSpace(float4 vec);
-
-float4 TransformScreenSpaceToViewSpace(float4 vec)
-{
-    // Convert to NDC
-    float2 texCoord = vec.xy / float2(ViewportSize);
-    
-    // Convert to clip space
-    float4 clipSpace = float4(texCoord * 2.0f - 1.0f, vec.z, vec.w);
-    
-    return TransformClipSpaceToViewSpace(clipSpace);
-}
-
-float4 TransformClipSpaceToViewSpace(float4 vec)
-{
-    // View space transformation
-    float4 viewSpace = mul(InvProj, vec);
-    
-    // Perspective projection
-    viewSpace /= viewSpace.w;
-    
-    return viewSpace;
-}
 
 [RootSignature(Renderer_RootSig)]
 MRT main(VSOutput vsOutput)
@@ -134,7 +105,6 @@ MRT main(VSOutput vsOutput)
     float3 specularAlbedo = float3(0.56, 0.56, 0.56);
     float3 viewDir = normalize(vsOutput.viewDir);
     colorSum += ApplyDirectionalLight(diffuseAlbedo, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection, SunColor, vsOutput.shadowCoord, texShadow);
-
     
     float screenSpaceDepth = texDepth[pixelPos];
     
@@ -152,17 +122,6 @@ MRT main(VSOutput vsOutput)
         ViewportSize
     );
     
-    //for (uint lightIdx = 0; lightIdx < MAX_LIGHTS; ++lightIdx)
-    //{
-    //    float4 screenSpaceLightPos = mul(ModelToProjection, float4(lightBuffer[lightIdx].pos, 1.0));
-    //    
-    //    if (dot(screenSpaceLightPos.xy - vsOutput.position.xy, screenSpaceLightPos.xy - vsOutput.position.xy) < 16.0)
-    //    {
-    //        colorSum = lightBuffer[lightIdx].color;
-    //    }
-    //}
-    
-    //colorSum += lights;
     // Thibieroz, Nicolas, “Deferred Shading with Multisampling Anti-Aliasing in DirectX 10,” in Wolfgang Engel, ed., ShaderX7, Charles River Media, pp. 225–242, 2009.
     if (dot(colorSum, 1.0f) == 0)
     {
@@ -170,6 +129,7 @@ MRT main(VSOutput vsOutput)
     }
     
     mrt.Color = colorSum;
+    
     return mrt;
 #endif
 }

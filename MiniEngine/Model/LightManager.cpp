@@ -20,6 +20,7 @@
 #include "CommandContext.h"
 #include "Camera.h"
 #include "BufferManager.h"
+#include "EsramAllocator.h"
 #include "TemporalEffects.h"
 #include "Model.h"
 
@@ -176,6 +177,11 @@
 #include "CompiledShaders/ThinGBufferTiledIntelFPRCS_24.h"
 #include "CompiledShaders/ThinGBufferTiledIntelFPRCS_32.h"
 
+#include "CompiledShaders/ZBoundsCS_8.h"
+#include "CompiledShaders/ZBoundsCS_16.h"
+#include "CompiledShaders/ZBoundsCS_24.h"
+#include "CompiledShaders/ZBoundsCS_32.h"
+
 using namespace Math;
 using namespace Graphics;
 
@@ -224,6 +230,14 @@ namespace Lighting
 #endif
 
     RootSignature m_ThinGBufferLightRootSig;
+
+    ComputePSO m_aZBoundsPSOs[] =
+    {
+        {L"Z Bounds 8 CS"},
+        {L"Z Bounds 16 CS"},
+        {L"Z Bounds 24 CS"},
+        {L"Z Bounds 32 CS"},
+    };
 
     ComputePSO m_aForwardPSOs[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eClusterType::COUNT)] =
     {
@@ -1689,6 +1703,14 @@ namespace Lighting
                 { (L"Fill Light Cluster 64 x 64 x 32 CS") },
             },
         }
+    };
+
+    std::pair<const unsigned char* const, size_t> m_aZBoundsComputeShaders[static_cast<size_t>(eClusterType::COUNT)] =
+    {
+        { g_pZBoundsCS_8, sizeof(g_pZBoundsCS_8) },
+        { g_pZBoundsCS_16, sizeof(g_pZBoundsCS_16) },
+        { g_pZBoundsCS_24, sizeof(g_pZBoundsCS_24) },
+        { g_pZBoundsCS_32, sizeof(g_pZBoundsCS_32) },
     };
 
     std::pair<const unsigned char* const, size_t> m_aForwardComputeShaders[static_cast<size_t>(eLightType::COUNT)][static_cast<size_t>(eClusterType::COUNT)] =
@@ -3163,6 +3185,8 @@ namespace Lighting
     ByteAddressBuffer m_LightGrid;
     ByteAddressBuffer m_LightCluster;
     StructuredBuffer m_LightClusterAABB;
+    //ByteAddressBuffer m_DepthBounds;
+    ColorBuffer m_DepthBounds;
 
     ByteAddressBuffer m_LightGridBitMask;
     ByteAddressBuffer m_LightClusterBitMask;
@@ -3201,11 +3225,11 @@ namespace Lighting
     void Shutdown(void);
 }
 
-void Lighting::InitializeResources( void )
+void Lighting::InitializeResources(void)
 {
     m_FillLightRootSig.Reset(3, 0);
     m_FillLightRootSig[0].InitAsConstantBuffer(0);
-    m_FillLightRootSig[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2);
+    m_FillLightRootSig[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3);
     m_FillLightRootSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 2);
     m_FillLightRootSig.Finalize(L"FillLightRS");
 
@@ -3294,6 +3318,13 @@ void Lighting::InitializeResources( void )
         }
     }
 
+    for (size_t gridIndex = 0; gridIndex < 4; ++gridIndex)
+    {
+        m_aZBoundsPSOs[gridIndex].SetRootSignature(m_FillLightRootSig);
+        m_aZBoundsPSOs[gridIndex].SetComputeShader(m_aZBoundsComputeShaders[gridIndex].first, m_aZBoundsComputeShaders[gridIndex].second);
+        m_aZBoundsPSOs[gridIndex].Finalize();
+    }
+
     // Assumes max resolution of 3840x2160
     uint32_t lightGridCells = Math::DivideByMultiple(3840, kMinLightGridDim) * Math::DivideByMultiple(2160, kMinLightGridDim);
     uint32_t lightGridSizeBytes = lightGridCells * (4 + MaxLights * 4);
@@ -3301,7 +3332,7 @@ void Lighting::InitializeResources( void )
 
     uint32_t lightClusterCells = Math::DivideByMultiple(3840, kMinLightGridDim) * Math::DivideByMultiple(2160, kMinLightGridDim) * 32;
     //uint32_t lightClusterSizeBytes = lightClusterCells * (4 + MaxLights * 4);
-    uint32_t lightClusterSizeBytes = lightClusterCells * (4 + MaxLights * 4);
+    uint32_t lightClusterSizeBytes = lightClusterCells * (4 + MaxClusterLights * 4);
     m_LightCluster.Create(L"m_LightCluster", lightClusterSizeBytes, 1);
 
     uint32_t lightGridBitMaskSizeBytes = lightGridCells * 4 * 4;
@@ -3322,6 +3353,12 @@ void Lighting::InitializeResources( void )
         tileCountX * tileCountY * tileCountZ,
         sizeof(VolumeTileAABB)
     );
+
+    EsramAllocator esram;
+
+    esram.PushStack();
+    m_DepthBounds.Create(L"Depth Bounds", tileCountX, tileCountY, 1, DXGI_FORMAT_R32G32_FLOAT, esram);
+    esram.PopStack();
 }
 
 void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBound )
@@ -3477,6 +3514,7 @@ void Lighting::Shutdown(void)
 {
     m_LightBuffer.Destroy();
     m_LightCluster.Destroy();
+    m_DepthBounds.Destroy();
     m_LightClusterAABB.Destroy();
     m_LightGrid.Destroy();
     m_LightClusterBitMask.Destroy();
@@ -3569,7 +3607,7 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& ca
     {
         Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
         Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-        Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+        //Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
         tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]);
         tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), aLightClusterDimensions[static_cast<size_t>(LightClusterType)][0]);
@@ -3591,8 +3629,10 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& ca
             {
                 uint32_t ViewportWidth, ViewportHeight;
                 //Matrix4 ViewProjMatrix;
-                Matrix4 InvProjMatrix;
-                Matrix4 InvViewMatrix;
+                //Matrix4 InvProjMatrix;
+                //Matrix4 InvViewMatrix;
+                Matrix4 InvViewProjMatrix;
+                Matrix4 ProjMatrix;
                 uint32_t TileCount[4];
                 float FarZ;
                 float NearZ;
@@ -3600,21 +3640,29 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& ca
             // todo: assumes 1920x1080 resolution
             csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
             csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
-            XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetProjMatrix()), camera.GetProjMatrix());
-            csConstants.InvProjMatrix = Matrix4(
-                Vector4(invProj.r[0]),
-                Vector4(invProj.r[1]),
-                Vector4(invProj.r[2]),
-                Vector4(invProj.r[3])
+            //XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetProjMatrix()), camera.GetProjMatrix());
+            //csConstants.InvProjMatrix = Matrix4(
+            //    Vector4(invProj.r[0]),
+            //    Vector4(invProj.r[1]),
+            //    Vector4(invProj.r[2]),
+            //    Vector4(invProj.r[3])
+            //);
+            
+            //XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewMatrix()), camera.GetViewMatrix());
+            //csConstants.InvViewMatrix = Matrix4(
+            //    Vector4(invView.r[0]),
+            //    Vector4(invView.r[1]),
+            //    Vector4(invView.r[2]),
+            //    Vector4(invView.r[3])
+            //);
+            XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
+            csConstants.InvViewProjMatrix = Matrix4(
+                Vector4(invViewProj.r[0]),
+                Vector4(invViewProj.r[1]),
+                Vector4(invViewProj.r[2]),
+                Vector4(invViewProj.r[3])
             );
-
-            XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewMatrix()), camera.GetViewMatrix());
-            csConstants.InvViewMatrix = Matrix4(
-                Vector4(invView.r[0]),
-                Vector4(invView.r[1]),
-                Vector4(invView.r[2]),
-                Vector4(invView.r[3])
-            );
+            csConstants.ProjMatrix = camera.GetProjMatrix();
             csConstants.TileCount[0] = tileCountX;
             csConstants.TileCount[1] = tileCountY;
             csConstants.TileCount[2] = tileCountZ;
@@ -3641,6 +3689,7 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& ca
             Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
             Context.SetDynamicDescriptor(1, 1, LinearDepth.GetSRV());
             Context.SetDynamicDescriptor(1, 2, m_LightClusterAABB.GetSRV());
+            //Context.SetDynamicDescriptor(1, 3, m_DepthBounds.GetSRV());
 
             Context.SetDynamicDescriptor(2, 0, m_LightCluster.GetUAV());
             //Context.SetDynamicDescriptor(2, 1, m_LightClusterBitMask.GetUAV());
@@ -3651,8 +3700,9 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& ca
                 float InvTileDim;
                 float RcpZMagic;
                 uint32_t TileCount[2];
-                Matrix4 ViewProjMatrix;
-                Matrix4 InvViewMatrix;
+                //Matrix4 ViewProjMatrix;
+                Matrix4 ProjMatrix;
+                Matrix4 ViewMatrix;
                 //Matrix4 InvProjMatrix;
                 //Matrix4 InvViewProj;
                 //float FarZ;
@@ -3665,7 +3715,8 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& ca
             csConstants.RcpZMagic = RcpZMagic;
             csConstants.TileCount[0] = tileCountX;
             csConstants.TileCount[1] = tileCountY;
-            csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
+            //csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
+            csConstants.ProjMatrix = camera.GetProjMatrix();
             //csConstants.ViewMatrix = camera.GetViewMatrix();
             //XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
             //csConstants.InvViewProj = Matrix4(
@@ -3681,13 +3732,14 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& ca
             //    Vector4(invProj.r[2]),
             //    Vector4(invProj.r[3])
             //);
-            XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewMatrix()), camera.GetViewMatrix());
-            csConstants.InvViewMatrix = Matrix4(
-                Vector4(invView.r[0]),
-                Vector4(invView.r[1]),
-                Vector4(invView.r[2]),
-                Vector4(invView.r[3])
-            );
+            //XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewMatrix()), camera.GetViewMatrix());
+            //csConstants.InvViewMatrix = Matrix4(
+            //    Vector4(invView.r[0]),
+            //    Vector4(invView.r[1]),
+            //    Vector4(invView.r[2]),
+            //    Vector4(invView.r[3])
+            //);
+            csConstants.ViewMatrix = camera.GetViewMatrix();
             //csConstants.FarZ = camera.GetFarClip();
             //csConstants.NearZ = camera.GetNearClip();
             Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
@@ -3703,56 +3755,76 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& ca
     }
     else
     {
-        Context.SetRootSignature(m_FillLightRootSig);
-        Context.SetPipelineState(Lighting::m_aForwardPSOs[static_cast<size_t>(lightType)][(static_cast<int>(LightGridDim) / 8) - 1]);
-
-        Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
         Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-        Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-
-        Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-        Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-        Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
-        Context.SetDynamicDescriptor(1, 1, LinearDepth.GetSRV());
-
-        Context.SetDynamicDescriptor(2, 0, m_LightGrid.GetUAV());
-        Context.SetDynamicDescriptor(2, 1, m_LightGridBitMask.GetUAV());
 
         tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDim);
         tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDim);
 
-        struct CSConstants
+        Context.SetRootSignature(m_FillLightRootSig);
+        // Z Bounds
         {
-            uint32_t ViewportWidth, ViewportHeight;
-            float InvTileDim;
-            float RcpZMagic;
-            uint32_t TileCount;
-            Matrix4 ViewProjMatrix;
-            Matrix4 InvViewProj;
-        } csConstants;
-        // todo: assumes 1920x1080 resolution
-        csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
-        csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
-        csConstants.InvTileDim = 1.0f / LightGridDim;
-        csConstants.RcpZMagic = RcpZMagic;
-        csConstants.TileCount = tileCountX;
-        csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
-        XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
-        csConstants.InvViewProj = Matrix4(
-            Vector4(invViewProj.r[0]),
-            Vector4(invViewProj.r[1]),
-            Vector4(invViewProj.r[2]),
-            Vector4(invViewProj.r[3])
-        );
-        Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
+            Context.SetPipelineState(Lighting::m_aZBoundsPSOs[(static_cast<int>(LightGridDim) / 8) - 1]);
 
-        // todo: assumes 1920x1080 resolution
+            Context.TransitionResource(m_DepthBounds, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+            Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+            Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
 
-        Context.Dispatch(tileCountX, tileCountY, tileCountZ);
+            Context.SetDynamicDescriptor(2, 0, m_DepthBounds.GetUAV());
 
-        Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+            // todo: assumes 1920x1080 resolution
+
+            Context.Dispatch(tileCountX, tileCountY, tileCountZ);
+        }
+        
+        // Light Assignment
+        {
+            Context.SetPipelineState(Lighting::m_aForwardPSOs[static_cast<size_t>(lightType)][(static_cast<int>(LightGridDim) / 8) - 1]);
+
+            Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+            Context.TransitionResource(m_DepthBounds, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+            Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+            Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+            Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
+            Context.SetDynamicDescriptor(1, 1, LinearDepth.GetSRV());
+            Context.SetDynamicDescriptor(1, 2, m_DepthBounds.GetSRV());
+
+            Context.SetDynamicDescriptor(2, 0, m_LightGrid.GetUAV());
+            Context.SetDynamicDescriptor(2, 1, m_LightGridBitMask.GetUAV());
+
+            struct CSConstants
+            {
+                uint32_t ViewportWidth, ViewportHeight;
+                float InvTileDim;
+                float RcpZMagic;
+                uint32_t TileCount;
+                Matrix4 ViewProjMatrix;
+                Matrix4 InvViewProj;
+            } csConstants;
+            // todo: assumes 1920x1080 resolution
+            csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
+            csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
+            csConstants.InvTileDim = 1.0f / LightGridDim;
+            csConstants.RcpZMagic = RcpZMagic;
+            csConstants.TileCount = tileCountX;
+            csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
+            XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(camera.GetViewProjMatrix()), camera.GetViewProjMatrix());
+            csConstants.InvViewProj = Matrix4(
+                Vector4(invViewProj.r[0]),
+                Vector4(invViewProj.r[1]),
+                Vector4(invViewProj.r[2]),
+                Vector4(invViewProj.r[3])
+            );
+            Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
+
+            // todo: assumes 1920x1080 resolution
+
+            Context.Dispatch(tileCountX, tileCountY, tileCountZ);
+
+            Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+            Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+            Context.TransitionResource(m_LightGridBitMask, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        }
     }
 }
 
@@ -3875,6 +3947,7 @@ void Lighting::FillAndShadeLightGridThinGBuffer(GraphicsContext& gfxContext, con
 
     ColorBuffer& LinearDepth = g_LinearDepth[TemporalEffects::GetFrameIndexMod2()];
 
+    Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
     Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
     Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
@@ -3885,6 +3958,7 @@ void Lighting::FillAndShadeLightGridThinGBuffer(GraphicsContext& gfxContext, con
     Context.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
     Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
+    Context.SetDynamicDescriptor(1, 9, g_SceneDepthBuffer.GetStencilSRV());
     Context.SetDynamicDescriptor(1, 8, LinearDepth.GetSRV());
     Context.SetDynamicDescriptor(1, 4, m_LightBuffer.GetSRV());
     Context.SetDynamicDescriptor(1, 5, m_LightShadowArray.GetSRV());

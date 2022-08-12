@@ -21,28 +21,13 @@ cbuffer StartVertex : register(b1)
     float4x4 InvProj;
     float4x4 modelToShadow;
     float4 ViewerPos;
-//    float NearZ;
-//    float FarZ;
     uint2 ViewportSize;
-//    float CameraForward;
 };
 
-//Texture2D<float3> texDiffuse : register(t0);
-//Texture2D<float3> texSpecular : register(t1);
-//Texture2D<float4> texEmissive		: register(t2);
-//Texture2D<float3> texNormal : register(t3);
-//Texture2D<float4> texLightmap		: register(t4);
-//Texture2D<float4> texReflection	: register(t5);
-//Texture2D<float> texSSAO : register(t12);
-//Texture2D<float> texShadow : register(t13);
 Texture2D<float> texDepth : register(t18);
 
 // GBuffers
 Texture2D<float3> texRt0	: register(t21);
-//Texture2D<float4> texRt0 : register(t21);
-//Texture2D<float2> texRt1	: register(t22);
-//Texture2D<float3> texRt1    : register(t22);
-//Texture2D<float4> texRt1	: register(t22);
 Texture2D<half4> texRt1 : register(t22);
 Texture2D<float4> texRt2	: register(t23);
 Texture2D<float4> texRt3    : register(t24);
@@ -50,18 +35,18 @@ Texture2D<float4> texRt3    : register(t24);
 struct VSOutput
 {
 	sample float4 projPos : SV_Position;
-	sample float3 worldPos : WorldPos;
-    sample float2 uv : TexCoord0;
 };
 
 [RootSignature(Renderer_RootSig)]
 float3 main(VSOutput vsOutput) : SV_Target
 {
-    float3 color = 0.0;
-    
-	uint2 pixelPos = uint2(vsOutput.projPos.xy);
+    uint2 pixelPos = uint2(vsOutput.projPos.xy);
 	
     float depth = texDepth[pixelPos];
+    float3 color = texRt0[pixelPos];
+    half4 rt1Data = texRt1[pixelPos];
+    float4 rt2Data = texRt2[pixelPos];
+    float4 rt3Data = texRt3[pixelPos];
     if (depth <= 0.0)
     {
         color = 0.0;
@@ -70,27 +55,16 @@ float3 main(VSOutput vsOutput) : SV_Target
 #if DEPTH
     return sqrt(depth);
 #endif
-    //float4 rt0Data = texRt0[pixelPos];
-    //color = rt0Data.rgb;
-    color = texRt0[pixelPos];
     //float gloss = rt0Data.a * 256.0;
 #if LIGHT_ACCUMULATION
     return color;
 #endif
-//#if GLOSS
-//    return gloss / 256.0;
-//#endif
-
-    //float2 rt1Data = texRt1[pixelPos];
-    //float4 rt1Data = texRt1[pixelPos];
-    half4 rt1Data = texRt1[pixelPos];
+    
     float3 normal = rt1Data.xyz;
 #if NORMAL
     return normal;
 #endif
     
-    float4 rt2Data = texRt2[pixelPos];
-    //float3 worldPos = rt2Data.xyz;
     float specularMask = rt2Data.a;
     
     // Deferred Shading, Shawn Hargreaves, GDC 2004.
@@ -107,12 +81,7 @@ float3 main(VSOutput vsOutput) : SV_Target
 #if SPEC_INTENSITY
     return specularMask;
 #endif
-    float4 rt3Data = texRt3[pixelPos];
     float3 diffuseAlbedo = rt3Data.rgb;
-    if (dot(normal, 1.0) == 0.0 && dot(diffuseAlbedo, 1.0) == 0.0)
-    {
-        discard;
-    }
     float gloss = rt3Data.a * 256.0;
 #if GLOSS
     return gloss / 256.0;

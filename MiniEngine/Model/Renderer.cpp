@@ -220,10 +220,10 @@ void Renderer::Initialize(void)
     Lighting::InitializeResources();
 
     // Allocate a descriptor table for the common textures
-    m_CommonTextures = s_TextureHeap.Alloc(9);
+    m_CommonTextures = s_TextureHeap.Alloc(10);
 
-    uint32_t DestCount = 9;
-    uint32_t SourceCounts[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, };
+    uint32_t DestCount = 10;
+    uint32_t SourceCounts[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
     D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
     {
@@ -233,13 +233,12 @@ void Renderer::Initialize(void)
         g_ShadowBuffer.GetSRV(),            //  13
         Lighting::m_LightBuffer.GetSRV(),   //  14
         Lighting::m_LightShadowArray.GetSRV(),  // 15
-        //Lighting::m_LightGrid.GetSRV(),         // 16
-        //Lighting::m_LightGridBitMask.GetSRV(),  // 17
-        Lighting::m_LightCluster.GetSRV(),         // 16
-        Lighting::m_LightClusterBitMask.GetSRV(),  // 17
+        Lighting::m_LightGrid.GetSRV(),         // 16
+        Lighting::m_LightGridBitMask.GetSRV(),  // 17
+        //Lighting::m_LightCluster.GetSRV(),         // 16
+        //Lighting::m_LightClusterBitMask.GetSRV(),  // 17
         g_SceneDepthBuffer.GetDepthSRV(),       // 18
-        //g_aSceneGBuffers[0].GetSRV(),
-        //g_aSceneGBuffers[1].GetSRV(),
+        g_SceneDepthBuffer.GetStencilSRV(),     // 19
     };
 
     g_Device->CopyDescriptors(1, &m_CommonTextures, &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);

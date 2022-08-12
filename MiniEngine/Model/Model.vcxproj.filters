@@ -123,6 +123,9 @@
     <Filter Include="Shaders\Thin GBuffer\Clustered">
       <UniqueIdentifier>{47e36bde-2aa2-4e41-8a9c-45608badbe98}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\ZBounds">
+      <UniqueIdentifier>{9b582d6f-c0cc-4a45-af81-7e6b41e7954d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SponzaRenderer.h">
@@ -205,6 +208,9 @@
     </None>
     <None Include="Shaders\ThinGBufferTiledIntelCS.hlsli">
       <Filter>Shaders\Thin GBuffer\Tiled\Intel</Filter>
+    </None>
+    <None Include="Shaders\ZBoundsCS.hlsli">
+      <Filter>Shaders\ZBounds</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -927,6 +933,18 @@
     </FxCompile>
     <FxCompile Include="Shaders\ThinGBufferVS.hlsl">
       <Filter>Shaders\Thin GBuffer</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ZBoundsCS_8.hlsl">
+      <Filter>Shaders\ZBounds</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ZBoundsCS_16.hlsl">
+      <Filter>Shaders\ZBounds</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ZBoundsCS_24.hlsl">
+      <Filter>Shaders\ZBounds</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ZBoundsCS_32.hlsl">
+      <Filter>Shaders\ZBounds</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

@@ -15,10 +15,7 @@
 
 Texture2D<float3> texDiffuse : register(t0);
 Texture2D<float3> texSpecular : register(t1);
-//Texture2D<float4> texEmissive		: register(t2);
 Texture2D<float3> texNormal : register(t3);
-//Texture2D<float4> texLightmap		: register(t4);
-//Texture2D<float4> texReflection	: register(t5);
 Texture2D<float> texSSAO : register(t12);
 Texture2D<float> texShadow : register(t13);
 
@@ -95,12 +92,7 @@ MRT main(VSOutput vsOutput)
 	
     float3 specularAlbedo = float3(0.56, 0.56, 0.56);
     float3 viewDir = normalize(vsOutput.viewDir);
-    //float3 diffuseColor = colorSum;
-    //float3 directionalColor = ApplyDirectionalLight(diffuseAlbedo, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection, SunColor, vsOutput.shadowCoord, texShadow);
     colorSum += ApplyDirectionalLight(diffuseAlbedo, specularAlbedo, specularMask, gloss, normal, viewDir, SunDirection, SunColor, vsOutput.shadowCoord, texShadow);
-    //colorSum += directionalColor;
-    //float3 lights = 0;
-    //ShadeLights(lights, pixelPos,
     ShadeLights(colorSum, pixelPos,
     	diffuseAlbedo,
 		specularAlbedo,
@@ -110,8 +102,6 @@ MRT main(VSOutput vsOutput)
 		viewDir,
 		vsOutput.worldPos
 		);
-    
-    //colorSum += lights;
     
     // Thibieroz, Nicolas, “Deferred Shading with Multisampling Anti-Aliasing in DirectX 10,” in Wolfgang Engel, ed., ShaderX7, Charles River Media, pp. 225–242, 2009.
     if (dot(colorSum, 1.0f) == 0)

@@ -24,106 +24,52 @@ cbuffer StartVertex : register(b1)
     uint2 ViewportSize;
     float NearZ;
     float FarZ;
-//    float CameraForward;
 };
 
-//Texture2D<float3> texDiffuse : register(t0);
-//Texture2D<float3> texSpecular : register(t1);
-//Texture2D<float4> texEmissive		: register(t2);
-//Texture2D<float3> texNormal : register(t3);
-//Texture2D<float4> texLightmap		: register(t4);
-//Texture2D<float4> texReflection	: register(t5);
-//Texture2D<float> texSSAO : register(t12);
-//Texture2D<float> texShadow : register(t13);
 Texture2D<float> texDepth : register(t18);
 
 // GBuffers
 Texture2D<float3> texRt0	: register(t21);
-//Texture2D<float4> texRt0 : register(t21);
-//Texture2D<float2> texRt1	: register(t22);
-//Texture2D<float3> texRt1    : register(t22);
 Texture2D<half4> texRt1	: register(t22);
-//Texture2D<float4> texRt1 : register(t22);
 Texture2D<float4> texRt2	: register(t23);
 Texture2D<float4> texRt3    : register(t24);
 
 struct VSOutput
 {
 	sample float4 projPos : SV_Position;
-	sample float3 worldPos : WorldPos;
-    sample float2 uv : TexCoord0;
 };
-
-float4 TransformScreenSpaceToViewSpace(float4 vec);
-float4 TransformClipSpaceToViewSpace(float4 vec);
-
-float4 TransformScreenSpaceToViewSpace(float4 vec)
-{
-    // Convert to NDC
-    float2 texCoord = vec.xy / float2(ViewportSize);
-    
-    // Convert to clip space
-    float4 clipSpace = float4(texCoord * 2.0f - 1.0f, vec.z, vec.w);
-    
-    return TransformClipSpaceToViewSpace(clipSpace);
-}
-
-float4 TransformClipSpaceToViewSpace(float4 vec)
-{
-    // View space transformation
-    float4 viewSpace = mul(InvProj, vec);
-    
-    // Perspective projection
-    viewSpace /= viewSpace.w;
-    
-    return viewSpace;
-}
 
 [RootSignature(Renderer_RootSig)]
 float3 main(VSOutput vsOutput) : SV_Target
 {
-    float3 color = 0.0;
+    uint2 pixelPos = uint2(vsOutput.projPos.xy);
 	
-	uint2 pixelPos = uint2(vsOutput.projPos.xy);
-	
+    float3 color = texRt0[pixelPos];
+    half4 rt1Data = texRt1[pixelPos];
     float depth = texDepth[pixelPos];
+    float4 rt2Data = texRt2[pixelPos];
+    float4 rt3Data = texRt3[pixelPos];
+    
     if (depth <= 0.0)
     {
         color = 0.0;
         return color;
     }
     
-    //float4 viewSpaceDepth = float4(0.0, 0.0, depth, 1.0f);
-    //viewSpaceDepth = mul(InvProj, viewSpaceDepth);
-    //viewSpaceDepth.z *= -1.0;
-    //viewSpaceDepth /= viewSpaceDepth.w;
-    //viewSpaceDepth.z = N
-    //uint slice = (uint) floor(log(viewSpaceDepth.z) * TileCount[2] / log(FarZ / NearZ) - TileCount[2] * log(NearZ) / log(FarZ / NearZ));
 #if DEPTH
     //return sqrt((float) slice / (float) TileCount[2]);
     return sqrt(depth);
 #endif
     
-    //float4 rt0Data = texRt0[pixelPos];
-    //color = rt0Data.rgb;
-    color  = texRt0[pixelPos];
-    //float gloss = rt0Data.a * 256.0;
 #if LIGHT_ACCUMULATION
     return color;
 #endif
-//#if GLOSS
-//    return gloss / 256.0;
-//#endif
     
-    //float2 rt1Data = texRt1[pixelPos];
-    half4 rt1Data = texRt1[pixelPos];
     float3 normal = (float3) rt1Data.xyz;
 #if NORMAL
     return normal;
 #endif
     
-    float4 rt2Data = texRt2[pixelPos];
-    //float3 worldPos = rt2Data.xyz;
     float specularMask = rt2Data.a;
     
     float4 clipSpacePosition = float4((vsOutput.projPos.x / ViewportSize.x) * 2.0f - 1.0f, (vsOutput.projPos.y / ViewportSize.y) * 2.0f - 1.0f, depth, 1.0f);
@@ -137,12 +83,8 @@ float3 main(VSOutput vsOutput) : SV_Target
 #if SPEC_INTENSITY
     return specularMask;
 #endif
-    float4 rt3Data = texRt3[pixelPos];
+    
     float3 diffuseAlbedo = rt3Data.rgb;
-    if (dot(normal, 1.0) == 0.0 && dot(diffuseAlbedo, 1.0) == 0.0)
-    {
-        discard;
-    }
     float gloss = rt3Data.a * 256.0;
 #if GLOSS
     return gloss / 256.0;
@@ -155,11 +97,9 @@ float3 main(VSOutput vsOutput) : SV_Target
 #endif
   
     float3 specularAlbedo = float3( 0.56, 0.56, 0.56 );
-    //float3 viewDir = normalize(float3(vsOutput.projPos.xy, depth) - ViewerPos);
     float3 viewDir = normalize(worldPos.xyz - ViewerPos.xyz);
     float3 shadowCoord = mul(modelToShadow, float4(worldPos.xyz, 1.0)).xyz;
     
-    //float viewSpaceDepth = TransformScreenSpaceToViewSpace(float4(0.0f, 0.0f, depth, 1.0f));
     float4 viewDepth = mul(InvProj, clipSpacePosition);
     viewDepth /= viewDepth.w;
 

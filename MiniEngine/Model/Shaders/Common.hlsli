@@ -291,24 +291,23 @@ half3 BaseDecode(
 #endif
 )
 {
-#if NO_ENCODING
-    return enc.xyz;
-#elif BASELINE
-    return enc.xyz * 2.0 - 1.0;
-#elif Z_RECONSTRUCTION
     half3 n;
+#if NO_ENCODING
+    n = enc.xyz;
+#elif BASELINE
+    n = enc.xyz * 2.0 - 1.0;
+#elif Z_RECONSTRUCTION
     n.xy = enc.xy * 2.0 - 1.0;
     n.z = sqrt(1.0 - dot(n.xy, n.xy));
     n.z = n.z * !((asuint(n.z) & 0x7fffffff) > 0x7f800000) + FLT_MIN * ((asuint(n.z) & 0x7fffffff) > 0x7f800000);
     //n.z = sqrt(1.0 - dot(n.xy, n.xy)) * (2.0 * !!enc.z - 1.0);
     n = normalize(mul(invViewMatrix, float4(n, 0.0))).xyz;
-    return n;
 #elif SPHERICAL_COORDNATES
     half2 ang = enc * 2.0 - 1.0;
     half2 scth;
     sincos(ang.x * PI_F, scth.x, scth.y);
     half2 scphi = half2(sqrt(1.0 - ang.y * ang.y), ang.y);
-    return half3(scth.y * scphi.x, scth.x * scphi.x, scphi.y);
+    n = half3(scth.y * scphi.x, scth.x * scphi.x, scphi.y);
 #elif SPHEREMAP_TRANSFORM
 #if CRYENGINE3_SPHEREMAP_TRANSFORM
     half4 nn = half4(enc, 0.0, 0.0) * half4(2.0, 2.0, 0.0, 0.0) + half4(-1.0, -1.0, 1.0, -1.0);
@@ -316,9 +315,8 @@ half3 BaseDecode(
     l = l < 0.0f ? FLT_MIN : l;
     nn.z = l;
     nn.xy *= sqrt(l);
-    half3 n = nn.xyz * 2.0 + half3(0.0, 0.0, -1.0);
+    n = nn.xyz * 2.0 + half3(0.0, 0.0, -1.0);
     n = normalize(mul(invViewMatrix, float4(n, 0.0))).xyz;
-    return n;
 #elif LAMBERT_AZIMUTHAL_EQUAL_AREA_PROJECTION
     half2 fenc = enc * 4.0 - 2.0;
     half f = dot(fenc, fenc);
@@ -328,25 +326,29 @@ half3 BaseDecode(
         return 0;
     }
     g = sqrt(g);
-    half3 n;
     n.xy = fenc * g;
     n.z = 1.0 - f / 2.0;
     n = normalize(mul(invViewMatrix, float4(n, 0.0))).xyz;
-    return n;
 #endif
 #elif OCTAHEDRON_NORMAL
     enc = enc * 2.0 - 1.0;
     
     // https://twitter.com/Stubbesaurus/status/937994790553227264
-    half3 n = half3(enc.xy, 1.0 - abs(enc.x) - abs(enc.y));
+    n = half3(enc.xy, 1.0 - abs(enc.x) - abs(enc.y));
     float t = saturate(-n.z);
     n.xy += n.xy >= 0.0 ? -t : t;
-    return normalize(n);
+    n = normalize(n);
 #elif OCT24
     float2 v = twoSnorm12sEncodedAsUFloat3InFloat3FormatToFloat2(enc);
     
-    return finalDecode(v.x, v.y);
+    n = finalDecode(v.x, v.y);
 #endif
+
+    return half3(
+        n.x * !((asuint(n.x) & 0x7fffffff) > 0x7f800000),
+        n.y * !((asuint(n.y) & 0x7fffffff) > 0x7f800000),
+        n.z * !((asuint(n.z) & 0x7fffffff) > 0x7f800000)
+    );
 }
 
 #endif // __COMMON_HLSLI__
