@@ -135,9 +135,6 @@ float3 ConvertToRadarColor(float scale)
     }
 }
 
-#define KILLZONE_GBUFFER (0)
-#define THIN_GBUFFER (1)
-
 #define NO_ENCODING (0)
 #define BASELINE (0)
 #define Z_RECONSTRUCTION (0)

@@ -28,14 +28,11 @@ cbuffer PSConstants : register(b0)
     uint4 FirstLightIndex;
 
     uint FrameIndexMod2;
-    //float3 Scale;
-    //float3 Bias;
 }
 
 StructuredBuffer<LightData> lightBuffer : register(t14);
 Texture2DArray<float> lightShadowArrayTex : register(t15);
 ByteAddressBuffer lightCluster : register(t16);
-//ByteAddressBuffer lightClusterBitMask : register(t17);
 
 void AntiAliasSpecular( inout float3 texNormal, inout float gloss )
 {
@@ -168,19 +165,7 @@ float3 ApplyPointLight(
     // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
     float distanceFalloff = lightRadiusSq * (invLightDist * invLightDist);
     distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
-
-    //float3 commonLight = ApplyLightCommon(
-    //    diffuseColor,
-    //    specularColor,
-    //    specularMask,
-    //    gloss,
-    //    normal,
-    //    viewDir,
-    //    lightDir,
-    //    lightColor
-    //    );
-    //
-    //return distanceFalloff * commonLight;
+    
     return distanceFalloff * ApplyLightCommon(
         diffuseColor,
         specularColor,
@@ -625,7 +610,6 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
         falsePositiveCount += (distanceFalloff == 0.0);
         
         float3 pointLightColor = ApplyPointLight(POINT_LIGHT_ARGS);
-        //falsePositiveCount += (pointLightColor.r == 0 && pointLightColor.g == 0 && pointLightColor.b == 0);
         colorSum += pointLightColor;
 #else
         colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
@@ -654,7 +638,6 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
         falsePositiveCount += (distanceFalloff * coneFalloff == 0.0);
         
         float3 coneLightColor = ApplyConeLight(CONE_LIGHT_ARGS);
-        //falsePositiveCount += (coneLightColor.r == 0 && coneLightColor.g == 0 && coneLightColor.b == 0);
         colorSum += coneLightColor;
 #else
         colorSum += ApplyConeLight(CONE_LIGHT_ARGS);
@@ -683,7 +666,6 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
         falsePositiveCount += (distanceFalloff * coneFalloff == 0.0);
         
         float3 coneShadowedLightColor = ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
-        //falsePositiveCount += (coneShadowedLightColor.r == 0 && coneShadowedLightColor.g == 0 && coneShadowedLightColor.b == 0);
         colorSum += coneShadowedLightColor;
 #else
         colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
@@ -781,7 +763,6 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
         falsePositiveCount += (distanceFalloff == 0.0);
         
         float3 pointLightColor = ApplyPointLight(POINT_LIGHT_ARGS);
-        //falsePositiveCount += (pointLightColor.r == 0 && pointLightColor.g == 0 && pointLightColor.b == 0);
         colorSum += pointLightColor;
 #else
         colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
@@ -810,7 +791,6 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
         falsePositiveCount += (distanceFalloff * coneFalloff == 0.0);
         
         float3 coneLightColor = ApplyConeLight(CONE_LIGHT_ARGS);
-        //falsePositiveCount += (coneLightColor.r == 0 && coneLightColor.g == 0 && coneLightColor.b == 0);
         colorSum += coneLightColor;
 #else
         colorSum += ApplyConeLight(CONE_LIGHT_ARGS);
@@ -839,45 +819,10 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
         falsePositiveCount += (distanceFalloff * coneFalloff == 0.0);
         
         float3 coneShadowedLightColor = ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
-        //falsePositiveCount += (coneShadowedLightColor.r == 0 && coneShadowedLightColor.g == 0 && coneShadowedLightColor.b == 0);
         colorSum += coneShadowedLightColor;
 #else              
         float3 coneShadowedLightColor = ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
         colorSum += coneShadowedLightColor;
-        
-        //float4 shadowCoord = mul(lightData.shadowTextureMatrix, float4(worldPos, 1.0));
-        //shadowCoord.xyz *= rcp(shadowCoord.w);
-        //float shadow = GetShadowConeLight(lightIndex, shadowCoord.xyz);
-        //
-        //
-        //float3 lightDir = lightData.pos - worldPos.xyz;
-        //float lightDistSq = dot(lightDir, lightDir);
-        //float invLightDist = rsqrt(lightDistSq);
-        //lightDir *= invLightDist;
-        //
-        //// modify 1/d^2 * R^2 to fall off at a fixed radius
-        //// (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
-        //float distanceFalloff = lightData.radiusSq * (invLightDist * invLightDist);
-        //distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
-        //
-        //float coneFalloff = dot(-lightDir, lightData.coneDir);
-        //coneFalloff = saturate((coneFalloff - lightData.coneAngles.y) * lightData.coneAngles.x);
-        //
-        //float3 halfVec = normalize(lightDir - viewDir);
-        //float nDotH = saturate(dot(halfVec, normal));
-        //
-        ////FSchlick(diffuseAlbedo, specularAlbedo, lightDir, halfVec);
-        //
-        //float fresnel = pow(1.0 - saturate(dot(lightDir, halfVec)), 5.0);
-        //float3 specular = lerp(specularAlbedo, 1, fresnel);
-        //float3 diffuse = lerp(diffuseAlbedo, 0, fresnel);
-        //
-        //float specularFactor = specularMask * pow(nDotH, gloss) * (gloss + 2) / 8;
-        //
-        //float nDotL = saturate(dot(normal, lightDir));
-        //
-        //float3 result = shadow * (coneFalloff * distanceFalloff) * nDotL * lightData.color * (diffuse + specularFactor * specular);
-        //colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
 #endif
     }
     

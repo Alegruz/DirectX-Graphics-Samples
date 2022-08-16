@@ -27,7 +27,6 @@ cbuffer CSConstants : register(b0)
     float InvTileDim;
     float RcpZMagic;
     uint2 TileCount;
-    //float4x4 ViewProjMatrix;
     float4x4 ProjMatrix;
     float4x4 ViewMatrix;
 };
@@ -41,7 +40,6 @@ struct VolumeTileAABB
 StructuredBuffer<LightData> lightBuffer : register(t0);
 Texture2D<float> depthTex : register(t1);
 StructuredBuffer<VolumeTileAABB> lightClusterAABB : register(t2);
-//Texture2D<float2> depthBounds : register(t3);
 RWByteAddressBuffer lightCluster : register(u0);
 RWByteAddressBuffer lightClusterBitMask : register(u1);
 
@@ -52,9 +50,6 @@ groupshared uint gClusterLightCountConeShadowed;
 groupshared uint gClusterLightIndicesSphere[CLUSTER_MAX_LIGHTS];
 groupshared uint gClusterLightIndicesCone[CLUSTER_MAX_LIGHTS];
 groupshared uint gClusterLightIndicesConeShadowed[CLUSTER_MAX_LIGHTS];
-
-float GetDistSqPointAABB(float3 position, uint tileIndex);
-bool TestSphereAABB(float lightRadiusSq, float3 lightPos, uint tileIndex);
 
 #define _RootSig \
     "RootFlags(0), " \
@@ -84,31 +79,11 @@ void main(
     float4 centerAABB = (lightClusterAABB[clusterIndex].MinPoint + lightClusterAABB[clusterIndex].MaxPoint) / 2.0;
     float4 extentAABB = abs(lightClusterAABB[clusterIndex].MaxPoint - centerAABB);
     
-    //float4 screenSpaceMax = mul(ProjMatrix, float4(lightClusterAABB[clusterIndex].MaxPoint.xyz, 1.0));
-    //screenSpaceMax /= screenSpaceMax.w;
-    //float4 screenSpaceMin = mul(ProjMatrix, float4(lightClusterAABB[clusterIndex].MinPoint.xyz, 1.0));
-    //screenSpaceMin /= screenSpaceMin.w;
-    
-    //float tileMinDepth = (rcp(depthBounds[Gid.xy].y) - 1.0) * RcpZMagic;
-    //float tileMaxDepth = (rcp(depthBounds[Gid.xy].x) - 1.0) * RcpZMagic;
-    //float tileMinDepth = depthBounds[Gid.xy].y;
-    //float tileMaxDepth = depthBounds[Gid.xy].x;
-    //
-    //if (tileMaxDepth < screenSpaceMin.z - FLT_MIN || screenSpaceMax.z < tileMinDepth - FLT_MIN)
-    //{
-    //    return;
-    //}
-    
-    //const float sizeSq = dot(extentAABB, extentAABB);
     // find set of lights that overlap this tile
     for (uint lightIndex = GI; lightIndex < MAX_LIGHTS; lightIndex += 64)
     {
         LightData lightData = lightBuffer[lightIndex];
 
-        //if (!TestSphereAABB(lightData.radiusSq, lightData.pos, clusterIndex))
-        //{
-        //    continue;
-        //}
         // Arvo Intersection Test
         //bool bIsOverlapping = false;
         
@@ -207,36 +182,4 @@ void main(
             storeOffset += 4;
         }
     }
-}
-
-
-bool TestSphereAABB(float lightRadiusSq, float3 lightPos, uint tileIndex)
-{
-    float4 viewSpaceLightPos = mul(ViewMatrix, float4(lightPos, 1.0f));
-    float distSq = GetDistSqPointAABB(viewSpaceLightPos.xyz, tileIndex);
-    
-    return distSq <= lightRadiusSq;
-}
-
-float GetDistSqPointAABB(float3 position, uint tileIndex)
-{
-    float distSq = 0.0;
-    
-    VolumeTileAABB currentCell = lightClusterAABB[tileIndex];
-    
-    currentCell.MaxPoint.w = tileIndex;
-    for (uint i = 0; i < 3; ++i)
-    {
-        float v = position[i];
-        if (v < currentCell.MinPoint[i])
-        {
-            distSq += (currentCell.MinPoint[i] - v) * (currentCell.MinPoint[i] - v);
-        }
-        else if (v > currentCell.MaxPoint[i])
-        {
-            distSq += (v - currentCell.MaxPoint[i]) * (v - currentCell.MaxPoint[i]);
-        }
-    }
-    
-    return distSq;
 }

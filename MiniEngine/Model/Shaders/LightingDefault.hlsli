@@ -181,19 +181,7 @@ float3 ApplyPointLight(
     // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
     float distanceFalloff = lightRadiusSq * (invLightDist * invLightDist);
     distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
-
-    //float3 commonLight = ApplyLightCommon(
-    //    diffuseColor,
-    //    specularColor,
-    //    specularMask,
-    //    gloss,
-    //    normal,
-    //    viewDir,
-    //    lightDir,
-    //    lightColor
-    //    );
-    //
-    //return distanceFalloff * commonLight;
+    
     return distanceFalloff * ApplyLightCommon(
         diffuseColor,
         specularColor,
@@ -491,10 +479,6 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
 
                 falsePositiveCount += (distanceFalloff == 0.0);
                 lightCount += (distanceFalloff != 0.0);
-        
-                //float3 pointLightColor = ApplyPointLight(POINT_LIGHT_ARGS);
-                //falsePositiveCount += (pointLightColor.r == 0 && pointLightColor.g == 0 && pointLightColor.b == 0);
-                //colorSum += pointLightColor;
 #else
                 colorSum += ApplyPointLight(POINT_LIGHT_ARGS);
 #endif
@@ -519,10 +503,6 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
         
                 falsePositiveCount += (distanceFalloff * coneFalloff == 0.0);
                 lightCount += (distanceFalloff * coneFalloff != 0.0);
-        
-                //float3 coneLightColor = ApplyConeLight(CONE_LIGHT_ARGS);
-                //falsePositiveCount += (coneLightColor.r == 0 && coneLightColor.g == 0 && coneLightColor.b == 0);
-                //colorSum += coneLightColor;
 #else
                 colorSum += ApplyConeLight(CONE_LIGHT_ARGS);
 #endif
@@ -547,10 +527,6 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
         
                 falsePositiveCount += (distanceFalloff * coneFalloff == 0.0);
                 lightCount += (distanceFalloff * coneFalloff != 0.0);
-        
-                //float3 coneShadowedLightColor = ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
-                //falsePositiveCount += (coneShadowedLightColor.r == 0 && coneShadowedLightColor.g == 0 && coneShadowedLightColor.b == 0);
-                //colorSum += coneShadowedLightColor;
 #else
                 colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
 #endif

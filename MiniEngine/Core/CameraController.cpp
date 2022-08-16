@@ -53,7 +53,7 @@ namespace Graphics
     extern EnumVar DebugZoom;
 }
 
-#define PROFILE_MODE (1)
+#define PROFILE_MODE (0)
 
 void FlyingFPSCamera::Update(float deltaTime)
 {

@@ -89,28 +89,20 @@ namespace GameCore
 
         Display::Present();
 
-        //if (gFrameCount == 256)
+        //--gFrameCount;
+        //
+        //if (!gFrameCount)
         //{
-        //    Display::Resize(1600, 900);
+        //    //if (gStopGame)
+        //    //{
+        //    //    return false;
+        //    //}
+        //
+        //    OutputDebugString(L"//=====================================//\n");
+        //    EngineProfiling::PrintHistory();
+        //
+        //    return false;
         //}
-        //if (gFrameCount == 128)
-        //{
-        //    Display::Resize(1280, 720);
-        //}
-        --gFrameCount;
-        
-        if (!gFrameCount)
-        {
-            //if (gStopGame)
-            //{
-            //    return false;
-            //}
-        
-            OutputDebugString(L"//=====================================//\n");
-            EngineProfiling::PrintHistory();
-            //Display::Resize(1920, 1080);
-            return false;
-        }
 
         return !game.IsDone();
     }

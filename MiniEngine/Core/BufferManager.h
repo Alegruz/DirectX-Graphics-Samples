@@ -21,10 +21,6 @@
 
 namespace Graphics
 {
-#define SIMPLE_GBUFFER (0)
-#define KILLZONE_GBUFFER (1)
-#define THIN_GBUFFER (1)
-
     enum class eRenderType : UINT8
     {
         FORWARD,
@@ -61,17 +57,10 @@ namespace Graphics
 
     enum class eGBufferType : UINT8
     {
-#if SIMPLE_GBUFFER
-        WORLD_POS,
-        NORMAL_DEPTH,
-        ALBEDO,
-        SPECULAR,
-#elif KILLZONE_GBUFFER
         RT0,    // Light accumulation + intensity
         RT1,    // Normal.XY
         RT2,    // Motion Vectors + spec-intensity
         RT3,    // diffuse albedo + sun-occlusion
-#endif
         COUNT,
     };
 
@@ -85,14 +74,6 @@ namespace Graphics
 
     enum class eGBufferDataType : UINT8
     {
-#if SIMPLE_GBUFFER
-        RT0_WORLD_POS,
-        RT1_NORMAL,
-        RT1_DEPTH,
-        RT2_ALBEDO,
-        RT3_SPECULAR,
-        RT3_GLOSS,
-#elif KILLZONE_GBUFFER
         DEPTH,
         RT0_LIGHT_ACCUMULATION,
         RT0_INTENSITY,
@@ -101,7 +82,6 @@ namespace Graphics
         RT2_SPEC_INTENSITY,
         RT3_DIFFUSE_ALBEDO,
         RT3_SUN_OCCLUSION,
-#endif
         LIGHT_DENSITY,
         FALSE_POSITIVE_RATE,
         COUNT,
@@ -123,8 +103,10 @@ namespace Graphics
 
     extern DepthBuffer g_SceneDepthBuffer;  // D32_FLOAT_S8_UINT
     extern ColorBuffer g_SceneColorBuffer;  // R11G11B10_FLOAT
+
     extern ColorBuffer g_aSceneGBuffers[static_cast<size_t>(eGBufferType::COUNT)];
     extern ColorBuffer g_aSceneThinGBuffers[static_cast<size_t>(eThinGBufferType::COUNT)];
+
     extern ColorBuffer g_SceneNormalBuffer; // R16G16B16A16_FLOAT
     extern ColorBuffer g_PostEffectsBuffer; // R32_UINT (to support Read-Modify-Write with a UAV)
     extern ColorBuffer g_OverlayBuffer;     // R8G8B8A8_UNORM

@@ -195,7 +195,7 @@ class NestedTimingTree
 {
 public:
     NestedTimingTree( const wstring& name, NestedTimingTree* parent = nullptr )
-        : m_Name(name), m_Parent(parent), m_IsExpanded(false), m_IsGraphed(false), m_GraphHandle(PERF_GRAPH_ERROR), m_uLastCpuHistoryIndex(0), m_uLastGpuHistoryIndex(0) {}
+        : m_Name(name), m_Parent(parent), m_IsExpanded(false), m_IsGraphed(false), m_GraphHandle(PERF_GRAPH_ERROR) {}
 
     NestedTimingTree* GetChild( const wstring& name )
     {
@@ -406,8 +406,6 @@ private:
     GpuTimer m_GpuTimer;
     bool m_IsGraphed;
     GraphHandle m_GraphHandle;
-    uint32_t m_uLastCpuHistoryIndex;
-    uint32_t m_uLastGpuHistoryIndex;
     static StatHistory s_TotalCpuTime;
     static StatHistory s_TotalGpuTime;
     static StatHistory s_FrameDelta;
@@ -591,35 +589,10 @@ void NestedTimingTree::PrintNodeHistory()
             m_Name == L"Tiled 2.5D (D)" ||
             m_Name == L"Tiled 2.5D AABB (D)" ||
             m_Name == L"Tiled (I)" ||
-            //m_Name == L"F Clustered Color" ||
-            //m_Name == L"F Color" ||
-            //m_Name == L"F+ Color" ||
-            //m_Name == L"F+ 2.5D Color" ||
-            //m_Name == L"F+ 2.5D AABB Color" ||
-            //m_Name == L"D C Color" ||
-            //m_Name == L"D Color" ||
-            //m_Name == L"D T Color" ||
-            //m_Name == L"D T 2.5D Color" ||
-            //m_Name == L"D T 2.5D AABB Color" ||
-            //m_Name == L"D T (D) Color" ||
-            //m_Name == L"D T (D) 2.5D Color" ||
-            //m_Name == L"D T (D) 2.5D AABB Color" ||
-            //m_Name == L"D T (I) Color" ||
-            //m_Name == L"TG C Color" ||
-            //m_Name == L"TG Color" ||
-            //m_Name == L"TG T Color" ||
-            //m_Name == L"TG T 2.5D Color" ||
-            //m_Name == L"TG T 2.5D AABB Color" ||
-            //m_Name == L"TG T (D) Color" ||
-            //m_Name == L"TG T 2.5D (D) Color" ||
-            //m_Name == L"TG T 2.5D AABB (D) Color" ||
-            //m_Name == L"TG T (I) Color" ||
             m_Name == L"OPAQUE" ||
             m_Name == L"Geometry Phase" ||
             m_Name == L"Lighting Phase" ||
-            m_Name == L"Forward Opaque" ||
-            m_Name == L"RenderObjectsThinGBuffer"
-            //m_Name == L"Non-opaque Render"
+            m_Name == L"Forward Opaque"
             )
         {
             WCHAR szDebugMsg[32];
@@ -628,7 +601,7 @@ void NestedTimingTree::PrintNodeHistory()
             const float* pCpuTimeHistory = m_CpuTime.GetHistory();
             uint32_t uCpuTimeHistoryLength = m_CpuTime.GetHistoryLength();
             float avgCpuTime = 0.0f;
-            //for (uint32_t cpuHistoryIdx = m_uLastCpuHistoryIndex; cpuHistoryIdx < uCpuTimeHistoryLength; ++cpuHistoryIdx)
+
             for (uint32_t cpuHistoryIdx = 0; cpuHistoryIdx < uCpuTimeHistoryLength; ++cpuHistoryIdx)
             {
                 swprintf_s(szDebugMsg, L"\t%f,\n", pCpuTimeHistory[cpuHistoryIdx]);
@@ -637,18 +610,15 @@ void NestedTimingTree::PrintNodeHistory()
             }
             avgCpuTime /= uCpuTimeHistoryLength;
             OutputDebugString(L"\t]\n");
-            //m_uLastCpuHistoryIndex = uCpuTimeHistoryLength;
 
             swprintf_s(szDebugMsg, L"%s_gpu = [\n", m_Name.c_str());
             OutputDebugString(szDebugMsg);
             const float* pGpuTimeHistory = m_GpuTime.GetHistory();
             uint32_t uGpuTimeHistoryLength = m_GpuTime.GetHistoryLength();
             float avgGpuTime = 0.0f;
-            //for (uint32_t gpuHistoryIdx = m_uLastGpuHistoryIndex; gpuHistoryIdx < uGpuTimeHistoryLength; ++gpuHistoryIdx)
+
             for (uint32_t gpuHistoryIdx = 0; gpuHistoryIdx < uGpuTimeHistoryLength; ++gpuHistoryIdx)
             {
-                //swprintf_s(szDebugMsg, L"\tGPU [%u]: %f\n", gpuHistoryIdx, pGpuTimeHistory[gpuHistoryIdx]);
-                //OutputDebugString(szDebugMsg);
                 swprintf_s(szDebugMsg, L"\t%f,\n", pGpuTimeHistory[gpuHistoryIdx]);
                 OutputDebugString(szDebugMsg);
                 avgGpuTime += pGpuTimeHistory[gpuHistoryIdx];
@@ -658,7 +628,6 @@ void NestedTimingTree::PrintNodeHistory()
 
             if (avgCpuTime != 0.0f && avgGpuTime != 0.0f)
             {
-                //WCHAR szDebugMsg[32];
                 OutputDebugString(L"# ");
                 OutputDebugString(m_Name.c_str());
                 OutputDebugString(L":\n#\tCPU TIME:\t");
@@ -669,12 +638,8 @@ void NestedTimingTree::PrintNodeHistory()
                 swprintf_s(szDebugMsg, L"%6.6f, %u\n", avgGpuTime, uGpuTimeHistoryLength);
                 OutputDebugString(szDebugMsg);
             }
-            //m_uLastGpuHistoryIndex = uGpuTimeHistoryLength;
         }
     }
-
-    //if (!m_IsExpanded)
-    //    return;
 
     for (auto node : m_Children)
         node->PrintNodeHistory();

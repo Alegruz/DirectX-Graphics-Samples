@@ -24,7 +24,6 @@
 #define TWOPI			6.283185307f
 
 Texture2D<float> g_SceneDepthBuffer : register(t1);
-//RWByteAddressBuffer g_DepthBounds : register(u0);
 RWTexture2D<float2> g_DepthBounds : register(u0);
 
 #define NUM_THREADS_1D_X (WORK_GROUP_SIZE_X / 2)
@@ -101,8 +100,6 @@ void main(
     if (threadNum == 0)
     {
         uint index = (Gid.x + Gid.y * WORK_GROUP_SIZE_X) * 8;
-        //g_DepthBounds.Store(index, minZ);
-        //g_DepthBounds.Store(index + 4, maxZ);
         g_DepthBounds[Gid.xy] = float2(minZ, maxZ);
     }
 }

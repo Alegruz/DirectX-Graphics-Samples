@@ -31,15 +31,13 @@ cbuffer CSConstants : register(b0)
     float4x4 ViewProjMatrix;
     float4x4 InvViewProj;
     float3 ViewerPos;
-    //float4x4 InvProj;
 };
 
 StructuredBuffer<LightData> gLightBuffer : register(t4);
 Texture2DArray<float> gLightShadowArrayTex : register(t5);
 Texture2D<float> gDepthTex : register(t8);
+Texture2D<uint2> gStencilTex : register(t9);
 Texture2D<float3> gRt0 : register(t10);
-//Texture2D<float4> gRt0 : register(t10);
-//Texture2D<float4> gRt1 : register(t11);
 Texture2D<half4> gRt1 : register(t11);
 Texture2D<float4> gRt2 : register(t12);
 Texture2D<float4> gRt3 : register(t13);
@@ -58,8 +56,6 @@ groupshared uint gSharedVisibleLightCountConeShadowed;
 groupshared uint gSharedVisibleLightIndicesSphere[MAX_LIGHTS];
 groupshared uint gSharedVisibleLightIndicesCone[MAX_LIGHTS];
 groupshared uint gSharedVisibleLightIndicesConeShadowed[MAX_LIGHTS];
-
-//groupshared uint4 tileLightBitMask;
 
 #define _RootSig \
     "RootFlags(0), " \
@@ -134,19 +130,7 @@ float3 ApplyPointLight(
     // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
     float distanceFalloff = lightRadiusSq * (invLightDist * invLightDist);
     distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
-
-    //float3 commonLight = ApplyLightCommon(
-    //    diffuseColor,
-    //    specularColor,
-    //    specularMask,
-    //    gloss,
-    //    normal,
-    //    viewDir,
-    //    lightDir,
-    //    lightColor
-    //    );
-    //
-    //return distanceFalloff * commonLight;
+    
     return distanceFalloff * ApplyLightCommon(
         diffuseColor,
         specularColor,
@@ -347,12 +331,16 @@ void main(
     }
     GroupMemoryBarrierWithGroupSync();
     
+    uint stencil = gStencilTex[DTid.xy].g;
+    if (!stencil)
+    {
+        return;
+    }
 
-    //if (depth <= 0.0f)
-    //{
-    //    //gOutputTexture[DTid.xy] += 0;
-    //    return;
-    //}
+    if (depth <= 0.0f)
+    {
+        return;
+    }
     
 #if LIGHT_DENSITY
     float density = (float) (gSharedVisibleLightCountSphere + gSharedVisibleLightCountCone + gSharedVisibleLightCountConeShadowed) / (float) MAX_LIGHTS;
@@ -362,22 +350,14 @@ void main(
     
     float3 color = 0;
     
-    //float4 rt0Data = gRt0[DTid.xy];
-    //color = rt0Data.rgb;
     color = gRt0[DTid.xy];
-    //float gloss = rt0Data.a * 256.0;
-    //float4 rt1Data = gRt1[DTid.xy];
     half4 rt1Data = gRt1[DTid.xy];
-    //float3 normal = rt1Data.xyz;
     float3 normal = (float3) rt1Data.xyz;
     float4 rt2Data = gRt2[DTid.xy];
     float specularMask = rt2Data.a;
     float4 rt3Data = gRt3[DTid.xy];
+    
     float3 diffuseAlbedo = rt3Data.rgb;
-    if (dot(normal, 1.0) == 0.0 && dot(diffuseAlbedo, 1.0) == 0.0)
-    {
-        return;
-    }
     float gloss = rt3Data.a * 256.0;
     
     float4 clipSpacePosition = float4(((float) DTid.x / (float) ViewportWidth) * 2.0f - 1.0f, ((float) DTid.y / (float) ViewportHeight) * 2.0f - 1.0f, depth, 1.0f);
@@ -432,7 +412,6 @@ void main(
         falsePositiveCount += (distanceFalloff == 0.0);
         
         float3 pointLightColor = ApplyPointLight(POINT_LIGHT_ARGS);
-        //falsePositiveCount += (pointLightColor.r == 0 && pointLightColor.g == 0 && pointLightColor.b == 0);
         color += pointLightColor;
 #else
         color += ApplyPointLight(POINT_LIGHT_ARGS);
@@ -460,7 +439,6 @@ void main(
         falsePositiveCount += (distanceFalloff * coneFalloff == 0.0);
         
         float3 coneLightColor = ApplyConeLight(CONE_LIGHT_ARGS);
-        //falsePositiveCount += (coneLightColor.r == 0 && coneLightColor.g == 0 && coneLightColor.b == 0);
         color += coneLightColor;
 #else
         color += ApplyConeLight(CONE_LIGHT_ARGS);
@@ -488,7 +466,6 @@ void main(
         falsePositiveCount += (distanceFalloff * coneFalloff == 0.0);
         
         float3 coneShadowedLightColor = ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
-        //falsePositiveCount += (coneShadowedLightColor.r == 0 && coneShadowedLightColor.g == 0 && coneShadowedLightColor.b == 0);
         color += coneShadowedLightColor;
 #else
         color += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
@@ -509,7 +486,6 @@ void main(
     return;
 #else
     gOutputTexture[DTid.xy] += float4(color, 1);
-    //gOutputTexture[DTid.xy] += float4(lightDensity, lightDensity, lightDensity, 1);
 #endif
 #endif
 }

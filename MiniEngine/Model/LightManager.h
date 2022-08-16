@@ -65,7 +65,7 @@ namespace Lighting
     extern eClusterType LightClusterType;
     extern uint32_t aLightClusterDimensions[static_cast<size_t>(eClusterType::COUNT)][2];
 
-    enum { MaxLights = 192, MaxClusterLights = MaxLights, MaxPointLights = 0, MaxConeLights = 0 };
+    enum { MaxLights = 192, MaxClusterLights = 64, MaxPointLights = 0, MaxConeLights = 0 };
 
     //LightData m_LightData[MaxLights];
     extern StructuredBuffer m_LightBuffer;
@@ -90,11 +90,6 @@ namespace Lighting
     void FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, Graphics::eLightType lightType);
     void FillAndShadeLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle, Graphics::eLightType lightType, Graphics::eGBufferDataType gbufferType);
     void FillAndShadeLightGridThinGBuffer(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle, Graphics::eLightType lightType, Graphics::eThinGBufferDataType gbufferType);
-    //void KillzoneDiceLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
-    //void KillzoneDiceLightCullingGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
-    //void KillzoneDiceLightAABBCullingGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
-    //void KillzoneIntelLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, const DescriptorHandle& gBufferHandle);
-    //void FillLightCluster(GraphicsContext& gfxContext, const Math::Camera& camera, const Math::AxisAlignedBox& boundingBox, Graphics::eLightType lightType, Graphics::eGBufferType gbufferType);
     void ResetLights(void);
     void Shutdown(void);
     void UpdateLights(float deltaTime);

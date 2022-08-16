@@ -18,7 +18,6 @@ cbuffer VSConstants : register(b0)
 {
     float4x4 modelToProjection;
     float4x4 modelToView;
-    //float3 ViewerPos;
 };
 
 cbuffer StartVertex : register(b1)
@@ -60,8 +59,7 @@ struct VSOutput
 VSOutput main(VSInput vsInput, uint vertexID : SV_VertexID)
 {
     VSOutput vsOutput;
-
-    //float4 position = mul(modelToProjection, float4(vsInput.position, 1.0));
+    
     vsOutput.position = mul(modelToProjection, float4(vsInput.position, 1.0));
     vsOutput.viewPos = mul(modelToView, float4(vsInput.position, 1.0)).xyz;
     vsOutput.worldPos = vsInput.position;

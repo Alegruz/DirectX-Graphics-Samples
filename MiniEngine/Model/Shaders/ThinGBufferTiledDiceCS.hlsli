@@ -141,19 +141,7 @@ float3 ApplyPointLight(
     // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
     float distanceFalloff = lightRadiusSq * (invLightDist * invLightDist);
     distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
-
-    //float3 commonLight = ApplyLightCommon(
-    //    diffuseColor,
-    //    specularColor,
-    //    specularMask,
-    //    gloss,
-    //    normal,
-    //    viewDir,
-    //    lightDir,
-    //    lightColor
-    //    );
-    //
-    //return distanceFalloff * commonLight;
+    
     return distanceFalloff * ApplyLightCommon(
         diffuseColor,
         specularColor,
@@ -258,7 +246,6 @@ void main(
         gSharedVisibleLightCountSphere = 0;
         gSharedVisibleLightCountCone = 0;
         gSharedVisibleLightCountConeShadowed = 0;
-        //tileLightBitMask = 0;
         gSharedMinDepthUInt = 0xffffffff;
         gSharedMaxDepthUInt = 0;
 #if LIGHT_CULLING_2_5
@@ -366,7 +353,6 @@ void main(
         {
             continue;
         }
-        //lightIndex = min(lightIndex, MAX_LIGHTS);
         
         LightData lightData = gLightBuffer[lightIndex];
         float3 lightWorldPos = lightData.pos;
@@ -378,7 +364,9 @@ void main(
         float fDistSq = dot(vDelta, vDelta);
         
         if (fDistSq > lightData.radiusSq)
+        {
             continue;
+        }
 #else
         bool overlapping = true;
         for (int p = 0; p < 6; p++)
@@ -443,7 +431,6 @@ void main(
     
     if (depth <= 0.0f)
     {
-        //gOutputTexture[DTid.xy] += 0;
         return;
     }
     
@@ -457,6 +444,7 @@ void main(
     
     color = gRt0[DTid.xy];
     float4 rt1Data = gRt1[DTid.xy];
+    float4 rt2Data = gRt2[DTid.xy];
     
 #if NO_ENCODING || BASELINE
     float3 normal = (float3) BaseDecode(rt1Data);
@@ -468,7 +456,6 @@ void main(
     float3 normal = (float3) BaseDecode(rt1Data.xyz);
 #endif
     
-    float4 rt2Data = gRt2[DTid.xy];
     float3 diffuseAlbedo = rt2Data.xyz;
     float specularMask = rt2Data.a;
     
@@ -530,7 +517,6 @@ void main(
         falsePositiveCount += (distanceFalloff == 0.0);
         
         float3 pointLightColor = ApplyPointLight(POINT_LIGHT_ARGS);
-        //falsePositiveCount += (pointLightColor.r == 0 && pointLightColor.g == 0 && pointLightColor.b == 0);
         color += pointLightColor;
 #else
         color += ApplyPointLight(POINT_LIGHT_ARGS);
@@ -558,7 +544,6 @@ void main(
         falsePositiveCount += (distanceFalloff * coneFalloff == 0.0);
         
         float3 coneLightColor = ApplyConeLight(CONE_LIGHT_ARGS);
-        //falsePositiveCount += (coneLightColor.r == 0 && coneLightColor.g == 0 && coneLightColor.b == 0);
         color += coneLightColor;
 #else
         color += ApplyConeLight(CONE_LIGHT_ARGS);
@@ -586,7 +571,6 @@ void main(
         falsePositiveCount += (distanceFalloff * coneFalloff == 0.0);
         
         float3 coneShadowedLightColor = ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
-        //falsePositiveCount += (coneShadowedLightColor.r == 0 && coneShadowedLightColor.g == 0 && coneShadowedLightColor.b == 0);
         color += coneShadowedLightColor;
 #else
         color += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
@@ -607,7 +591,6 @@ void main(
     return;
 #else
     gOutputTexture[DTid.xy] += float4(color, 1);
-    //gOutputTexture[DTid.xy] += float4(lightDensity, lightDensity, lightDensity, 1);
 #endif
 #endif
 }

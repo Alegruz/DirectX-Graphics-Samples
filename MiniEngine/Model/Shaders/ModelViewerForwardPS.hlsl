@@ -103,12 +103,6 @@ MRT main(VSOutput vsOutput)
 		vsOutput.worldPos
 		);
     
-    // Thibieroz, Nicolas, “Deferred Shading with Multisampling Anti-Aliasing in DirectX 10,” in Wolfgang Engel, ed., ShaderX7, Charles River Media, pp. 225–242, 2009.
-    if (dot(colorSum, 1.0f) == 0)
-    {
-        discard;
-    }
-    
     mrt.Color = colorSum;
     
     return mrt;

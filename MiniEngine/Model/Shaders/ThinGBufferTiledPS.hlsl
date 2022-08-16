@@ -58,7 +58,6 @@ float3 main(VSOutput vsOutput) : SV_Target
     return sqrt(depth);
 #endif
     
-    
 #if LIGHT_ACCUMULATION
     return color;
 #endif
@@ -115,12 +114,6 @@ float3 main(VSOutput vsOutput) : SV_Target
 		viewDir,
 		worldPos.xyz
 		);
-    
-    // Thibieroz, Nicolas, “Deferred Shading with Multisampling Anti-Aliasing in DirectX 10,” in Wolfgang Engel, ed., ShaderX7, Charles River Media, pp. 225–242, 2009.
-    if (dot(color, 1.0f) == 0)
-    {
-        discard;
-    }
     
     return color;
 }

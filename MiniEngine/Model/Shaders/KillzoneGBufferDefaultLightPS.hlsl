@@ -55,7 +55,6 @@ float3 main(VSOutput vsOutput) : SV_Target
 #if DEPTH
     return sqrt(depth);
 #endif
-    //float gloss = rt0Data.a * 256.0;
 #if LIGHT_ACCUMULATION
     return color;
 #endif
@@ -94,7 +93,6 @@ float3 main(VSOutput vsOutput) : SV_Target
 #endif
   
     float3 specularAlbedo = float3( 0.56, 0.56, 0.56 );
-    //float3 viewDir = normalize(float3(vsOutput.projPos.xy, depth) - ViewerPos);
     float3 viewDir = normalize(worldPos.xyz - ViewerPos.xyz);
     float3 shadowCoord = mul(modelToShadow, float4(worldPos.xyz, 1.0)).xyz;
     
@@ -109,12 +107,6 @@ float3 main(VSOutput vsOutput) : SV_Target
 		viewDir,
 		worldPos.xyz
 		);
-    
-    // Thibieroz, Nicolas, “Deferred Shading with Multisampling Anti-Aliasing in DirectX 10,” in Wolfgang Engel, ed., ShaderX7, Charles River Media, pp. 225–242, 2009.
-    if (dot(color, 1.0f) == 0)
-    {
-        discard;
-    }
     
     return color;
 }
